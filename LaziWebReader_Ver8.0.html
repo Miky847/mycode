@@ -40,7 +40,8 @@ body{height:100vh;height:100dvh;-webkit-tap-highlight-color:transparent;-webkit-
 #guide{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}#guide[hidden]{display:none}
 .gbox{background:var(--pn);border:1px solid var(--bd);border-radius:14px;max-width:560px;width:100%;max-height:85vh;max-height:85dvh;overflow:auto;padding:16px;position:relative}
 .gbox h2{margin:0 0 10px;font-size:16px;color:var(--ac)}#gbody{white-space:pre-line;line-height:1.7}#gclose{position:absolute;top:8px;right:8px}
-#lang{max-width:96px;padding:6px}
+.fl{font-family:"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif;font-size:18px;line-height:1}
+#langMenu{position:absolute;right:0;top:calc(100% + 4px);z-index:60;background:var(--pn);border:1px solid var(--bd);border-radius:10px;padding:4px;display:flex;flex-direction:column;gap:4px;min-width:140px}#langMenu[hidden]{display:none}#langMenu .b{text-align:left;border:0;white-space:nowrap}
 #mbar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:20;gap:8px;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:var(--pn);border-top:1px solid var(--bd)}
 #mbar .b{flex:1;font-size:20px;min-height:46px}#closeSet{display:none;width:100%}
 @media(max-width:760px){
@@ -52,12 +53,13 @@ body{height:100vh;height:100dvh;-webkit-tap-highlight-color:transparent;-webkit-
  input,select,textarea{font-size:16px}.b{min-height:40px}header h1{font-size:15px}
 }
 </style>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 </head>
 <body>
 <header>
   <h1>📖 LaziWeb Reader</h1>
   <button class="b" id="fm" title="Giảm cỡ chữ">A−</button><button class="b" id="fp" title="Tăng cỡ chữ">A+</button>
-  <select id="lang" class="b" aria-label="Language"><option value="vi">Tiếng Việt</option><option value="en">English</option><option value="es">Español</option><option value="th">ไทย</option><option value="lo">ລາວ</option><option value="zh">中文</option></select>
+  <div style="position:relative"><button class="b" id="langBtn" aria-label="Language" title="Language"></button><div id="langMenu" hidden></div></div>
   <button class="b" id="help">?</button>
   <button class="b" id="theme" title="Sáng/Tối">🌓</button>
 </header>
@@ -65,7 +67,7 @@ body{height:100vh;height:100dvh;-webkit-tap-highlight-color:transparent;-webkit-
 <aside>
   <button class="b" id="closeSet">✕ Đóng cài đặt</button>
   <div class="card"><h2 data-i="doc"></h2>
-    <input type="file" id="file" accept=".txt,.html,.htm,.md,.pdf,application/pdf" style="width:100%">
+    <input type="file" id="file" accept=".txt,.html,.htm,.md,.pdf,.epub,.mobi,.azw,.azw3,.prc,.fb2,.docx" style="width:100%">
     <label data-i="url"></label>
     <div class="row"><input type="text" id="url" placeholder="https://..." style="flex:3"><button class="b pri" id="getUrl" style="flex:1" data-i="load"></button></div>
     <div class="note" id="urlSt"></div>
@@ -173,7 +175,8 @@ function load(raw,name){
   const doc=$('doc');doc.innerHTML='';let n=0;const toc=$('toc');toc.innerHTML='';
   text.split(/\n\n+/).forEach(pt=>{pt=pt.trim();if(!pt)return;
     const p=document.createElement('p');
-    if(isChap(pt)){p.className='ch';S.chap.push({i:n,t:pt});const o=new Option(pt.slice(0,50),n);toc.add(o)}
+    let hd=false;if(pt.startsWith('§§ ')){pt=pt.slice(3);hd=true}
+    if(hd||isChap(pt)){p.className='ch';S.chap.push({i:n,t:pt});const o=new Option(pt.slice(0,50),n);toc.add(o)}
     // tách theo dấu ngoặc kép: phần trong “ ” / " " / « » (hoặc đoạn bắt đầu bằng gạch đầu dòng) là lời thoại
     const segs=[];let inQ=/^[—–-]\s/.test(pt),buf='';const fl=()=>{if(buf.trim())segs.push({t:buf,d:inQ});buf=''};
     for(const ch of pt){
@@ -220,7 +223,54 @@ async function pdfToText(file){
     if(buf){if(/[A-Za-zÀ-ỹ]-$/.test(buf)&&/^[a-zà-ỹ]/.test(l.t))buf=buf.slice(0,-1)+l.t;else buf+=' '+l.t}else buf=l.t;
     prev={y:l.y,h:l.h,pi}})});
   flush();return paras.join('\n\n')}
+/* ---------- Ebook: EPUB, MOBI/AZW/AZW3/PRC, FB2, DOCX ---------- */
+const loadScript=src=>new Promise((ok,no)=>{const e=document.createElement('script');e.src=src;e.onload=ok;e.onerror=no;document.head.appendChild(e)});
+const needZip=async()=>{if(!window.JSZip)await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js')};
+const BLK='h1,h2,h3,h4,h5,h6,p,li,blockquote,pre,tr,div,table,ul,ol';
+function blocksOf(d){ // lấy các khối văn bản "lá"; tiêu đề h1-h3 thành chương (§§)
+  d.querySelectorAll('script,style,svg,img,nav').forEach(e=>e.remove());d.body.querySelectorAll('br').forEach(b=>b.replaceWith('\n'));
+  const out=[];d.body.querySelectorAll(BLK).forEach(e=>{if(e.querySelector(BLK))return;const x=e.textContent.replace(/[ \t\u00a0]+/g,' ').trim();if(!x)return;
+    const lk=[...e.querySelectorAll('a')].reduce((n,a)=>n+a.textContent.length,0);if(lk>.8*x.length)return;
+    out.push(/^H[1-3]$/.test(e.tagName)?'§§ '+x.replace(/\s+/g,' '):x)});
+  const all=d.body.textContent;return out.join('\n\n').length>.5*all.length?out.join('\n\n'):all}
+async function epubText(buf){await needZip();const z=await JSZip.loadAsync(buf),X=t=>new DOMParser().parseFromString(t,'application/xml');
+  const rd=async pa=>{const f=z.file(pa);return f?f.async('string'):''};
+  const opfP=X(await rd('META-INF/container.xml')).querySelector('rootfile').getAttribute('full-path'),opf=X(await rd(opfP));
+  const base=opfP.replace(/[^/]*$/,''),man={};opf.querySelectorAll('manifest > item').forEach(i=>man[i.getAttribute('id')]=i.getAttribute('href'));
+  const out=[];for(const r of opf.querySelectorAll('spine > itemref')){const h=man[r.getAttribute('idref')];if(!h)continue;
+    const path=decodeURIComponent(new URL(h,'http://x/'+base).pathname.slice(1));
+    out.push(blocksOf(new DOMParser().parseFromString(await rd(path),'text/html')))}
+  return out.join('\n\n')}
+function palm(d){const o=[];let i=0;while(i<d.length){const c=d[i++];
+  if(c===0||(c>=9&&c<=127))o.push(c);else if(c<=8){for(let k=0;k<c&&i<d.length;k++)o.push(d[i++])}
+  else if(c>=192)o.push(32,c^128);else{const m=(c<<8)|d[i++],dist=(m>>3)&0x7ff,len=(m&7)+3;for(let k=0;k<len;k++)o.push(o[o.length-dist])}}
+  return Uint8Array.from(o)}
+function trail(r,fl){let n=0;for(let i=15;i>=1;i--)if(fl&(1<<i)){let sz=0,sh=0,p=r.length-n-1;for(;;){const b=r[p--];sz|=(b&127)<<sh;sh+=7;if((b&128)||sh>=28||p<0)break}n+=sz}
+  if(fl&1)n+=(r[r.length-n-1]&3)+1;return n}
+function mobiText(buf){ // PalmDOC/MOBI (.mobi .azw .azw3 .prc), chưa bị DRM, nén kiểu PalmDOC
+  const dv=new DataView(buf),u=new Uint8Array(buf),ty=String.fromCharCode(...u.slice(60,68));
+  if(ty!=='BOOKMOBI'&&ty!=='TEXtREAd')throw new Error('type');
+  const n=dv.getUint16(76),off=[];for(let i=0;i<n;i++)off.push(dv.getUint32(78+i*8));off.push(u.length);
+  const r0=off[0],comp=dv.getUint16(r0),cnt=dv.getUint16(r0+8),isM=String.fromCharCode(...u.slice(r0+16,r0+20))==='MOBI';
+  if(isM&&dv.getUint16(r0+12)!==0)throw new Error('drm');if(comp!==1&&comp!==2)throw new Error('comp');
+  const hl=isM?dv.getUint32(r0+20):0,cp=isM?dv.getUint32(r0+28):1252,fl=isM&&hl>=0xE4?dv.getUint16(r0+0xF2):0,parts=[];
+  for(let i=1;i<=cnt&&i<n;i++){let r=u.subarray(off[i],off[i+1]);if(fl)r=r.subarray(0,r.length-trail(r,fl));parts.push(comp===2?palm(r):r)}
+  const all=new Uint8Array(parts.reduce((a,x)=>a+x.length,0));let o=0;parts.forEach(x=>{all.set(x,o);o+=x.length});
+  let h=new TextDecoder(cp===65001?'utf-8':'windows-1252').decode(all).replace(/<mbp:pagebreak\s*\/?>/gi,'<hr>');
+  return blocksOf(new DOMParser().parseFromString(h,'text/html'))}
+function fb2Text(buf){const m=/encoding=["']([^"']+)/i.exec(new TextDecoder('latin1').decode(new Uint8Array(buf).slice(0,200)));let enc='utf-8';try{if(m){new TextDecoder(m[1]);enc=m[1]}}catch(e){}
+  const x=new DOMParser().parseFromString(new TextDecoder(enc).decode(buf),'application/xml'),out=[];
+  x.querySelectorAll('body title,body p,body subtitle').forEach(e=>{const g=e.localName;if(g==='p'&&e.closest('title'))return;const t=e.textContent.replace(/\s+/g,' ').trim();if(t)out.push(g==='title'?'§§ '+t:t)});return out.join('\n\n')}
+async function docxText(buf){await needZip();const z=await JSZip.loadAsync(buf),x=new DOMParser().parseFromString(await z.file('word/document.xml').async('string'),'application/xml');
+  return[...x.getElementsByTagName('w:p')].map(p=>{const st=p.getElementsByTagName('w:pStyle')[0],t=[...p.getElementsByTagName('w:t')].map(n=>n.textContent).join('');
+    return st&&/^(Heading|Title)/i.test(st.getAttribute('w:val')||'')&&t?'§§ '+t:t}).filter(Boolean).join('\n\n')}
+async function ebookText(f,ext){const buf=await f.arrayBuffer();
+  return ext==='epub'?epubText(buf):ext==='fb2'?fb2Text(buf):ext==='docx'?docxText(buf):mobiText(buf)}
 $('file').onchange=async e=>{const f=e.target.files[0];if(!f)return;
+  const ext=(f.name.split('.').pop()||'').toLowerCase();
+  if(['epub','mobi','azw','azw3','prc','fb2','docx'].includes(ext)){const st=$('urlSt');st.textContent=t('sl');
+    try{const tx=await ebookText(f,ext);if(clean(tx).length<100)throw new Error('empty');load(tx,f.name);st.textContent=t('so')+' '+S.sents.length}
+    catch(err){st.textContent=t('bk')}return}
   if(/\.pdf$/i.test(f.name)||f.type==='application/pdf'){
     try{const tx=await pdfToText(f);
       if(clean(tx).length<100){$('urlSt').textContent=t('pe');return}
@@ -404,33 +454,37 @@ $('fix').value=store.get('fix','');$('fix').oninput=()=>store.set('fix',$('fix')
 /* ---------- Đa ngôn ngữ ---------- */
 var VL;
 const L={
-vi:{doc:"Tài liệu",url:"Hoặc tải từ link trang web",load:"Tải",paste:"Hoặc dán văn bản",pasteph:"Dán nội dung truyện/bài viết...",readpaste:"Đọc đoạn đã dán",voice:"Giọng kể",sysv:"Giọng hệ thống (người dẫn)",dlgv:"Giọng cho lời thoại",rate:"Tốc độ",pitch:"Cao độ",sleep:"Hẹn giờ tắt",none:"Không",chap:"Hết chương này",fix:"Sửa cách đọc",fixph:"mỗi dòng: từ=cách đọc",amb:"Âm nền",vol:"Âm lượng",close:"Đóng cài đặt",lib:"Thư viện",libname:"Tên",libadd:"Thêm vào thư viện",wt:"Biến mọi văn bản thành sách nói",wp:"Tải tệp .txt/.html/.pdf, dán văn bản hoặc chọn một mục trong Thư viện.",opendef:"Mở mục mặc định",gt:"Hướng dẫn",same:"Giống người dẫn",auto:"Tự động (giọng khác)",noText:"Không tìm thấy nội dung văn bản.",noDoc:"Hãy tải văn bản trước!",sl:"Đang tải...",so:"Đã tải xong. Số câu:",se:"Không tải được (bị chặn hoặc không có chữ). Thử link khác hoặc dán văn bản.",pe:"PDF không có lớp chữ (bản scan).",pf:"Không mở được PDF.",
+vi:{doc:"Tài liệu",url:"Hoặc tải từ link trang web",load:"Tải",paste:"Hoặc dán văn bản",pasteph:"Dán nội dung truyện/bài viết...",readpaste:"Đọc đoạn đã dán",voice:"Giọng kể",sysv:"Giọng hệ thống (người dẫn)",dlgv:"Giọng cho lời thoại",rate:"Tốc độ",pitch:"Cao độ",sleep:"Hẹn giờ tắt",none:"Không",chap:"Hết chương này",fix:"Sửa cách đọc",fixph:"mỗi dòng: từ=cách đọc",amb:"Âm nền",vol:"Âm lượng",close:"Đóng cài đặt",lib:"Thư viện",libname:"Tên",libadd:"Thêm vào thư viện",wt:"Biến mọi văn bản thành sách nói",wp:"Tải tệp .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx, dán văn bản hoặc chọn một mục trong Thư viện.",opendef:"Mở mục mặc định",gt:"Hướng dẫn",bk:"Không đọc được ebook này (có thể bị khoá DRM hoặc định dạng chưa hỗ trợ).",same:"Giống người dẫn",auto:"Tự động (giọng khác)",noText:"Không tìm thấy nội dung văn bản.",noDoc:"Hãy tải văn bản trước!",sl:"Đang tải...",so:"Đã tải xong. Số câu:",se:"Không tải được (bị chặn hoặc không có chữ). Thử link khác hoặc dán văn bản.",pe:"PDF không có lớp chữ (bản scan).",pf:"Không mở được PDF.",
 pn:["Mặc định","Kể chuyện trầm ấm","Nam thời sự","Nữ dịu dàng","Nữ tin tức","Nhi đồng"],sn:["Mưa rơi","Lửa trại","Rừng chim","Sóng biển","Gió núi","Ồn nâu","Ồn trắng","Nhạc đọc sách","Nhạc chill","Nhạc cổ điển"],
-g:"1. Mở tài liệu: chọn tệp .txt/.html/.pdf, dán link hoặc chọn trong Thư viện.\n2. Bấm ▶ để nghe; chạm vào một câu để đọc từ đó.\n3. Giọng đọc lấy từ hệ thống; trên điện thoại hãy cài giọng tiếng Việt.\n4. Thư viện: nhập tên + link rồi Thêm; ⭐ đặt mặc định; ✕ xoá.\n5. Máy tính: Space, ←/→, Ctrl+↑/↓. Khoá màn hình sẽ dừng đọc.\n6. Tải link/PDF chỉ chạy khi mở tệp đã tải về hoặc web riêng."},
-en:{doc:"Document",url:"Or load from a web link",load:"Load",paste:"Or paste text",pasteph:"Paste your text here...",readpaste:"Read pasted text",voice:"Voice",sysv:"Narrator voice",dlgv:"Dialogue voice",rate:"Speed",pitch:"Pitch",sleep:"Sleep timer",none:"Off",chap:"End of chapter",fix:"Pronunciation fixes",fixph:"one per line: word=reading",amb:"Ambient",vol:"Volume",close:"Close settings",lib:"Library",libname:"Name",libadd:"Add to library",wt:"Turn any text into an audiobook",wp:"Open a .txt/.html/.pdf file, paste text, or pick an item from the Library.",opendef:"Open default item",gt:"Guide",same:"Same as narrator",auto:"Auto (other voice)",noText:"No text content found.",noDoc:"Please load a text first!",sl:"Loading...",so:"Loaded. Sentences:",se:"Could not load (blocked or no text). Try another link or paste the text.",pe:"This PDF has no text layer (scanned).",pf:"Could not open the PDF.",
+g:"1. Mở tài liệu: chọn tệp .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx, dán link hoặc chọn trong Thư viện.\n2. Bấm ▶ để nghe; chạm vào một câu để đọc từ đó.\n3. Giọng đọc lấy từ hệ thống; trên điện thoại hãy cài giọng tiếng Việt.\n4. Thư viện: nhập tên + link rồi Thêm; ⭐ đặt mặc định; ✕ xoá.\n5. Máy tính: Space, ←/→, Ctrl+↑/↓. Khoá màn hình sẽ dừng đọc.\n6. Tải link/PDF chỉ chạy khi mở tệp đã tải về hoặc web riêng."},
+en:{doc:"Document",url:"Or load from a web link",load:"Load",paste:"Or paste text",pasteph:"Paste your text here...",readpaste:"Read pasted text",voice:"Voice",sysv:"Narrator voice",dlgv:"Dialogue voice",rate:"Speed",pitch:"Pitch",sleep:"Sleep timer",none:"Off",chap:"End of chapter",fix:"Pronunciation fixes",fixph:"one per line: word=reading",amb:"Ambient",vol:"Volume",close:"Close settings",lib:"Library",libname:"Name",libadd:"Add to library",wt:"Turn any text into an audiobook",wp:"Open a .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx file, paste text, or pick an item from the Library.",opendef:"Open default item",gt:"Guide",bk:"Could not read this ebook (it may be DRM-protected or an unsupported format).",same:"Same as narrator",auto:"Auto (other voice)",noText:"No text content found.",noDoc:"Please load a text first!",sl:"Loading...",so:"Loaded. Sentences:",se:"Could not load (blocked or no text). Try another link or paste the text.",pe:"This PDF has no text layer (scanned).",pf:"Could not open the PDF.",
 pn:["Default","Warm storyteller","Male news","Soft female","Female news","Kids"],sn:["Rain","Campfire","Forest","Waves","Wind","Brown noise","White noise","Reading music","Chill lo-fi","Classical"],
-g:"1. Open a document: pick a .txt/.html/.pdf file, paste a link, or choose from the Library.\n2. Press ▶ to listen; tap any sentence to read from there.\n3. Voices come from your device; on phones install the voice pack for your language.\n4. Library: enter a name + link, then Add; ⭐ sets the default; ✕ deletes.\n5. Desktop: Space, ←/→, Ctrl+↑/↓. Locking the screen stops reading.\n6. Link/PDF loading works only from the downloaded file or your own website."},
-es:{doc:"Documento",url:"O carga desde un enlace web",load:"Cargar",paste:"O pega texto",pasteph:"Pega tu texto aquí...",readpaste:"Leer el texto pegado",voice:"Voz",sysv:"Voz del narrador",dlgv:"Voz de diálogos",rate:"Velocidad",pitch:"Tono",sleep:"Temporizador",none:"No",chap:"Fin del capítulo",fix:"Corregir pronunciación",fixph:"una por línea: palabra=lectura",amb:"Ambiente",vol:"Volumen",close:"Cerrar ajustes",lib:"Biblioteca",libname:"Nombre",libadd:"Añadir a la biblioteca",wt:"Convierte cualquier texto en audiolibro",wp:"Abre un archivo .txt/.html/.pdf, pega texto o elige un elemento de la Biblioteca.",opendef:"Abrir el predeterminado",gt:"Guía",same:"Igual que el narrador",auto:"Auto (otra voz)",noText:"No se encontró texto.",noDoc:"¡Carga primero un texto!",sl:"Cargando...",so:"Cargado. Frases:",se:"No se pudo cargar (bloqueado o sin texto). Prueba otro enlace o pega el texto.",pe:"Este PDF no tiene capa de texto (escaneado).",pf:"No se pudo abrir el PDF.",
+g:"1. Open a document: pick a .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx file, paste a link, or choose from the Library.\n2. Press ▶ to listen; tap any sentence to read from there.\n3. Voices come from your device; on phones install the voice pack for your language.\n4. Library: enter a name + link, then Add; ⭐ sets the default; ✕ deletes.\n5. Desktop: Space, ←/→, Ctrl+↑/↓. Locking the screen stops reading.\n6. Link/PDF loading works only from the downloaded file or your own website."},
+es:{doc:"Documento",url:"O carga desde un enlace web",load:"Cargar",paste:"O pega texto",pasteph:"Pega tu texto aquí...",readpaste:"Leer el texto pegado",voice:"Voz",sysv:"Voz del narrador",dlgv:"Voz de diálogos",rate:"Velocidad",pitch:"Tono",sleep:"Temporizador",none:"No",chap:"Fin del capítulo",fix:"Corregir pronunciación",fixph:"una por línea: palabra=lectura",amb:"Ambiente",vol:"Volumen",close:"Cerrar ajustes",lib:"Biblioteca",libname:"Nombre",libadd:"Añadir a la biblioteca",wt:"Convierte cualquier texto en audiolibro",wp:"Abre un archivo .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx, pega texto o elige un elemento de la Biblioteca.",opendef:"Abrir el predeterminado",gt:"Guía",bk:"No se pudo leer este ebook (puede tener DRM o un formato no compatible).",same:"Igual que el narrador",auto:"Auto (otra voz)",noText:"No se encontró texto.",noDoc:"¡Carga primero un texto!",sl:"Cargando...",so:"Cargado. Frases:",se:"No se pudo cargar (bloqueado o sin texto). Prueba otro enlace o pega el texto.",pe:"Este PDF no tiene capa de texto (escaneado).",pf:"No se pudo abrir el PDF.",
 pn:["Predeterminada","Narrador cálido","Locutor","Voz suave","Locutora","Infantil"],sn:["Lluvia","Fogata","Bosque","Olas","Viento","Ruido marrón","Ruido blanco","Música para leer","Chill lo-fi","Clásica"],
-g:"1. Abrir un documento: elige un archivo .txt/.html/.pdf, pega un enlace o usa la Biblioteca.\n2. Pulsa ▶ para escuchar; toca una frase para leer desde ahí.\n3. Las voces vienen del dispositivo; en el móvil instala el paquete de voz de tu idioma.\n4. Biblioteca: escribe nombre + enlace y pulsa Añadir; ⭐ marca el predeterminado; ✕ borra.\n5. PC: Espacio, ←/→, Ctrl+↑/↓. Bloquear la pantalla detiene la lectura.\n6. Cargar enlaces/PDF solo funciona con el archivo descargado o en tu propio sitio web."},
-th:{doc:"เอกสาร",url:"หรือโหลดจากลิงก์เว็บ",load:"โหลด",paste:"หรือวางข้อความ",pasteph:"วางเนื้อหาที่นี่...",readpaste:"อ่านข้อความที่วาง",voice:"เสียงอ่าน",sysv:"เสียงผู้บรรยาย",dlgv:"เสียงบทสนทนา",rate:"ความเร็ว",pitch:"ระดับเสียง",sleep:"ตั้งเวลาปิด",none:"ไม่ตั้ง",chap:"จบบทนี้",fix:"แก้การออกเสียง",fixph:"บรรทัดละ: คำ=คำอ่าน",amb:"เสียงบรรยากาศ",vol:"ความดัง",close:"ปิดการตั้งค่า",lib:"คลังหนังสือ",libname:"ชื่อ",libadd:"เพิ่มในคลัง",wt:"เปลี่ยนข้อความทุกอย่างเป็นหนังสือเสียง",wp:"เปิดไฟล์ .txt/.html/.pdf วางข้อความ หรือเลือกจากคลังหนังสือ",opendef:"เปิดรายการเริ่มต้น",gt:"คู่มือ",same:"เหมือนผู้บรรยาย",auto:"อัตโนมัติ (เสียงอื่น)",noText:"ไม่พบเนื้อหาข้อความ",noDoc:"กรุณาโหลดข้อความก่อน!",sl:"กำลังโหลด...",so:"โหลดเสร็จแล้ว จำนวนประโยค:",se:"โหลดไม่ได้ (ถูกบล็อกหรือไม่มีข้อความ) ลองลิงก์อื่นหรือวางข้อความ",pe:"PDF ไม่มีข้อความ (เป็นภาพสแกน)",pf:"เปิด PDF ไม่ได้",
+g:"1. Abrir un documento: elige un archivo .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx, pega un enlace o usa la Biblioteca.\n2. Pulsa ▶ para escuchar; toca una frase para leer desde ahí.\n3. Las voces vienen del dispositivo; en el móvil instala el paquete de voz de tu idioma.\n4. Biblioteca: escribe nombre + enlace y pulsa Añadir; ⭐ marca el predeterminado; ✕ borra.\n5. PC: Espacio, ←/→, Ctrl+↑/↓. Bloquear la pantalla detiene la lectura.\n6. Cargar enlaces/PDF solo funciona con el archivo descargado o en tu propio sitio web."},
+th:{doc:"เอกสาร",url:"หรือโหลดจากลิงก์เว็บ",load:"โหลด",paste:"หรือวางข้อความ",pasteph:"วางเนื้อหาที่นี่...",readpaste:"อ่านข้อความที่วาง",voice:"เสียงอ่าน",sysv:"เสียงผู้บรรยาย",dlgv:"เสียงบทสนทนา",rate:"ความเร็ว",pitch:"ระดับเสียง",sleep:"ตั้งเวลาปิด",none:"ไม่ตั้ง",chap:"จบบทนี้",fix:"แก้การออกเสียง",fixph:"บรรทัดละ: คำ=คำอ่าน",amb:"เสียงบรรยากาศ",vol:"ความดัง",close:"ปิดการตั้งค่า",lib:"คลังหนังสือ",libname:"ชื่อ",libadd:"เพิ่มในคลัง",wt:"เปลี่ยนข้อความทุกอย่างเป็นหนังสือเสียง",wp:"เปิดไฟล์ .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx วางข้อความ หรือเลือกจากคลังหนังสือ",opendef:"เปิดรายการเริ่มต้น",gt:"คู่มือ",bk:"อ่านอีบุ๊กนี้ไม่ได้ (อาจมี DRM หรือเป็นรูปแบบที่ไม่รองรับ)",same:"เหมือนผู้บรรยาย",auto:"อัตโนมัติ (เสียงอื่น)",noText:"ไม่พบเนื้อหาข้อความ",noDoc:"กรุณาโหลดข้อความก่อน!",sl:"กำลังโหลด...",so:"โหลดเสร็จแล้ว จำนวนประโยค:",se:"โหลดไม่ได้ (ถูกบล็อกหรือไม่มีข้อความ) ลองลิงก์อื่นหรือวางข้อความ",pe:"PDF ไม่มีข้อความ (เป็นภาพสแกน)",pf:"เปิด PDF ไม่ได้",
 pn:["ค่าเริ่มต้น","นักเล่าเสียงอุ่น","ผู้ประกาศชาย","หญิงอ่อนโยน","ผู้ประกาศหญิง","เด็ก"],sn:["ฝน","กองไฟ","ป่า","คลื่น","ลม","เสียงรบกวนสีน้ำตาล","ไวต์นอยส์","เพลงอ่านหนังสือ","ชิลล์ lo-fi","คลาสสิก"],
-g:"1. เปิดเอกสาร: เลือกไฟล์ .txt/.html/.pdf วางลิงก์ หรือเลือกจากคลังหนังสือ\n2. กด ▶ เพื่อฟัง แตะประโยคใดก็ได้เพื่ออ่านต่อจากตรงนั้น\n3. เสียงมาจากอุปกรณ์ของคุณ บนมือถือให้ติดตั้งชุดเสียงภาษาที่ต้องการ\n4. คลังหนังสือ: ใส่ชื่อ + ลิงก์ แล้วกดเพิ่ม ⭐ ตั้งค่าเริ่มต้น ✕ ลบ\n5. คอมพิวเตอร์: Space, ←/→, Ctrl+↑/↓ การล็อกหน้าจอจะหยุดการอ่าน\n6. การโหลดลิงก์/PDF ใช้ได้เฉพาะไฟล์ที่ดาวน์โหลดหรือเว็บไซต์ของคุณเอง"},
-lo:{doc:"ເອກະສານ",url:"ຫຼືໂຫຼດຈາກລິ້ງເວັບ",load:"ໂຫຼດ",paste:"ຫຼືວາງຂໍ້ຄວາມ",pasteph:"ວາງເນື້ອຫາບ່ອນນີ້...",readpaste:"ອ່ານຂໍ້ຄວາມທີ່ວາງ",voice:"ສຽງອ່ານ",sysv:"ສຽງຜູ້ບັນຍາຍ",dlgv:"ສຽງບົດສົນທະນາ",rate:"ຄວາມໄວ",pitch:"ລະດັບສຽງ",sleep:"ຕັ້ງເວລາປິດ",none:"ບໍ່ຕັ້ງ",chap:"ຈົບບົດນີ້",fix:"ແກ້ການອອກສຽງ",fixph:"ແຕ່ລະແຖວ: ຄຳ=ຄຳອ່ານ",amb:"ສຽງບັນຍາກາດ",vol:"ຄວາມດັງ",close:"ປິດການຕັ້ງຄ່າ",lib:"ຫ້ອງສະໝຸດ",libname:"ຊື່",libadd:"ເພີ່ມເຂົ້າຫ້ອງສະໝຸດ",wt:"ປ່ຽນທຸກຂໍ້ຄວາມເປັນປຶ້ມສຽງ",wp:"ເປີດໄຟລ໌ .txt/.html/.pdf ວາງຂໍ້ຄວາມ ຫຼືເລືອກຈາກຫ້ອງສະໝຸດ",opendef:"ເປີດລາຍການເລີ່ມຕົ້ນ",gt:"ຄູ່ມື",same:"ຄືຜູ້ບັນຍາຍ",auto:"ອັດຕະໂນມັດ (ສຽງອື່ນ)",noText:"ບໍ່ພົບເນື້ອຫາຂໍ້ຄວາມ",noDoc:"ກະລຸນາໂຫຼດຂໍ້ຄວາມກ່ອນ!",sl:"ກຳລັງໂຫຼດ...",so:"ໂຫຼດສຳເລັດ ຈຳນວນປະໂຫຍກ:",se:"ໂຫຼດບໍ່ໄດ້ (ຖືກບລັອກ ຫຼືບໍ່ມີຂໍ້ຄວາມ) ລອງລິ້ງອື່ນ ຫຼືວາງຂໍ້ຄວາມ",pe:"PDF ບໍ່ມີຂໍ້ຄວາມ (ເປັນຮູບສະແກນ)",pf:"ເປີດ PDF ບໍ່ໄດ້",
+g:"1. เปิดเอกสาร: เลือกไฟล์ .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx วางลิงก์ หรือเลือกจากคลังหนังสือ\n2. กด ▶ เพื่อฟัง แตะประโยคใดก็ได้เพื่ออ่านต่อจากตรงนั้น\n3. เสียงมาจากอุปกรณ์ของคุณ บนมือถือให้ติดตั้งชุดเสียงภาษาที่ต้องการ\n4. คลังหนังสือ: ใส่ชื่อ + ลิงก์ แล้วกดเพิ่ม ⭐ ตั้งค่าเริ่มต้น ✕ ลบ\n5. คอมพิวเตอร์: Space, ←/→, Ctrl+↑/↓ การล็อกหน้าจอจะหยุดการอ่าน\n6. การโหลดลิงก์/PDF ใช้ได้เฉพาะไฟล์ที่ดาวน์โหลดหรือเว็บไซต์ของคุณเอง"},
+lo:{doc:"ເອກະສານ",url:"ຫຼືໂຫຼດຈາກລິ້ງເວັບ",load:"ໂຫຼດ",paste:"ຫຼືວາງຂໍ້ຄວາມ",pasteph:"ວາງເນື້ອຫາບ່ອນນີ້...",readpaste:"ອ່ານຂໍ້ຄວາມທີ່ວາງ",voice:"ສຽງອ່ານ",sysv:"ສຽງຜູ້ບັນຍາຍ",dlgv:"ສຽງບົດສົນທະນາ",rate:"ຄວາມໄວ",pitch:"ລະດັບສຽງ",sleep:"ຕັ້ງເວລາປິດ",none:"ບໍ່ຕັ້ງ",chap:"ຈົບບົດນີ້",fix:"ແກ້ການອອກສຽງ",fixph:"ແຕ່ລະແຖວ: ຄຳ=ຄຳອ່ານ",amb:"ສຽງບັນຍາກາດ",vol:"ຄວາມດັງ",close:"ປິດການຕັ້ງຄ່າ",lib:"ຫ້ອງສະໝຸດ",libname:"ຊື່",libadd:"ເພີ່ມເຂົ້າຫ້ອງສະໝຸດ",wt:"ປ່ຽນທຸກຂໍ້ຄວາມເປັນປຶ້ມສຽງ",wp:"ເປີດໄຟລ໌ .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx ວາງຂໍ້ຄວາມ ຫຼືເລືອກຈາກຫ້ອງສະໝຸດ",opendef:"ເປີດລາຍການເລີ່ມຕົ້ນ",gt:"ຄູ່ມື",bk:"ອ່ານປຶ້ມອີເລັກໂຕຣນິກນີ້ບໍ່ໄດ້ (ອາດມີ DRM ຫຼືຮູບແບບທີ່ບໍ່ຮອງຮັບ)",same:"ຄືຜູ້ບັນຍາຍ",auto:"ອັດຕະໂນມັດ (ສຽງອື່ນ)",noText:"ບໍ່ພົບເນື້ອຫາຂໍ້ຄວາມ",noDoc:"ກະລຸນາໂຫຼດຂໍ້ຄວາມກ່ອນ!",sl:"ກຳລັງໂຫຼດ...",so:"ໂຫຼດສຳເລັດ ຈຳນວນປະໂຫຍກ:",se:"ໂຫຼດບໍ່ໄດ້ (ຖືກບລັອກ ຫຼືບໍ່ມີຂໍ້ຄວາມ) ລອງລິ້ງອື່ນ ຫຼືວາງຂໍ້ຄວາມ",pe:"PDF ບໍ່ມີຂໍ້ຄວາມ (ເປັນຮູບສະແກນ)",pf:"ເປີດ PDF ບໍ່ໄດ້",
 pn:["ຄ່າເລີ່ມຕົ້ນ","ນັກເລົ່າສຽງອຸ່ນ","ຜູ້ປະກາດຊາຍ","ຍິງອ່ອນໂຍນ","ຜູ້ປະກາດຍິງ","ເດັກນ້ອຍ"],sn:["ຝົນ","ກອງໄຟ","ປ່າ","ຄື້ນ","ລົມ","ສຽງລົບກວນສີນ້ຳຕານ","ສຽງຂາວ","ເພງອ່ານປຶ້ມ","ຊິວ lo-fi","ຄລາສສິກ"],
-g:"1. ເປີດເອກະສານ: ເລືອກໄຟລ໌ .txt/.html/.pdf ວາງລິ້ງ ຫຼືເລືອກຈາກຫ້ອງສະໝຸດ\n2. ກົດ ▶ ເພື່ອຟັງ ແຕະປະໂຫຍກໃດກໍໄດ້ເພື່ອອ່ານຕໍ່ຈາກບ່ອນນັ້ນ\n3. ສຽງມາຈາກອຸປະກອນຂອງທ່ານ ເທິງມືຖືໃຫ້ຕິດຕັ້ງຊຸດສຽງພາສາທີ່ຕ້ອງການ\n4. ຫ້ອງສະໝຸດ: ໃສ່ຊື່ + ລິ້ງ ແລ້ວກົດເພີ່ມ ⭐ ຕັ້ງຄ່າເລີ່ມຕົ້ນ ✕ ລຶບ\n5. ຄອມພິວເຕີ: Space, ←/→, Ctrl+↑/↓ ການລັອກໜ້າຈໍຈະຢຸດການອ່ານ\n6. ການໂຫຼດລິ້ງ/PDF ໃຊ້ໄດ້ສະເພາະໄຟລ໌ທີ່ດາວໂຫຼດ ຫຼືເວັບໄຊຂອງທ່ານເອງ"},
-zh:{doc:"文档",url:"或从网页链接加载",load:"加载",paste:"或粘贴文本",pasteph:"在此粘贴内容...",readpaste:"朗读粘贴的文本",voice:"朗读声音",sysv:"旁白声音",dlgv:"对话声音",rate:"语速",pitch:"音调",sleep:"定时关闭",none:"不设置",chap:"本章结束",fix:"修正读音",fixph:"每行：词=读法",amb:"环境音",vol:"音量",close:"关闭设置",lib:"书库",libname:"名称",libadd:"添加到书库",wt:"把任何文字变成有声书",wp:"打开 .txt/.html/.pdf 文件、粘贴文本，或从书库中选择。",opendef:"打开默认项",gt:"使用指南",same:"与旁白相同",auto:"自动（另一种声音）",noText:"未找到文本内容。",noDoc:"请先加载文本！",sl:"加载中...",so:"加载完成，句数：",se:"无法加载（被拦截或没有文字）。请换个链接或粘贴文本。",pe:"此 PDF 没有文字层（扫描件）。",pf:"无法打开 PDF。",
+g:"1. ເປີດເອກະສານ: ເລືອກໄຟລ໌ .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx ວາງລິ້ງ ຫຼືເລືອກຈາກຫ້ອງສະໝຸດ\n2. ກົດ ▶ ເພື່ອຟັງ ແຕະປະໂຫຍກໃດກໍໄດ້ເພື່ອອ່ານຕໍ່ຈາກບ່ອນນັ້ນ\n3. ສຽງມາຈາກອຸປະກອນຂອງທ່ານ ເທິງມືຖືໃຫ້ຕິດຕັ້ງຊຸດສຽງພາສາທີ່ຕ້ອງການ\n4. ຫ້ອງສະໝຸດ: ໃສ່ຊື່ + ລິ້ງ ແລ້ວກົດເພີ່ມ ⭐ ຕັ້ງຄ່າເລີ່ມຕົ້ນ ✕ ລຶບ\n5. ຄອມພິວເຕີ: Space, ←/→, Ctrl+↑/↓ ການລັອກໜ້າຈໍຈະຢຸດການອ່ານ\n6. ການໂຫຼດລິ້ງ/PDF ໃຊ້ໄດ້ສະເພາະໄຟລ໌ທີ່ດາວໂຫຼດ ຫຼືເວັບໄຊຂອງທ່ານເອງ"},
+zh:{doc:"文档",url:"或从网页链接加载",load:"加载",paste:"或粘贴文本",pasteph:"在此粘贴内容...",readpaste:"朗读粘贴的文本",voice:"朗读声音",sysv:"旁白声音",dlgv:"对话声音",rate:"语速",pitch:"音调",sleep:"定时关闭",none:"不设置",chap:"本章结束",fix:"修正读音",fixph:"每行：词=读法",amb:"环境音",vol:"音量",close:"关闭设置",lib:"书库",libname:"名称",libadd:"添加到书库",wt:"把任何文字变成有声书",wp:"打开 .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx 文件、粘贴文本，或从书库中选择。",opendef:"打开默认项",gt:"使用指南",bk:"无法读取此电子书（可能有 DRM 保护或格式不受支持）。",same:"与旁白相同",auto:"自动（另一种声音）",noText:"未找到文本内容。",noDoc:"请先加载文本！",sl:"加载中...",so:"加载完成，句数：",se:"无法加载（被拦截或没有文字）。请换个链接或粘贴文本。",pe:"此 PDF 没有文字层（扫描件）。",pf:"无法打开 PDF。",
 pn:["默认","温暖讲述","男声新闻","温柔女声","女声新闻","儿童"],sn:["雨声","篝火","森林","海浪","山风","棕噪音","白噪音","阅读音乐","轻松 lo-fi","古典音乐"],
-g:"1. 打开文档：选择 .txt/.html/.pdf 文件、粘贴链接，或从书库中选择。\n2. 点击 ▶ 收听；点按任意句子即可从该句开始朗读。\n3. 声音来自你的设备；手机上请安装对应语言的语音包。\n4. 书库：输入名称和链接后点“添加”；⭐ 设为默认；✕ 删除。\n5. 电脑：空格、←/→、Ctrl+↑/↓。锁屏会中断朗读。\n6. 链接/PDF 加载仅在下载后的文件或你自己的网站上可用。"}};
+g:"1. 打开文档：选择 .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx 文件、粘贴链接，或从书库中选择。\n2. 点击 ▶ 收听；点按任意句子即可从该句开始朗读。\n3. 声音来自你的设备；手机上请安装对应语言的语音包。\n4. 书库：输入名称和链接后点“添加”；⭐ 设为默认；✕ 删除。\n5. 电脑：空格、←/→、Ctrl+↑/↓。锁屏会中断朗读。\n6. 链接/PDF 加载仅在下载后的文件或你自己的网站上可用。"}};
 const nav2=(navigator.language||'vi').slice(0,2);let lang=store.get('lang',L[nav2]?nav2:'en');
 function t(k){return(L[lang]&&L[lang][k])||L.en[k]||k}
-function apply(){document.documentElement.lang=lang;$('lang').value=lang;
+function apply(){document.documentElement.lang=lang;$('langBtn').innerHTML='<span class="fl">'+FL[lang]+'</span>';
   document.querySelectorAll('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));
   document.querySelectorAll('[data-ph]').forEach(e=>e.placeholder=t(e.dataset.ph));
   VL=[t('same'),t('auto')];[...$('voice2').options].slice(0,2).forEach((o,i)=>o.text=VL[i]);
   $('closeSet').textContent='✕ '+t('close');$('gbody').textContent=t('g');$('help').title=t('gt');
   [...P.children].forEach((b,i)=>b.textContent=t('pn')[i]);[...A.children].forEach((b,i)=>b.textContent=AMB[i][1]+' '+t('sn')[i])}
-$('lang').onchange=e=>{lang=e.target.value;store.set('lang',lang);apply()};
+const LANGS=[['vi','🇻🇳','Tiếng Việt'],['en','🇬🇧','English'],['es','🇪🇸','Español'],['th','🇹🇭','ไทย'],['lo','🇱🇦','ລາວ'],['zh','🇨🇳','中文']],FL={};
+LANGS.forEach(([c,f,n])=>{FL[c]=f;const b=document.createElement('button');b.className='b';b.innerHTML='<span class="fl">'+f+'</span> '+n;
+  b.onclick=()=>{lang=c;store.set('lang',c);$('langMenu').hidden=true;apply()};$('langMenu').appendChild(b)});
+$('langBtn').onclick=e=>{e.stopPropagation();$('langMenu').hidden=!$('langMenu').hidden};
+document.addEventListener('click',()=>{$('langMenu').hidden=true});
 $('help').onclick=()=>{$('guide').hidden=!$('guide').hidden};$('gclose').onclick=()=>{$('guide').hidden=true};
 $('guide').onclick=e=>{if(e.target===$('guide'))$('guide').hidden=true};
 
