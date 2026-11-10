@@ -37,11 +37,19 @@ article p{margin:0 0 1.2em}.s{cursor:pointer;border-radius:3px}.s:hover{backgrou
 #welcome{text-align:center;color:var(--mu);margin-top:12vh;padding:0 20px}
 .note{font-size:11px;color:var(--mu);margin-top:6px;line-height:1.4}
 body{height:100vh;height:100dvh;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
-#guide{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}#guide[hidden]{display:none}
+#guide,#panel{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}#guide[hidden],#panel[hidden]{display:none}
 .gbox{background:var(--pn);border:1px solid var(--bd);border-radius:14px;max-width:560px;width:100%;max-height:85vh;max-height:85dvh;overflow:auto;padding:16px;position:relative}
 .gbox h2{margin:0 0 10px;font-size:16px;color:var(--ac)}#gbody{white-space:pre-line;line-height:1.7}#gclose{position:absolute;top:8px;right:8px}
 .fl{font-family:"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif;font-size:18px;line-height:1}
 #langMenu{position:absolute;right:0;top:calc(100% + 4px);z-index:60;background:var(--pn);border:1px solid var(--bd);border-radius:10px;padding:4px;display:flex;flex-direction:column;gap:4px;min-width:140px}#langMenu[hidden]{display:none}#langMenu .b{text-align:left;border:0;white-space:nowrap}
+:root[data-theme=sepia]{--bg:#f4ecd8;--pn:#fbf5e6;--tx:#3b3228;--mu:#7d6e58;--bd:#e0d3b4;--hl:#f2cf6b}
+:root{--ff:Georgia,"Times New Roman",serif;--lh:1.85;--ta:left}
+article{font-family:var(--ff);line-height:var(--lh);text-align:var(--ta)}
+::highlight(wd){background:var(--ac);color:#fff}
+#seltb{position:fixed;z-index:40;display:flex;gap:4px;background:var(--pn);border:1px solid var(--bd);border-radius:10px;padding:4px;box-shadow:0 4px 16px rgba(0,0,0,.25)}#seltb[hidden]{display:none}
+#seltb .b{padding:4px 9px;font-size:16px}.res{padding:8px;border-bottom:1px solid var(--bd);cursor:pointer;line-height:1.5}.res:hover{background:var(--bg)}
+#pbody h3{margin:12px 0 4px;font-size:13px;color:var(--mu)}header{flex-wrap:wrap}
+@media(max-width:760px){header .sb,header .nb{display:none}header .b{padding:6px 8px}}
 #mbar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:20;gap:8px;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:var(--pn);border-top:1px solid var(--bd)}
 #mbar .b{flex:1;font-size:20px;min-height:46px}#closeSet{display:none;width:100%}
 @media(max-width:760px){
@@ -60,6 +68,7 @@ body{height:100vh;height:100dvh;-webkit-tap-highlight-color:transparent;-webkit-
   <h1>📖 LaziWeb Reader</h1>
   <button class="b" id="fm" title="Giảm cỡ chữ">A−</button><button class="b" id="fp" title="Tăng cỡ chữ">A+</button>
   <div style="position:relative"><button class="b" id="langBtn" aria-label="Language" title="Language"></button><div id="langMenu" hidden></div></div>
+  <button class="b sb">🔍</button><button class="b nb">📒</button>
   <button class="b" id="help">?</button>
   <button class="b" id="theme" title="Sáng/Tối">🌓</button>
 </header>
@@ -67,7 +76,7 @@ body{height:100vh;height:100dvh;-webkit-tap-highlight-color:transparent;-webkit-
 <aside>
   <button class="b" id="closeSet">✕ Đóng cài đặt</button>
   <div class="card"><h2 data-i="doc"></h2>
-    <input type="file" id="file" accept=".txt,.html,.htm,.md,.pdf,.epub,.mobi,.azw,.azw3,.prc,.fb2,.docx" style="width:100%">
+    <input type="file" id="file" accept=".txt,.html,.htm,.md,.pdf,.epub,.mobi,.azw,.azw3,.prc,.fb2,.docx,.cbz" style="width:100%">
     <label data-i="url"></label>
     <div class="row"><input type="text" id="url" placeholder="https://..." style="flex:3"><button class="b pri" id="getUrl" style="flex:1" data-i="load"></button></div>
     <div class="note" id="urlSt"></div>
@@ -76,6 +85,7 @@ body{height:100vh;height:100dvh;-webkit-tap-highlight-color:transparent;-webkit-
   </div>
 
   <div class="card"><h2 data-i="lib"></h2><div id="libl"></div>
+    <label style="display:flex;gap:8px;align-items:center;color:var(--tx);margin-top:8px"><input type="checkbox" id="qnext" style="width:auto"><span data-i="qnext"></span></label>
     <div class="row" style="margin-top:8px"><input type="text" id="ln" data-ph="libname"><input type="text" id="lu" placeholder="https://..."></div>
     <button class="b" id="la" style="margin-top:6px;width:100%" data-i="libadd"></button></div>
 
@@ -102,6 +112,10 @@ body{height:100vh;height:100dvh;-webkit-tap-highlight-color:transparent;-webkit-
     <textarea id="fix" data-ph="fixph"></textarea>
   </div>
 
+  <div class="card"><h2 data-i="disp"></h2>
+    <div class="row"><select id="ff"><option value="serif">Aa Serif</option><option value="sans">Aa Sans</option></select><label style="display:flex;gap:6px;align-items:center;margin:0;color:var(--tx)"><input type="checkbox" id="jus" style="width:auto">⇔</label></div>
+    <label>↕ <b id="lhv"></b></label><input type="range" id="lh" min="1.4" max="2.4" step=".05" value="1.85"></div>
+
   <div class="card"><h2><span data-i="amb"></span> 🌿</h2>
     <div class="personas" id="amb"></div>
     <label data-i="vol"></label><input type="range" id="avol" min="0" max="1" step=".01" value=".35">
@@ -111,13 +125,15 @@ body{height:100vh;height:100dvh;-webkit-tap-highlight-color:transparent;-webkit-
 
 <section id="sec">
   <div id="bar"><i></i></div>
-  <div id="top" hidden><select id="toc"></select><span id="lgi" class="fl" style="flex:0 0 auto;font-size:14px"></span><span id="stat"></span></div>
+  <div id="top" hidden><select id="toc"></select><button class="b" id="clean">🧹</button><span id="lgi" class="fl" style="flex:0 0 auto;font-size:14px"></span><span id="stat"></span></div>
   <article id="doc" hidden></article>
   <div id="welcome"><div style="font-size:56px">📚</div><h2 style="font-family:Georgia,serif" data-i="wt"></h2><p data-i="wp"></p><button class="b pri" id="openDef" data-i="opendef"></button></div>
 </section>
 </main>
+<div id="panel" hidden><div class="gbox"><button class="b" id="pclose">✕</button><h2 id="ptitle"></h2><div id="pbody"></div></div></div>
+<div id="seltb" hidden><button class="b" data-a="read">🔊</button><button class="b" data-a="note">📝</button><button class="b" data-a="tr">🌐</button></div>
 <div id="guide" hidden><div class="gbox"><button class="b" id="gclose">✕</button><h2 data-i="gt"></h2><div id="gbody"></div></div></div>
-<div id="mbar"><button class="b" id="mprev" aria-label="Câu trước">⏮</button><button class="b pri" id="mplay" aria-label="Phát / Tạm dừng">▶</button><button class="b" id="mnext" aria-label="Câu sau">⏭</button><button class="b" id="gear" aria-label="Cài đặt">⚙️</button></div>
+<div id="mbar"><button class="b" id="mprev" aria-label="Câu trước">⏮</button><button class="b pri" id="mplay" aria-label="Phát / Tạm dừng">▶</button><button class="b" id="mnext" aria-label="Câu sau">⏭</button><button class="b sb">🔍</button><button class="b nb">📒</button><button class="b" id="gear" aria-label="Cài đặt">⚙️</button></div>
 
 <script>
 (()=>{
@@ -131,7 +147,7 @@ const applyFs=()=>$('doc').style.fontSize=fs+'px';applyFs();
 $('fm').onclick=()=>{fs=Math.max(13,fs-1);store.set('fs',fs);applyFs()};
 $('fp').onclick=()=>{fs=Math.min(30,fs+1);store.set('fs',fs);applyFs()};
 const th=store.get('theme',null);if(th)root.dataset.theme=th;
-$('theme').onclick=()=>{const dark=getComputedStyle(root).getPropertyValue('--bg').trim()==='#12100e';root.dataset.theme=dark?'light':'dark';store.set('theme',root.dataset.theme)};
+$('theme').onclick=()=>{const O=['light','sepia','dark'],c=root.dataset.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');root.dataset.theme=O[(O.indexOf(c)+1)%3];store.set('theme',root.dataset.theme)};
 
 /* ---------- Text processing ---------- */
 const clean=t=>t.replace(/\r/g,'').replace(/^[ \t]*(Final URL|URL Source|Source URL|Published Time|Markdown Content|URL)[ \t]*:.*$/gim,'').replace(/https?:\/\/\S+|www\.\S+/gi,'').replace(/\[\d+\]|\[edit\]/gi,'').replace(/^\s*\d+\s*$/gm,'').replace(/[ \t\u00a0]{2,}/g,' ').replace(/\n[ \t]*\n+/g,'\n\n').trim();
@@ -171,7 +187,7 @@ function hash(t){let h=0;for(let i=0;i<Math.min(t.length,4000);i++)h=(h*31+t.cha
 const HEAD=/(CÂU CHUYỆN THỨ \d+:(?:[ \t]+[^\s\p{Ll}]+(?=\s|$))*)/gu;
 const pack=s=>{s=s.trim();if(s.length<=200)return[s];const out=[];let c='';(s.match(/[^,;:，；：、]+[,;:，；：、]?\s*/g)||[s]).flatMap(c=>c.length>240?(c.match(/.{1,180}(\s|$)/g)||[c]):[c]).forEach(q=>{if(c&&(c+q).length>180){out.push(c.trim());c=''}c+=q});if(c.trim())out.push(c.trim());return out};
 function load(raw,name){
-  const text=clean(raw.replace(HEAD,'\n\n$1\n\n'));if(!text){alert(t('noText'));return}
+  const text=clean(raw.replace(HEAD,'\n\n$1\n\n'));if(!text){alert(t('noText'));return}S.text=text;S.ns=null;if(name)S.title=name;
   stop();S.key=hash(text);S.sents=[];S.dlg=[];S.lng=[];S.chap=[];
   const doc=$('doc');doc.innerHTML='';let n=0;const toc=$('toc');toc.innerHTML='';
   text.split(/\n\n+/).forEach(pt=>{pt=pt.trim();if(!pt)return;
@@ -196,7 +212,7 @@ function load(raw,name){
   $('welcome').hidden=true;doc.hidden=false;$('top').hidden=false;
   S.idx=Math.min(store.get(S.key,0),n-1);mark(S.idx,true);stat();
   if(name)document.title=name+' · LaziWeb Reader';
-  document.querySelector('aside').classList.remove('open');
+  document.querySelector('aside').classList.remove('open');applyHL();
 }
 /* ---------- PDF (pdf.js nạp khi cần) ---------- */
 const PDFJS='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
@@ -267,10 +283,18 @@ function fb2Text(buf){const m=/encoding=["']([^"']+)/i.exec(new TextDecoder('lat
 async function docxText(buf){await needZip();const z=await JSZip.loadAsync(buf),x=new DOMParser().parseFromString(await z.file('word/document.xml').async('string'),'application/xml');
   return[...x.getElementsByTagName('w:p')].map(p=>{const st=p.getElementsByTagName('w:pStyle')[0],t=[...p.getElementsByTagName('w:t')].map(n=>n.textContent).join('');
     return st&&/^(Heading|Title)/i.test(st.getAttribute('w:val')||'')&&t?'§§ '+t:t}).filter(Boolean).join('\n\n')}
+const mdText=x=>x.replace(/^```.*$/gm,'').replace(/^\s{0,3}#{1,3}\s+(.*)$/gm,'\n§§ $1\n').replace(/^\s{0,3}#{4,6}\s+/gm,'').replace(/!\[[^\]]*\]\([^)]*\)/g,'').replace(/\[([^\]]*)\]\([^)]*\)/g,'$1').replace(/^[>\-*+]\s+/gm,'').replace(/(\*\*|__|\*|`)/g,'');
+async function comic(f){await needZip();const z=await JSZip.loadAsync(await f.arrayBuffer());
+  const names=Object.keys(z.files).filter(n=>!z.files[n].dir&&/\.(jpe?g|png|webp|gif|avif)$/i.test(n)).sort(new Intl.Collator(undefined,{numeric:true}).compare);if(!names.length)throw new Error('empty');
+  stop();S.sents=[];S.dlg=[];S.lng=[];S.chap=[];S.key='';const doc=$('doc');doc.innerHTML='';$('welcome').hidden=true;doc.hidden=false;$('top').hidden=true;document.querySelector('aside').classList.remove('open');
+  const io=new IntersectionObserver(es=>es.forEach(async en=>{if(!en.isIntersecting)return;const im=en.target;io.unobserve(im);im.src=URL.createObjectURL(await z.files[im.dataset.n].async('blob'))}),{root:$('sec'),rootMargin:'900px'});
+  names.forEach(n=>{const im=document.createElement('img');im.dataset.n=n;im.alt='';im.style.cssText='display:block;max-width:100%;margin:0 auto 8px;min-height:50vh';doc.appendChild(im);io.observe(im)});
+  $('urlSt').textContent=names.length+' ✓'}
 async function ebookText(f,ext){const buf=await f.arrayBuffer();
   return ext==='epub'?epubText(buf):ext==='fb2'?fb2Text(buf):ext==='docx'?docxText(buf):mobiText(buf)}
 $('file').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   const ext=(f.name.split('.').pop()||'').toLowerCase();
+  if(ext==='cbz'){try{await comic(f)}catch(err){$('urlSt').textContent=t('bk')}return}
   if(['epub','mobi','azw','azw3','prc','fb2','docx'].includes(ext)){const st=$('urlSt');st.textContent=t('sl');
     try{const tx=await ebookText(f,ext);if(clean(tx).length<100)throw new Error('empty');load(tx,f.name);st.textContent=t('so')+' '+S.sents.length}
     catch(err){st.textContent=t('bk')}return}
@@ -280,7 +304,7 @@ $('file').onchange=async e=>{const f=e.target.files[0];if(!f)return;
       load(tx,f.name);$('urlSt').textContent=t('so')+' '+S.sents.length}
     catch(err){$('urlSt').textContent=t('pf')}
     return}
-  let raw=await f.text();if(/\.html?$/i.test(f.name))raw=fromHTML(raw);load(raw,f.name)};
+  let raw=await f.text();if(/\.html?$/i.test(f.name))raw=fromHTML(raw);else if(/\.md$/i.test(f.name))raw=mdText(raw);load(raw,f.name)};
 $('loadPaste').onclick=()=>load($('paste').value);
 async function viaJina(u){ // dự phòng: dịch vụ r.jina.ai trả về bản văn bản sạch của trang
   const r=await fetch('https://r.jina.ai/'+u,{headers:{'Accept':'text/plain'}});if(!r.ok)throw new Error('jina');
@@ -357,7 +381,7 @@ function voiceFor(lg,base){ // giọng tốt nhất cho ngôn ngữ lg (ưu tiê
   const c=voices.filter(v=>v.lang.slice(0,2).toLowerCase()===lg);if(!c.length)return null;
   return(base&&(isF(base)?c.find(isF):isM(base)?c.find(isM):null))||c.find(v=>v.localService)||c[0]}
 const isDlg=s=>/^["“«‘—–-]/.test(s)||/[“"].+[”"]/.test(s);
-function mark(i,scroll){document.querySelectorAll('.s.on').forEach(e=>e.classList.remove('on'));const el=$('s'+i);
+function mark(i,scroll){if(window.CSS&&CSS.highlights)CSS.highlights.delete('wd');document.querySelectorAll('.s.on').forEach(e=>e.classList.remove('on'));const el=$('s'+i);
   if(el){el.classList.add('on');if(scroll!==false)el.scrollIntoView({block:'center',behavior:'smooth'})}
   $('bar').firstChild.style.width=S.sents.length?(i/S.sents.length*100)+'%':0;
   let c=0;S.chap.forEach((x,k)=>{if(x.i<=i)c=k});if(S.chap.length)$('toc').selectedIndex=c}
@@ -365,11 +389,13 @@ function stat(){if(!S.sents.length)return;const w=S.sents.slice(S.idx).join(' ')
   const mins=Math.round(w/(165*$('rate').value));$('stat').textContent='Câu '+(S.idx+1)+'/'+S.sents.length+' · còn ~'+(mins>=60?Math.floor(mins/60)+' giờ '+mins%60+' phút':mins+' phút')}
 function say(){
   if(!S.on)return;
-  if(S.idx>=S.sents.length){stop();S.idx=0;return}
+  if(S.stopAt!=null&&S.idx>S.stopAt){stop();return}
+  if(S.idx>=S.sents.length){const nx=$('qnext').checked&&lib[(S.libIdx==null?-1:S.libIdx)+1];stop();S.idx=0;if(nx)nextBook(nx);return}
   if(S.sleepEnd&&Date.now()>S.sleepEnd){stop();return}
   if(S.sleepChap&&S.chap.some(c=>c.i===S.idx)&&S.idx!==S.chapStart){stop();return}
   const raw=S.sents[S.idx],dlg=!!S.dlg[S.idx];
-  const u=new SpeechSynthesisUtterance(fixes(raw));
+  const ut=fixes(raw),u=new SpeechSynthesisUtterance(ut),el=$('s'+S.idx);
+  if(window.CSS&&CSS.highlights&&ut===raw&&el)u.onboundary=ev=>{if(ev.name&&ev.name!=='word')return;try{const tn=el.firstChild,st=ev.charIndex,m=/\S+/.exec(raw.slice(st)),r=new Range();r.setStart(tn,st);r.setEnd(tn,Math.min(st+(m?m[0].length:1),tn.length));CSS.highlights.set('wd',new Highlight(r))}catch(e){}}; // sáng từng từ (chỉ giọng có báo ranh giới từ)
   const vn=$('voice').value,v2=$('voice2').value;let lg=S.lng[S.idx];if(lg)S.last=lg;else lg=S.last||S.dom;
   const base=voices.find(x=>x.name===vn),nv=voiceFor(lg,base)||base;let alt=null;
   if(dlg){const o2=voices.find(x=>x.name===v2);if(v2==='__auto'||(o2&&nv&&o2.lang.slice(0,2)!==nv.lang.slice(0,2)))alt=altVoice(nv);else if(o2&&o2!==nv)alt=o2}
@@ -378,7 +404,7 @@ function say(){
   const same=dlg&&!alt;u.rate=+$('rate').value*(same?.92:1);u.pitch=Math.min(2,+$('pitch').value*(same?+$('dpitch').value:1)); // cùng giọng: đổi cả cao độ lẫn tốc độ (nhiều giọng trực tuyến bỏ qua cao độ)
   mark(S.idx);stat();store.set(S.key,S.idx);
   const my=++S.tok;
-  u.onend=()=>{if(my!==S.tok||!S.on)return;S.idx++;setTimeout(say,raw.length<4?0:140)}; // quãng nghỉ tự nhiên
+  u.onend=()=>{if(window.CSS&&CSS.highlights)CSS.highlights.delete('wd');if(my!==S.tok||!S.on)return;S.idx++;setTimeout(say,raw.length<4?0:140)}; // quãng nghỉ tự nhiên
   u.onerror=e=>{if(my!==S.tok)return;if(e.error==='canceled'||e.error==='interrupted')return;S.idx++;say()};
   synth.speak(u)}
 S.tok=0;
@@ -387,13 +413,17 @@ function play(){if(!S.sents.length){alert(t('noDoc'));return}
   S.on=true;S.paused=false;S.chapStart=S.idx;
   const m=+$('sleep').value;S.sleepChap=m===-1;S.sleepEnd=m>0?Date.now()+m*60000:0;
   synth.cancel();ui();ambient(true);setMedia();wake(true);say()}
+// âm thanh im lặng chạy nền: giúp trình duyệt coi trang là đang phát nhạc (thử nghiệm, chưa chắc giữ được tiếng khi khoá máy)
+const ka=(()=>{const n=8000,b=new DataView(new ArrayBuffer(44+n)),w=(o,x)=>[...x].forEach((c,i)=>b.setUint8(o+i,c.charCodeAt(0)));
+  w(0,'RIFF');b.setUint32(4,36+n,true);w(8,'WAVEfmt ');b.setUint32(16,16,true);b.setUint16(20,1,true);b.setUint16(22,1,true);b.setUint32(24,8000,true);b.setUint32(28,8000,true);b.setUint16(32,1,true);b.setUint16(34,8,true);w(36,'data');b.setUint32(40,n,true);
+  for(let i=0;i<n;i++)b.setUint8(44+i,128);const a=new Audio(URL.createObjectURL(new Blob([b],{type:'audio/wav'})));a.loop=true;a.volume=.02;return a})();
 let wl=null;
-async function wake(on){try{if(on){if('wakeLock' in navigator&&!wl){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null})}}else if(wl){await wl.release();wl=null}}catch(e){}}
+async function wake(on){if(on)ka.play().catch(()=>{});else ka.pause();try{if(on){if('wakeLock' in navigator&&!wl){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null})}}else if(wl){await wl.release();wl=null}}catch(e){}}
 function pause(){if(!S.on)return;S.tok++;synth.cancel();S.paused=true;ui();ambient(false);wake(false)} // huỷ rồi đọc lại từ câu hiện tại (pause() hay lỗi trên di động)
-function stop(){S.tok++;synth.cancel();S.on=false;S.paused=false;ui();ambient(false);wake(false)}
+function stop(){S.stopAt=null;S.tok++;synth.cancel();S.on=false;S.paused=false;ui();ambient(false);wake(false)}
 function restart(){S.tok++;synth.cancel();if(S.on)setTimeout(say,60)}
-function jump(i){S.idx=i;mark(i,false);stat();if(S.on){S.paused=false;restart();ui();ambient(true)}else{store.set(S.key,i)}}
-function ui(){$('play').textContent=$('mplay').textContent=S.on&&!S.paused?'⏸':'▶'}
+function jump(i){S.stopAt=null;S.idx=i;mark(i,false);stat();if(S.on){S.paused=false;restart();ui();ambient(true)}else{store.set(S.key,i)}}
+function ui(){$('play').textContent=$('mplay').textContent=S.on&&!S.paused?'⏸':'▶';if('mediaSession' in navigator)navigator.mediaSession.playbackState=S.on&&!S.paused?'playing':'paused'}
 $('play').onclick=()=>S.on&&!S.paused?pause():play();$('stop').onclick=stop;
 $('mplay').onclick=()=>$('play').click();$('mprev').onclick=()=>$('prev').click();$('mnext').onclick=()=>$('next').click();
 const asd=document.querySelector('aside');$('gear').onclick=()=>asd.classList.toggle('open');$('closeSet').onclick=()=>asd.classList.remove('open');
@@ -481,10 +511,10 @@ $('fix').value=store.get('fix','');$('fix').oninput=()=>store.set('fix',$('fix')
 /* ---------- Đa ngôn ngữ ---------- */
 var VL;
 const L={
-vi:{doc:"Tài liệu",url:"Hoặc tải từ link trang web",load:"Tải",paste:"Hoặc dán văn bản",pasteph:"Dán nội dung truyện/bài viết...",readpaste:"Đọc đoạn đã dán",voice:"Giọng kể",sysv:"Giọng hệ thống (người dẫn)",dlgv:"Giọng cho lời thoại",rate:"Tốc độ",pitch:"Cao độ",sleep:"Hẹn giờ tắt",none:"Không",chap:"Hết chương này",fix:"Sửa cách đọc",fixph:"mỗi dòng: từ=cách đọc",amb:"Âm nền",vol:"Âm lượng",close:"Đóng cài đặt",lib:"Thư viện",libname:"Tên",libadd:"Thêm vào thư viện",wt:"Biến mọi văn bản thành sách nói",wp:"Tải tệp .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx, dán văn bản hoặc chọn một mục trong Thư viện.",opendef:"Mở mục mặc định",gt:"Hướng dẫn",bk:"Không đọc được ebook này (có thể bị khoá DRM hoặc định dạng chưa hỗ trợ).",autolang:"Tự nhận diện ngôn ngữ để chọn giọng",same:"Giống người dẫn",auto:"Tự động (giọng khác)",noText:"Không tìm thấy nội dung văn bản.",noDoc:"Hãy tải văn bản trước!",sl:"Đang tải...",so:"Đã tải xong. Số câu:",se:"Không tải được (bị chặn hoặc không có chữ). Thử link khác hoặc dán văn bản.",pe:"PDF không có lớp chữ (bản scan).",pf:"Không mở được PDF.",
+vi:{doc:"Tài liệu",url:"Hoặc tải từ link trang web",load:"Tải",paste:"Hoặc dán văn bản",pasteph:"Dán nội dung truyện/bài viết...",readpaste:"Đọc đoạn đã dán",voice:"Giọng kể",sysv:"Giọng hệ thống (người dẫn)",dlgv:"Giọng cho lời thoại",rate:"Tốc độ",pitch:"Cao độ",sleep:"Hẹn giờ tắt",none:"Không",chap:"Hết chương này",fix:"Sửa cách đọc",fixph:"mỗi dòng: từ=cách đọc",amb:"Âm nền",vol:"Âm lượng",close:"Đóng cài đặt",lib:"Thư viện",libname:"Tên",libadd:"Thêm vào thư viện",wt:"Biến mọi văn bản thành sách nói",wp:"Tải tệp .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx, dán văn bản hoặc chọn một mục trong Thư viện.",opendef:"Mở mục mặc định",gt:"Hướng dẫn",disp:"Hiển thị",qnext:"Tự đọc cuốn kế trong Thư viện",find:"Tìm trong sách",notes:"Sổ tay",note:"Ghi chú",tr:"Bản dịch",nonote:"Chưa có đoạn tô sáng hay ghi chú. Bôi đen chữ rồi chọn một màu.",nojunk:"Không thấy dòng rác lặp lại.",rmq:"Bỏ các dòng lặp này ở mọi chương?",bk:"Không đọc được ebook này (có thể bị khoá DRM hoặc định dạng chưa hỗ trợ).",autolang:"Tự nhận diện ngôn ngữ để chọn giọng",same:"Giống người dẫn",auto:"Tự động (giọng khác)",noText:"Không tìm thấy nội dung văn bản.",noDoc:"Hãy tải văn bản trước!",sl:"Đang tải...",so:"Đã tải xong. Số câu:",se:"Không tải được (bị chặn hoặc không có chữ). Thử link khác hoặc dán văn bản.",pe:"PDF không có lớp chữ (bản scan).",pf:"Không mở được PDF.",
 pn:["Mặc định","Kể chuyện trầm ấm","Nam thời sự","Nữ dịu dàng","Nữ tin tức","Nhi đồng"],sn:["Mưa rơi","Lửa trại","Rừng chim","Sóng biển","Gió núi","Ồn nâu","Ồn trắng","Nhạc đọc sách","Nhạc chill","Nhạc cổ điển"],
 g:"1. Mở tài liệu: chọn tệp .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx, dán link hoặc chọn trong Thư viện.\n2. Bấm ▶ để nghe; chạm vào một câu để đọc từ đó.\n3. Giọng đọc lấy từ hệ thống; trên điện thoại hãy cài giọng tiếng Việt.\n4. Thư viện: nhập tên + link rồi Thêm; ⭐ đặt mặc định; ✕ xoá.\n5. Máy tính: Space, ←/→, Ctrl+↑/↓. Khoá màn hình sẽ dừng đọc.\n6. Tải link/PDF chỉ chạy khi mở tệp đã tải về hoặc web riêng."},
-en:{doc:"Document",url:"Or load from a web link",load:"Load",paste:"Or paste text",pasteph:"Paste your text here...",readpaste:"Read pasted text",voice:"Voice",sysv:"Narrator voice",dlgv:"Dialogue voice",rate:"Speed",pitch:"Pitch",sleep:"Sleep timer",none:"Off",chap:"End of chapter",fix:"Pronunciation fixes",fixph:"one per line: word=reading",amb:"Ambient",vol:"Volume",close:"Close settings",lib:"Library",libname:"Name",libadd:"Add to library",wt:"Turn any text into an audiobook",wp:"Open a .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx file, paste text, or pick an item from the Library.",opendef:"Open default item",gt:"Guide",bk:"Could not read this ebook (it may be DRM-protected or an unsupported format).",autolang:"Auto-detect language to pick the voice",same:"Same as narrator",auto:"Auto (other voice)",noText:"No text content found.",noDoc:"Please load a text first!",sl:"Loading...",so:"Loaded. Sentences:",se:"Could not load (blocked or no text). Try another link or paste the text.",pe:"This PDF has no text layer (scanned).",pf:"Could not open the PDF.",
+en:{doc:"Document",url:"Or load from a web link",load:"Load",paste:"Or paste text",pasteph:"Paste your text here...",readpaste:"Read pasted text",voice:"Voice",sysv:"Narrator voice",dlgv:"Dialogue voice",rate:"Speed",pitch:"Pitch",sleep:"Sleep timer",none:"Off",chap:"End of chapter",fix:"Pronunciation fixes",fixph:"one per line: word=reading",amb:"Ambient",vol:"Volume",close:"Close settings",lib:"Library",libname:"Name",libadd:"Add to library",wt:"Turn any text into an audiobook",wp:"Open a .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx file, paste text, or pick an item from the Library.",opendef:"Open default item",gt:"Guide",disp:"Display",qnext:"Auto-play next book in Library",find:"Search in book",notes:"Notebook",note:"Note",tr:"Translation",nonote:"No highlights or notes yet. Select text, then tap a color.",nojunk:"No repeated junk lines found.",rmq:"Remove these repeated lines everywhere?",bk:"Could not read this ebook (it may be DRM-protected or an unsupported format).",autolang:"Auto-detect language to pick the voice",same:"Same as narrator",auto:"Auto (other voice)",noText:"No text content found.",noDoc:"Please load a text first!",sl:"Loading...",so:"Loaded. Sentences:",se:"Could not load (blocked or no text). Try another link or paste the text.",pe:"This PDF has no text layer (scanned).",pf:"Could not open the PDF.",
 pn:["Default","Warm storyteller","Male news","Soft female","Female news","Kids"],sn:["Rain","Campfire","Forest","Waves","Wind","Brown noise","White noise","Reading music","Chill lo-fi","Classical"],
 g:"1. Open a document: pick a .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx file, paste a link, or choose from the Library.\n2. Press ▶ to listen; tap any sentence to read from there.\n3. Voices come from your device; on phones install the voice pack for your language.\n4. Library: enter a name + link, then Add; ⭐ sets the default; ✕ deletes.\n5. Desktop: Space, ←/→, Ctrl+↑/↓. Locking the screen stops reading.\n6. Link/PDF loading works only from the downloaded file or your own website."},
 es:{doc:"Documento",url:"O carga desde un enlace web",load:"Cargar",paste:"O pega texto",pasteph:"Pega tu texto aquí...",readpaste:"Leer el texto pegado",voice:"Voz",sysv:"Voz del narrador",dlgv:"Voz de diálogos",rate:"Velocidad",pitch:"Tono",sleep:"Temporizador",none:"No",chap:"Fin del capítulo",fix:"Corregir pronunciación",fixph:"una por línea: palabra=lectura",amb:"Ambiente",vol:"Volumen",close:"Cerrar ajustes",lib:"Biblioteca",libname:"Nombre",libadd:"Añadir a la biblioteca",wt:"Convierte cualquier texto en audiolibro",wp:"Abre un archivo .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx, pega texto o elige un elemento de la Biblioteca.",opendef:"Abrir el predeterminado",gt:"Guía",bk:"No se pudo leer este ebook (puede tener DRM o un formato no compatible).",autolang:"Detectar idioma y elegir la voz",same:"Igual que el narrador",auto:"Auto (otra voz)",noText:"No se encontró texto.",noDoc:"¡Carga primero un texto!",sl:"Cargando...",so:"Cargado. Frases:",se:"No se pudo cargar (bloqueado o sin texto). Prueba otro enlace o pega el texto.",pe:"Este PDF no tiene capa de texto (escaneado).",pf:"No se pudo abrir el PDF.",
@@ -505,7 +535,7 @@ function apply(){document.documentElement.lang=lang;$('langBtn').innerHTML='<spa
   document.querySelectorAll('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));
   document.querySelectorAll('[data-ph]').forEach(e=>e.placeholder=t(e.dataset.ph));
   VL=[t('same'),t('auto')];[...$('voice2').options].slice(0,2).forEach((o,i)=>o.text=VL[i]);
-  $('closeSet').textContent='✕ '+t('close');$('gbody').textContent=t('g');$('help').title=t('gt');
+  $('closeSet').textContent='✕ '+t('close');$('gbody').textContent=t('g');$('help').title=t('gt');document.querySelectorAll('.sb').forEach(e=>e.title=t('find'));document.querySelectorAll('.nb').forEach(e=>e.title=t('notes'));$('clean').title=t('rmq');
   [...P.children].forEach((b,i)=>b.textContent=t('pn')[i]);[...A.children].forEach((b,i)=>b.textContent=AMB[i][1]+' '+t('sn')[i])}
 const LANGS=[['vi','🇻🇳','Tiếng Việt'],['en','🇬🇧','English'],['es','🇪🇸','Español'],['th','🇹🇭','ไทย'],['lo','🇱🇦','ລາວ'],['zh','🇨🇳','中文']],FL={};
 LANGS.forEach(([c,f,n])=>{FL[c]=f;const b=document.createElement('button');b.className='b';b.innerHTML='<span class="fl">'+f+'</span> '+n;
@@ -519,7 +549,7 @@ $('guide').onclick=e=>{if(e.target===$('guide'))$('guide').hidden=true};
 const DEF={name:'Góp Nhặt Cát Đá (Thạch Sa Tập) – Thiền sư Muju',url:'https://tinyurl.com/Gop-Nhat-Cat-Da-Muju'};
 let lib=store.get('lib',null);if(!Array.isArray(lib)||!lib.length)lib=[DEF];let dfl=Math.min(store.get('dfl',0),lib.length-1);
 const saveLib=()=>{store.set('lib',lib);store.set('dfl',dfl)};
-function openLib(it){$('url').value=it.url;loadUrl(it.url)}
+function openLib(it){S.libIdx=lib.indexOf(it);$('url').value=it.url;loadUrl(it.url)}
 function renderLib(){const box=$('libl');box.innerHTML='';
   lib.forEach((it,i)=>{const r=document.createElement('div');r.className='row';r.style.marginBottom='6px';
     const b=document.createElement('button');b.className='b pe';b.textContent=it.name;b.title=it.url;b.onclick=()=>openLib(it);
@@ -530,6 +560,58 @@ function renderLib(){const box=$('libl');box.innerHTML='';
 $('la').onclick=()=>{let u=$('lu').value.trim(),n=$('ln').value.trim();if(!u)return;if(!/^https?:\/\//i.test(u))u='https://'+u;
   lib.push({name:n||u.replace(/^https?:\/\//,'').slice(0,40),url:u});saveLib();$('ln').value=$('lu').value='';renderLib()};
 $('openDef').onclick=()=>openLib(lib[dfl]||lib[0]);
+/* ---------- Tìm kiếm, tô sáng, sổ tay, dịch, hàng chờ, giao diện ---------- */
+const nz=x=>x.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/gi,'d').toLowerCase();
+function panel(title,c){$('ptitle').textContent=title;$('pbody').innerHTML='';$('pbody').append(c);$('panel').hidden=false}
+$('pclose').onclick=()=>{$('panel').hidden=true};$('panel').onclick=e=>{if(e.target===$('panel'))$('panel').hidden=true};
+function openSearch(){const box=document.createElement('div'),inp=document.createElement('input'),out=document.createElement('div');inp.type='text';inp.placeholder=t('find');box.append(inp,out);panel(t('find'),box);inp.focus();
+  if(!S.ns)S.ns=S.sents.map(nz);let tm;inp.oninput=()=>{clearTimeout(tm);tm=setTimeout(()=>{out.innerHTML='';const q=nz(inp.value.trim());if(q.length<2)return;let n=0;
+    for(let i=0;i<S.ns.length&&n<60;i++){if(S.ns[i].indexOf(q)<0)continue;n++;const d=document.createElement('div');d.className='res';d.textContent=(i+1)+'. '+S.sents[i].slice(0,120);
+      d.onclick=()=>{$('panel').hidden=true;jump(i);const e=$('s'+i);if(e)e.scrollIntoView({block:'center'})};out.appendChild(d)}},200)}}
+const HC=['#fde68a','#bbf7d0','#bfdbfe','#fbcfe8','#fed7aa'];
+function applyHL(){document.querySelectorAll('.s[style]').forEach(e=>{e.style.boxShadow='';e.removeAttribute('title')});
+  ((store.get('hl',{})[S.key])||{items:[]}).items.forEach(it=>{const e=$('s'+it.i);if(e){e.style.boxShadow='inset 0 -.55em 0 '+it.c;if(it.n)e.title=it.n}})}
+function hl(ix,c,n){const all=store.get('hl',{}),b=all[S.key]||(all[S.key]={title:S.title||'',items:[]});
+  const same=!n&&ix.every(i=>b.items.some(x=>x.i===i&&x.c===c));b.items=b.items.filter(x=>!ix.includes(x.i));
+  if(!same)ix.forEach(i=>b.items.push({i,c,n,x:S.sents[i].slice(0,120)}));b.items.sort((p,q)=>p.i-q.i);store.set('hl',all);applyHL()}
+function openNotes(){const all=store.get('hl',{}),box=document.createElement('div');let any=false;
+  Object.values(all).forEach(b=>{if(!b.items.length)return;any=true;const h=document.createElement('h3');h.textContent=b.title||'';box.appendChild(h);
+    b.items.forEach((it,j)=>{const d=document.createElement('div');d.className='res';const dot=document.createElement('span');dot.textContent='● ';dot.style.color=it.c;d.append(dot,it.x+(it.n?'  📝 '+it.n:''));
+      const x=document.createElement('button');x.className='b';x.textContent='✕';x.style.marginLeft='8px';x.onclick=e=>{e.stopPropagation();b.items.splice(j,1);store.set('hl',all);applyHL();openNotes()};d.appendChild(x);
+      d.onclick=()=>{if(all[S.key]===b){$('panel').hidden=true;jump(it.i)}};box.appendChild(d)})});
+  if(!any)box.textContent=t('nonote');panel(t('notes'),box)}
+document.querySelectorAll('.sb').forEach(b=>b.onclick=()=>{if(!S.sents.length)return alert(t('noDoc'));openSearch()});
+document.querySelectorAll('.nb').forEach(b=>b.onclick=openNotes);
+/* thanh công cụ khi bôi đen chữ */
+const tb=$('seltb');HC.forEach((c,i)=>{const b=document.createElement('button');b.className='b';b.dataset.c=i;b.textContent='●';b.style.color=c;tb.insertBefore(b,tb.querySelector('[data-a=note]'))});
+function selIdx(){const r=getSelection().getRangeAt(0);return[...$('doc').querySelectorAll('.s')].filter(e=>r.intersectsNode(e)).map(e=>+e.id.slice(1))}
+document.addEventListener('selectionchange',()=>{const sel=getSelection();
+  if(!sel||!sel.rangeCount||sel.isCollapsed||!$('doc').contains(sel.anchorNode)){tb.hidden=true;return}
+  S.si=selIdx();S.stx=sel.toString();if(!S.si.length){tb.hidden=true;return}
+  const r=sel.getRangeAt(0).getBoundingClientRect();tb.hidden=false;tb.style.top=Math.min(innerHeight-56,r.bottom+34)+'px';tb.style.left=Math.max(8,Math.min(innerWidth-tb.offsetWidth-8,r.left))+'px'});
+tb.addEventListener('pointerdown',e=>e.preventDefault());
+async function trans(x){let out='';try{if('Translator' in self){const tr=await Translator.create({sourceLanguage:detect(x)||'en',targetLanguage:lang});out=await tr.translate(x)}}catch(e){}
+  if(out)panel(t('tr'),out);else window.open('https://translate.google.com/?sl=auto&tl='+(lang==='zh'?'zh-CN':lang)+'&text='+encodeURIComponent(x.slice(0,1500))+'&op=translate','_blank','noopener')}
+tb.onclick=e=>{const a=e.target.closest('button');if(!a||!(S.si||[]).length)return;const ix=S.si;
+  if(a.dataset.c!=null)hl(ix,HC[+a.dataset.c],'');
+  else if(a.dataset.a==='read'){jump(ix[0]);S.stopAt=ix[ix.length-1];if(!S.on)play();tb.hidden=true;getSelection().removeAllRanges()}
+  else if(a.dataset.a==='note'){const n=prompt(t('note'),'');if(n!=null)hl(ix,HC[0],n)}
+  else if(a.dataset.a==='tr')trans(S.stx)};
+/* làm sạch dòng quảng cáo/chữ ký lặp lại ở nhiều chương */
+$('clean').onclick=()=>{const cnt={};S.text.split(/\n\n+/).forEach(p=>{p=p.trim();if(p.length>3&&p.length<200&&!p.startsWith('§§'))cnt[p]=(cnt[p]||0)+1});
+  const rp=Object.keys(cnt).filter(k=>cnt[k]>=3&&!isChap(k)).sort((a,b)=>cnt[b]-cnt[a]).slice(0,8);
+  if(!rp.length){alert(t('nojunk'));return}
+  if(!confirm(t('rmq')+'\n\n'+rp.map(k=>'• '+k.slice(0,70)+' ×'+cnt[k]).join('\n')))return;
+  const bad=new Set(rp);load(S.text.split(/\n\n+/).filter(p=>!bad.has(p.trim())).join('\n\n'))};
+/* hàng chờ: hết cuốn này, một tiếng chuông rồi sang cuốn kế trong Thư viện */
+function chime(){try{ctx();const t0=ac.currentTime;nt(mf(84),t0,1.8,{v:.18});nt(mf(91),t0+.3,2.2,{v:.18})}catch(e){}}
+async function nextBook(it){chime();S.libIdx=lib.indexOf(it);$('url').value=it.url;await loadUrl(it.url);if(S.sents.length){S.idx=0;play()}}
+$('qnext').checked=store.get('qn',false);$('qnext').onchange=()=>store.set('qn',$('qnext').checked);
+/* hiển thị: phông, giãn dòng, căn đều */
+const AP=Object.assign({ff:'serif',lh:1.85,jus:false},store.get('ap',{}));
+function applyAp(){const r=document.documentElement.style;r.setProperty('--ff',AP.ff==='sans'?'system-ui,"Segoe UI",Roboto,sans-serif':'Georgia,"Times New Roman",serif');r.setProperty('--lh',AP.lh);r.setProperty('--ta',AP.jus?'justify':'left');
+  $('ff').value=AP.ff;$('lh').value=AP.lh;$('jus').checked=AP.jus;$('lhv').textContent=(+AP.lh).toFixed(2);store.set('ap',AP)}
+$('ff').onchange=()=>{AP.ff=$('ff').value;applyAp()};$('lh').oninput=()=>{AP.lh=+$('lh').value;applyAp()};$('jus').onchange=()=>{AP.jus=$('jus').checked;applyAp()};applyAp();
 $('dpitch').value=store.get('dp',1.2);$('dpv').textContent=(+$('dpitch').value).toFixed(2);
 $('dpitch').oninput=()=>{$('dpv').textContent=(+$('dpitch').value).toFixed(2);store.set('dp',$('dpitch').value)};
 renderLib();apply();
