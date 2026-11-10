@@ -591,7 +591,7 @@ $('help').onclick=()=>{$('guide').hidden=!$('guide').hidden};$('gclose').onclick
 $('guide').onclick=e=>{if(e.target===$('guide'))$('guide').hidden=true};
 
 /* ---------- Thư viện link do người dùng tự định nghĩa ---------- */
-const DEF={name:'Góp Nhặt Cát Đá (Thạch Sa Tập) – Thiền sư Muju',url:'https://tinyurl.com/Gop-Nhat-Cat-Da-Muju'};
+const DEF={name:'Góp Nhặt Cát Đá (Thạch Sa Tập) – Thiền sư Muju',url:'https://miky847.github.io/mycode/G%C3%B3p%20nh%E1%BA%B7t%20c%C3%A1t%20%C4%91%C3%A1%20(Th%E1%BA%A1ch%20Sa%20T%E1%BA%ADp)%20c%E1%BB%A7a%20thi%E1%BB%81n%20s%C6%B0%20Muju%20(V%C3%B4%20Tr%C3%BA).html'};
 let lib=store.get('lib',null);if(!Array.isArray(lib)||!lib.length)lib=[DEF];let dfl=Math.min(store.get('dfl',0),lib.length-1);
 const saveLib=()=>{store.set('lib',lib);store.set('dfl',dfl)};
 function openLib(it){S.libIdx=lib.indexOf(it);$('url').value=it.url;loadUrl(it.url)}
