@@ -50,6 +50,13 @@ article{font-family:var(--ff);line-height:var(--lh);text-align:var(--ta)}
 #seltb .b{padding:4px 9px;font-size:16px}.res{padding:8px;border-bottom:1px solid var(--bd);cursor:pointer;line-height:1.5}.res:hover{background:var(--bg)}
 #pbody h3{margin:12px 0 4px;font-size:13px;color:var(--mu)}header{flex-wrap:wrap}
 @media(max-width:760px){header .sb,header .nb{display:none}header .b{padding:6px 8px}}
+ruby rt{font-size:.5em;color:var(--mu)}#top{flex-wrap:wrap}
+figure.fg{margin:0 0 1.2em;text-align:center}figure.fg img{max-width:100%;cursor:zoom-in;border-radius:4px}
+.tbl{overflow-x:auto;margin:0 0 1.2em;cursor:zoom-in;font-size:.85em;line-height:1.5}.tbl table{border-collapse:collapse}.tbl td,.tbl th{border:1px solid var(--bd);padding:4px 8px}
+#fs{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.92);overflow:auto;padding:16px;display:flex;align-items:flex-start;justify-content:center}#fs[hidden]{display:none}
+#fs img{max-width:100%;height:auto}#fs .tbl{background:var(--pn);padding:12px;border-radius:8px;font-size:1em}
+@media(min-width:900px){article.cols{column-count:2;column-gap:56px;max-width:1100px}}
+@media print{@page{size:A5;margin:12mm}header,aside,#top,#mbar,#bar,#seltb,#panel,#guide{display:none!important}body,main,section{display:block!important;height:auto!important;overflow:visible!important}article{padding:0!important;max-width:none!important;font-size:11pt!important;color:#000}.s.on{background:none}}
 #mbar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:20;gap:8px;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:var(--pn);border-top:1px solid var(--bd)}
 #mbar .b{flex:1;font-size:20px;min-height:46px}#closeSet{display:none;width:100%}
 @media(max-width:760px){
@@ -75,8 +82,8 @@ article{font-family:var(--ff);line-height:var(--lh);text-align:var(--ta)}
 <main>
 <aside>
   <button class="b" id="closeSet">✕ Đóng cài đặt</button>
-  <div class="card"><h2 data-i="doc"></h2>
-    <input type="file" id="file" accept=".txt,.html,.htm,.md,.pdf,.epub,.mobi,.azw,.azw3,.prc,.fb2,.docx,.cbz" style="width:100%">
+  <div class="card"><h2 data-i="doc"></h2><div class="note" id="plat"></div>
+    <input type="file" id="file" accept=".txt,.html,.htm,.md,.pdf,.epub,.mobi,.azw,.azw3,.prc,.fb2,.docx,.cbz,.cbt,.png,.jpg,.jpeg,.webp" style="width:100%">
     <label data-i="url"></label>
     <div class="row"><input type="text" id="url" placeholder="https://..." style="flex:3"><button class="b pri" id="getUrl" style="flex:1" data-i="load"></button></div>
     <div class="note" id="urlSt"></div>
@@ -110,10 +117,13 @@ article{font-family:var(--ff);line-height:var(--lh);text-align:var(--ta)}
 
   <div class="card"><h2 data-i="fix"></h2>
     <textarea id="fix" data-ph="fixph"></textarea>
+    <label data-i="spellh"></label><textarea id="spell" data-ph="spellph"></textarea>
+    <label style="display:flex;gap:8px;align-items:center;color:var(--tx)"><input type="checkbox" id="norm" style="width:auto"><span data-i="norm"></span></label>
   </div>
 
   <div class="card"><h2 data-i="disp"></h2>
     <div class="row"><select id="ff"><option value="serif">Aa Serif</option><option value="sans">Aa Sans</option></select><label style="display:flex;gap:6px;align-items:center;margin:0;color:var(--tx)"><input type="checkbox" id="jus" style="width:auto">⇔</label></div>
+    <label style="display:flex;gap:8px;align-items:center;color:var(--tx)"><input type="checkbox" id="cols" style="width:auto">▥ 2</label>
     <label>↕ <b id="lhv"></b></label><input type="range" id="lh" min="1.4" max="2.4" step=".05" value="1.85"></div>
 
   <div class="card"><h2><span data-i="amb"></span> 🌿</h2>
@@ -125,7 +135,7 @@ article{font-family:var(--ff);line-height:var(--lh);text-align:var(--ta)}
 
 <section id="sec">
   <div id="bar"><i></i></div>
-  <div id="top" hidden><select id="toc"></select><button class="b" id="clean">🧹</button><span id="lgi" class="fl" style="flex:0 0 auto;font-size:14px"></span><span id="stat"></span></div>
+  <div id="top" hidden><select id="toc"></select><button class="b" id="clean">🧹</button><button class="b" id="pyb" hidden>拼</button><button class="b" id="pgv" hidden>📄</button><button class="b" id="exp">⬇️</button><button class="b" id="prt">🖨️</button><span id="lgi" class="fl" style="flex:0 0 auto;font-size:14px"></span><span id="stat"></span></div>
   <article id="doc" hidden></article>
   <div id="welcome"><div style="font-size:56px">📚</div><h2 style="font-family:Georgia,serif" data-i="wt"></h2><p data-i="wp"></p><button class="b pri" id="openDef" data-i="opendef"></button></div>
 </section>
@@ -138,6 +148,7 @@ article{font-family:var(--ff);line-height:var(--lh);text-align:var(--ta)}
 <script>
 (()=>{
 const $=id=>document.getElementById(id),synth=window.speechSynthesis;
+function cancelAll(){synth.cancel();if(S.audio){S.audio.pause();S.audio=null}}
 const S={sents:[],chap:[],idx:0,on:false,paused:false,key:'',pre:'',sleepEnd:0,sleepChap:false};
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 
@@ -186,12 +197,15 @@ function hash(t){let h=0;for(let i=0;i<Math.min(t.length,4000);i++)h=(h*31+t.cha
 
 const HEAD=/(CÂU CHUYỆN THỨ \d+:(?:[ \t]+[^\s\p{Ll}]+(?=\s|$))*)/gu;
 const pack=s=>{s=s.trim();if(s.length<=200)return[s];const out=[];let c='';(s.match(/[^,;:，；：、]+[,;:，；：、]?\s*/g)||[s]).flatMap(c=>c.length>240?(c.match(/.{1,180}(\s|$)/g)||[c]):[c]).forEach(q=>{if(c&&(c+q).length>180){out.push(c.trim());c=''}c+=q});if(c.trim())out.push(c.trim());return out};
-function load(raw,name){
-  const text=clean(raw.replace(HEAD,'\n\n$1\n\n'));if(!text){alert(t('noText'));return}S.text=text;S.ns=null;if(name)S.title=name;
+function load(raw,name,keepPdf){
+  const text=clean(tidy(raw).replace(HEAD,'\n\n$1\n\n'));if(!text){alert(t('noText'));return}S.text=text;S.ns=null;if(name)S.title=name;
   stop();S.key=hash(text);S.sents=[];S.dlg=[];S.lng=[];S.chap=[];
   const doc=$('doc');doc.innerHTML='';let n=0;const toc=$('toc');toc.innerHTML='';
   text.split(/\n\n+/).forEach(pt=>{pt=pt.trim();if(!pt)return;
     const p=document.createElement('p');
+    const mk=/^¤(IMG|TBL):(\d+)¤$/.exec(pt);
+    if(mk){const n0=+mk[2];if(mk[1]==='IMG'){const u=(S.imgs||[])[n0];if(!u)return;const fg=document.createElement('figure'),im=document.createElement('img');fg.className='fg';im.src=u;im.loading='lazy';im.alt='';fg.appendChild(im);fg.onclick=()=>fsShow(im.cloneNode());doc.appendChild(fg)}
+      else{const h=(S.tbls||[])[n0];if(!h)return;const dv=document.createElement('div');dv.className='tbl';dv.innerHTML=h;dv.onclick=()=>fsShow(dv.cloneNode(true));doc.appendChild(dv)}return}
     let hd=false;if(pt.startsWith('§§ ')){pt=pt.slice(3);hd=true}
     if(hd||isChap(pt)){p.className='ch';S.chap.push({i:n,t:pt});const o=new Option(pt.slice(0,50),n);toc.add(o)}
     // tách theo dấu ngoặc kép: phần trong “ ” / " " / « » (hoặc đoạn bắt đầu bằng gạch đầu dòng) là lời thoại
@@ -208,11 +222,15 @@ function load(raw,name){
     doc.appendChild(p)});
   if(!S.chap.length)toc.add(new Option('Toàn bộ văn bản',0));
   const cnt={};S.lng.forEach((l,i)=>{if(l)cnt[l]=(cnt[l]||0)+S.sents[i].length});S.dom=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0]||null;S.last=S.dom;
-  if($('auto').checked&&S.dom){const b0=voices.find(x=>x.name===$('voice').value),nv=voiceFor(S.dom,b0);if(nv&&nv!==b0)$('voice').value=nv.name}
+  if($('auto').checked&&S.dom&&!$('voice').value.startsWith('piper:')){const b0=voices.find(x=>x.name===$('voice').value),nv=voiceFor(S.dom,b0);if(nv&&nv!==b0)$('voice').value=nv.name}
   $('welcome').hidden=true;doc.hidden=false;$('top').hidden=false;
   S.idx=Math.min(store.get(S.key,0),n-1);mark(S.idx,true);stat();
   if(name)document.title=name+' · LaziWeb Reader';
   document.querySelector('aside').classList.remove('open');applyHL();
+  RB=false;$('pyb').hidden=!S.lng.includes('zh');$('pyb').classList.remove('pri');if(!keepPdf)S.pdfDoc=null;$('pgv').hidden=!S.pdfDoc;
+  if(PV&&$('pdfv')){PV=false;$('doc').hidden=false;$('pdfv').hidden=true}
+  idbPut(S.key,{title:S.title||name||'',text:S.text});
+  {const a=store.get('ambk',{})[S.key];try{if(a&&a!==cur)setAmb(a);else if(a===''&&cur)setAmb(null)}catch(e){}}
 }
 /* ---------- PDF (pdf.js nạp khi cần) ---------- */
 const PDFJS='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
@@ -222,7 +240,7 @@ async function loadPdfLib(){if(window.pdfjsLib)return;
   pdfjsLib.GlobalWorkerOptions.workerSrc=URL.createObjectURL(new Blob([w],{type:'text/javascript'}))}
 async function pdfToText(file){
   const st=$('urlSt');st.textContent=t('sl');await loadPdfLib();
-  const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise,N=pdf.numPages,pages=[];
+  const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise,N=pdf.numPages,pages=[];S.pdfDoc=pdf;
   for(let p=1;p<=N;p++){st.textContent=t('sl')+' '+p+'/'+N;
     const tc=await(await pdf.getPage(p)).getTextContent(),lines=[];let cur=null;
     tc.items.forEach(it=>{if(!it.str&&!it.hasEOL)return;const y=it.transform[5],h=it.height||10;
@@ -246,7 +264,12 @@ async function pdfToText(file){
 const loadScript=src=>new Promise((ok,no)=>{const e=document.createElement('script');e.src=src;e.onload=ok;e.onerror=no;document.head.appendChild(e)});
 const needZip=async()=>{if(!window.JSZip)await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js')};
 const BLK='h1,h2,h3,h4,h5,h6,p,li,blockquote,pre,tr,div,table,ul,ol';
-function blocksOf(d){ // lấy các khối văn bản "lá"; tiêu đề h1-h3 thành chương (§§)
+function blocksOf(d,cx){
+  if(cx){d.querySelectorAll('a[epub\\:type~=noteref],a[role=doc-noteref]').forEach(a=>a.remove());
+    d.querySelectorAll('[epub\\:type~=footnote],[epub\\:type~=endnote],[epub\\:type~=rearnote],[role=doc-footnote],[role=doc-endnote]').forEach(n=>{const x=n.textContent.replace(/\s+/g,' ').trim();if(x)cx.notes.push(x);n.remove()});
+    const pm=m=>{const q=d.createElement('p');q.textContent=m;return q};
+    d.querySelectorAll('table').forEach(tb=>tb.replaceWith(pm(cx.tbl(tb))));
+    d.querySelectorAll('img').forEach(im=>{const m=cx.img(im.getAttribute('src')||'');if(!m)return;const h=im.closest('p,li,h1,h2,h3,h4,h5,h6,blockquote,pre');if(h){h.after(pm(m));im.remove()}else im.replaceWith(pm(m))})} // lấy các khối văn bản "lá"; tiêu đề h1-h3 thành chương (§§)
   d.querySelectorAll('script,style,svg,img,nav').forEach(e=>e.remove());d.body.querySelectorAll('br').forEach(b=>b.replaceWith('\n'));
   const out=[];d.body.querySelectorAll(BLK).forEach(e=>{if(e.querySelector(BLK))return;const x=e.textContent.replace(/[ \t\u00a0]+/g,' ').trim();if(!x)return;
     const lk=[...e.querySelectorAll('a')].reduce((n,a)=>n+a.textContent.length,0);if(lk>.8*x.length)return;
@@ -256,10 +279,17 @@ async function epubText(buf){await needZip();const z=await JSZip.loadAsync(buf),
   const rd=async pa=>{const f=z.file(pa);return f?f.async('string'):''};
   const opfP=X(await rd('META-INF/container.xml')).querySelector('rootfile').getAttribute('full-path'),opf=X(await rd(opfP));
   const base=opfP.replace(/[^/]*$/,''),man={};opf.querySelectorAll('manifest > item').forEach(i=>man[i.getAttribute('id')]=i.getAttribute('href'));
+  const cx={notes:[],imgs:[],tbls:[]};let dir='';cx.img=src=>{if(!src)return'';const pa=/^data:/.test(src)?src:decodeURIComponent(new URL(src,'http://x/'+dir).pathname.slice(1));cx.imgs.push(pa);return'¤IMG:'+(cx.imgs.length-1)+'¤'};
+  cx.tbl=tb=>{cx.tbls.push(cleanTable(tb));return'¤TBL:'+(cx.tbls.length-1)+'¤'};
   const out=[];for(const r of opf.querySelectorAll('spine > itemref')){const h=man[r.getAttribute('idref')];if(!h)continue;
-    const path=decodeURIComponent(new URL(h,'http://x/'+base).pathname.slice(1));
-    out.push(blocksOf(new DOMParser().parseFromString(await rd(path),'text/html')))}
+    const path=decodeURIComponent(new URL(h,'http://x/'+base).pathname.slice(1));dir=path.replace(/[^/]*$/,'');
+    out.push(blocksOf(new DOMParser().parseFromString(await rd(path),'text/html'),cx))}
+  const MT={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',svg:'image/svg+xml'};
+  S.imgs=await Promise.all(cx.imgs.map(async pa=>{if(/^data:/.test(pa))return pa;const f=z.file(pa);return f?URL.createObjectURL(new Blob([await f.async('uint8array')],{type:MT[pa.split('.').pop().toLowerCase()]||''})):''}));S.tbls=cx.tbls;
+  if(cx.notes.length)out.push('§§ '+t('fn')+'\n\n'+cx.notes.join('\n\n'));
   return out.join('\n\n')}
+function cleanTable(tb){const c=tb.cloneNode(true);c.querySelectorAll('script,style,img,svg,iframe,object,a').forEach(e=>e.tagName==='A'?e.replaceWith(...e.childNodes):e.remove());
+  [c,...c.querySelectorAll('*')].forEach(e=>[...e.attributes].forEach(a=>{if(!/^(colspan|rowspan)$/i.test(a.name))e.removeAttribute(a.name)}));return c.outerHTML}
 function palm(d){const o=[];let i=0;while(i<d.length){const c=d[i++];
   if(c===0||(c>=9&&c<=127))o.push(c);else if(c<=8){for(let k=0;k<c&&i<d.length;k++)o.push(d[i++])}
   else if(c>=192)o.push(32,c^128);else{const m=(c<<8)|d[i++],dist=(m>>3)&0x7ff,len=(m&7)+3;for(let k=0;k<len;k++)o.push(o[o.length-dist])}}
@@ -284,7 +314,10 @@ async function docxText(buf){await needZip();const z=await JSZip.loadAsync(buf),
   return[...x.getElementsByTagName('w:p')].map(p=>{const st=p.getElementsByTagName('w:pStyle')[0],t=[...p.getElementsByTagName('w:t')].map(n=>n.textContent).join('');
     return st&&/^(Heading|Title)/i.test(st.getAttribute('w:val')||'')&&t?'§§ '+t:t}).filter(Boolean).join('\n\n')}
 const mdText=x=>x.replace(/^```.*$/gm,'').replace(/^\s{0,3}#{1,3}\s+(.*)$/gm,'\n§§ $1\n').replace(/^\s{0,3}#{4,6}\s+/gm,'').replace(/!\[[^\]]*\]\([^)]*\)/g,'').replace(/\[([^\]]*)\]\([^)]*\)/g,'$1').replace(/^[>\-*+]\s+/gm,'').replace(/(\*\*|__|\*|`)/g,'');
-async function comic(f){await needZip();const z=await JSZip.loadAsync(await f.arrayBuffer());
+function tarFiles(buf){const u=new Uint8Array(buf),dc=new TextDecoder(),out={};let o=0;
+  while(o+512<=u.length){const nm=dc.decode(u.subarray(o,o+100)).replace(/\0.*$/s,'');if(!nm)break;const sz=parseInt(dc.decode(u.subarray(o+124,o+136)).replace(/\0.*$/s,'').trim()||'0',8),ty=String.fromCharCode(u[o+156]);
+    if(ty==='0'||ty==='\0')out[nm]=u.slice(o+512,o+512+sz);o+=512+Math.ceil(sz/512)*512}return out}
+async function comic(f,ext){let z;if(ext==='cbt'){const tf=tarFiles(await f.arrayBuffer());z={files:{}};for(const n in tf)z.files[n]={dir:false,async:()=>Promise.resolve(new Blob([tf[n]]))}}else{await needZip();z=await JSZip.loadAsync(await f.arrayBuffer())}
   const names=Object.keys(z.files).filter(n=>!z.files[n].dir&&/\.(jpe?g|png|webp|gif|avif)$/i.test(n)).sort(new Intl.Collator(undefined,{numeric:true}).compare);if(!names.length)throw new Error('empty');
   stop();S.sents=[];S.dlg=[];S.lng=[];S.chap=[];S.key='';const doc=$('doc');doc.innerHTML='';$('welcome').hidden=true;doc.hidden=false;$('top').hidden=true;document.querySelector('aside').classList.remove('open');
   const io=new IntersectionObserver(es=>es.forEach(async en=>{if(!en.isIntersecting)return;const im=en.target;io.unobserve(im);im.src=URL.createObjectURL(await z.files[im.dataset.n].async('blob'))}),{root:$('sec'),rootMargin:'900px'});
@@ -294,14 +327,15 @@ async function ebookText(f,ext){const buf=await f.arrayBuffer();
   return ext==='epub'?epubText(buf):ext==='fb2'?fb2Text(buf):ext==='docx'?docxText(buf):mobiText(buf)}
 $('file').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   const ext=(f.name.split('.').pop()||'').toLowerCase();
-  if(ext==='cbz'){try{await comic(f)}catch(err){$('urlSt').textContent=t('bk')}return}
+  if(['png','jpg','jpeg','webp'].includes(ext)){const st=$('urlSt');try{if(MOB&&!confirm(t('heavy')))return;st.textContent=t('sl');const w=await ocrStart(),r=await w.recognize(f);await w.terminate();S.pdfDoc=null;load(ocrFlow(r.data.text),f.name);st.textContent=t('so')+' '+S.sents.length}catch(err){st.textContent=t('pf')}return}
+  if(ext==='cbz'||ext==='cbt'){try{await comic(f,ext)}catch(err){$('urlSt').textContent=t('bk')}return}
   if(['epub','mobi','azw','azw3','prc','fb2','docx'].includes(ext)){const st=$('urlSt');st.textContent=t('sl');
     try{const tx=await ebookText(f,ext);if(clean(tx).length<100)throw new Error('empty');load(tx,f.name);st.textContent=t('so')+' '+S.sents.length}
     catch(err){st.textContent=t('bk')}return}
   if(/\.pdf$/i.test(f.name)||f.type==='application/pdf'){
-    try{const tx=await pdfToText(f);
-      if(clean(tx).length<100){$('urlSt').textContent=t('pe');return}
-      load(tx,f.name);$('urlSt').textContent=t('so')+' '+S.sents.length}
+    try{let tx=await pdfToText(f);
+      if(clean(tx).length<100){if(!confirm(t('ocrq'))){$('urlSt').textContent=t('pe');return}tx=await pdfOcr(f)}
+      load(tx,f.name,true);$('urlSt').textContent=t('so')+' '+S.sents.length}
     catch(err){$('urlSt').textContent=t('pf')}
     return}
   let raw=await f.text();if(/\.html?$/i.test(f.name))raw=fromHTML(raw);else if(/\.md$/i.test(f.name))raw=mdText(raw);load(raw,f.name)};
@@ -333,12 +367,13 @@ const PERSONAS=[
  {n:'Nhi đồng',d:'Vui tươi, cao',g:'f',p:1.4,r:1.0}];
 const isF=v=>/female|hoai|my\b|linh|hien|lan|mai|nữ|ngoc|thuy|trang/i.test(v.name);
 const isM=v=>/(^|\s)male|nam|minh|khoi|duc|son|tuan/i.test(v.name)&&!isF(v);
+var PIPER=[['vi_VN-vais1000-medium','Tiếng Việt · vais1000'],['vi_VN-25hours_single-low','Tiếng Việt · 25hours'],['vi_VN-vivos-x_low','Tiếng Việt · vivos'],['en_US-lessac-medium','English US · lessac'],['en_US-hfc_female-medium','English US · hfc female'],['es_ES-davefx-medium','Español · davefx'],['zh_CN-huayan-medium','中文 · huayan'],['fr_FR-siwis-medium','Français · siwis'],['de_DE-thorsten-medium','Deutsch · thorsten']];
 function loadVoices(){voices=synth.getVoices();
   const vi=voices.filter(v=>/^vi/i.test(v.lang)),rest=voices.filter(v=>!/^vi/i.test(v.lang));
   const list=[...vi,...rest];[$('voice'),$('voice2')].forEach((sel,k)=>{const cur=sel.value;sel.innerHTML='';
     if(k){const vl=VL||['Giống người dẫn','Tự động (giọng khác)'];sel.add(new Option(vl[0],''));sel.add(new Option(vl[1],'__auto'))}
-    list.forEach(v=>{const o=new Option((/^vi/i.test(v.lang)?'🇻🇳 ':'')+v.name+' ('+v.lang+')',v.name);sel.add(o)});
-    if(cur)sel.value=cur;else if(k)sel.value='__auto';else{const sv=store.get('voice','');sel.value=sv&&list.some(v=>v.name===sv)?sv:(vi[0]?vi[0].name:'')}});
+    list.forEach(v=>{const o=new Option((/^vi/i.test(v.lang)?'🇻🇳 ':'')+v.name+' ('+v.lang+')',v.name);sel.add(o)});if(!k)PIPER.forEach(([id,lb])=>sel.add(new Option('🤖 '+lb+' (AI)','piper:'+id)));
+    if(cur)sel.value=cur;else if(k)sel.value='__auto';else{const sv=store.get('voice','');sel.value=sv&&(list.some(v=>v.name===sv)||sv.startsWith('piper:'))?sv:(vi[0]?vi[0].name:'')}});
   if(!vi.length&&voices.length)$('voice').title='Không có giọng Việt: hãy cài gói giọng tiếng Việt trong hệ điều hành.'}
 // chọn giọng khác (ưu tiên khác giới) cùng ngôn ngữ với người dẫn
 function altVoice(v){const pre=v?v.lang.slice(0,2):'vi',c=voices.filter(x=>x.lang.slice(0,2)===pre&&(!v||x.name!==v.name));if(!c.length)return null;
@@ -354,7 +389,7 @@ PERSONAS.forEach((p,i)=>{const b=document.createElement('button');b.className='b
 P.children[0].classList.add('on');
 function lab(){$('rv').textContent=(+$('rate').value).toFixed(2)+'×';$('pv').textContent=(+$('pitch').value).toFixed(2)}
 ['rate','pitch'].forEach(i=>$(i).oninput=()=>{lab();stat()});
-$('voice').onchange=()=>{store.set('voice',$('voice').value);const o=voices.find(x=>x.name===$('voice').value);if(o){const m=store.get('lv',{});m[o.lang.slice(0,2).toLowerCase()]=o.name;store.set('lv',m)}if(S.on)restart()};
+$('voice').onchange=()=>{if($('voice').value.startsWith('piper:')&&MOB&&!confirm(t('heavy'))){$('voice').value=store.get('voice','');return}store.set('voice',$('voice').value);const o=voices.find(x=>x.name===$('voice').value);if(o){const m=store.get('lv',{});m[o.lang.slice(0,2).toLowerCase()]=o.name;store.set('lv',m)}if(S.on)restart()};
 $('auto').checked=store.get('auto',true);$('auto').onchange=()=>{store.set('auto',$('auto').checked);if(S.on)restart()};
 lab();
 
@@ -397,6 +432,7 @@ function say(){
   const ut=fixes(raw),u=new SpeechSynthesisUtterance(ut),el=$('s'+S.idx);
   if(window.CSS&&CSS.highlights&&ut===raw&&el)u.onboundary=ev=>{if(ev.name&&ev.name!=='word')return;try{const tn=el.firstChild,st=ev.charIndex,m=/\S+/.exec(raw.slice(st)),r=new Range();r.setStart(tn,st);r.setEnd(tn,Math.min(st+(m?m[0].length:1),tn.length));CSS.highlights.set('wd',new Highlight(r))}catch(e){}}; // sáng từng từ (chỉ giọng có báo ranh giới từ)
   const vn=$('voice').value,v2=$('voice2').value;let lg=S.lng[S.idx];if(lg)S.last=lg;else lg=S.last||S.dom;
+  const pvn=$('voice').value;if(pvn.startsWith('piper:')&&(!lg||!$('auto').checked||pvn.slice(6,8)===lg)){mark(S.idx);stat();store.set(S.key,S.idx);piperSay(pvn.slice(6),fixes(raw),dlg,++S.tok);return}
   const base=voices.find(x=>x.name===vn),nv=voiceFor(lg,base)||base;let alt=null;
   if(dlg){const o2=voices.find(x=>x.name===v2);if(v2==='__auto'||(o2&&nv&&o2.lang.slice(0,2)!==nv.lang.slice(0,2)))alt=altVoice(nv);else if(o2&&o2!==nv)alt=o2}
   const v=alt||nv;$('lgi').innerHTML=lg?(FLG[lg]||'🌐')+' '+lg+(v&&v.lang.slice(0,2).toLowerCase()!==lg?' ⚠':''):'';
@@ -412,16 +448,16 @@ function play(){if(!S.sents.length){alert(t('noDoc'));return}
   if(S.paused){S.paused=false;ui();ambient(true);wake(true);say();return}
   S.on=true;S.paused=false;S.chapStart=S.idx;
   const m=+$('sleep').value;S.sleepChap=m===-1;S.sleepEnd=m>0?Date.now()+m*60000:0;
-  synth.cancel();ui();ambient(true);setMedia();wake(true);say()}
+  cancelAll();ui();ambient(true);setMedia();wake(true);say()}
 // âm thanh im lặng chạy nền: giúp trình duyệt coi trang là đang phát nhạc (thử nghiệm, chưa chắc giữ được tiếng khi khoá máy)
 const ka=(()=>{const n=8000,b=new DataView(new ArrayBuffer(44+n)),w=(o,x)=>[...x].forEach((c,i)=>b.setUint8(o+i,c.charCodeAt(0)));
   w(0,'RIFF');b.setUint32(4,36+n,true);w(8,'WAVEfmt ');b.setUint32(16,16,true);b.setUint16(20,1,true);b.setUint16(22,1,true);b.setUint32(24,8000,true);b.setUint32(28,8000,true);b.setUint16(32,1,true);b.setUint16(34,8,true);w(36,'data');b.setUint32(40,n,true);
   for(let i=0;i<n;i++)b.setUint8(44+i,128);const a=new Audio(URL.createObjectURL(new Blob([b],{type:'audio/wav'})));a.loop=true;a.volume=.02;return a})();
 let wl=null;
-async function wake(on){if(on)ka.play().catch(()=>{});else ka.pause();try{if(on){if('wakeLock' in navigator&&!wl){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null})}}else if(wl){await wl.release();wl=null}}catch(e){}}
-function pause(){if(!S.on)return;S.tok++;synth.cancel();S.paused=true;ui();ambient(false);wake(false)} // huỷ rồi đọc lại từ câu hiện tại (pause() hay lỗi trên di động)
-function stop(){S.stopAt=null;S.tok++;synth.cancel();S.on=false;S.paused=false;ui();ambient(false);wake(false)}
-function restart(){S.tok++;synth.cancel();if(S.on)setTimeout(say,60)}
+async function wake(on){if(on&&MOB)ka.play().catch(()=>{});else ka.pause();try{if(on){if('wakeLock' in navigator&&!wl){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null})}}else if(wl){await wl.release();wl=null}}catch(e){}}
+function pause(){if(!S.on)return;S.tok++;cancelAll();S.paused=true;ui();ambient(false);wake(false)} // huỷ rồi đọc lại từ câu hiện tại (pause() hay lỗi trên di động)
+function stop(){S.stopAt=null;S.tok++;cancelAll();S.on=false;S.paused=false;ui();ambient(false);wake(false)}
+function restart(){S.tok++;cancelAll();if(S.on)setTimeout(say,60)}
 function jump(i){S.stopAt=null;S.idx=i;mark(i,false);stat();if(S.on){S.paused=false;restart();ui();ambient(true)}else{store.set(S.key,i)}}
 function ui(){$('play').textContent=$('mplay').textContent=S.on&&!S.paused?'⏸':'▶';if('mediaSession' in navigator)navigator.mediaSession.playbackState=S.on&&!S.paused?'playing':'paused'}
 $('play').onclick=()=>S.on&&!S.paused?pause():play();$('stop').onclick=stop;
@@ -439,7 +475,7 @@ document.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target
 function setMedia(){if(!('mediaSession' in navigator))return;try{navigator.mediaSession.metadata=new MediaMetadata({title:document.title});
   navigator.mediaSession.setActionHandler('play',play);navigator.mediaSession.setActionHandler('pause',pause);
   navigator.mediaSession.setActionHandler('previoustrack',()=>$('prev').click());navigator.mediaSession.setActionHandler('nexttrack',()=>$('next').click())}catch(e){}}
-addEventListener('beforeunload',()=>synth.cancel());
+addEventListener('beforeunload',()=>cancelAll());
 
 /* ---------- Ambient sounds (Web Audio, tổng hợp tại chỗ) ---------- */
 let ac,master,bus,cur=null,nodes=[],timers=[];
@@ -500,7 +536,7 @@ function build(k){
   else music(k)}
 function halt(){nodes.splice(0).forEach(n=>{try{n.stop()}catch(e){}});timers.splice(0).forEach(clearInterval)}
 // Âm nền chạy độc lập với giọng đọc: bấm lần nữa để tắt. Không còn tự tắt sau vài giây.
-function setAmb(k){halt();cur=k;[...A.children].forEach((b,i)=>b.classList.toggle('on',AMB[i][0]===k));if(!k)return;ctx();master.gain.value=vol();build(k)}
+function setAmb(k){halt();cur=k;if(S.key){const m=store.get('ambk',{});m[S.key]=k||'';store.set('ambk',m)}[...A.children].forEach((b,i)=>b.classList.toggle('on',AMB[i][0]===k));if(!k)return;ctx();master.gain.value=vol();build(k)}
 function ambient(run){if(run&&ac&&cur&&ac.state!=='running')ac.resume()}
 const wakeAudio=()=>{if(ac&&cur&&ac.state!=='running')ac.resume()};
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)wakeAudio()});
@@ -511,31 +547,31 @@ $('fix').value=store.get('fix','');$('fix').oninput=()=>store.set('fix',$('fix')
 /* ---------- Đa ngôn ngữ ---------- */
 var VL;
 const L={
-vi:{doc:"Tài liệu",url:"Hoặc tải từ link trang web",load:"Tải",paste:"Hoặc dán văn bản",pasteph:"Dán nội dung truyện/bài viết...",readpaste:"Đọc đoạn đã dán",voice:"Giọng kể",sysv:"Giọng hệ thống (người dẫn)",dlgv:"Giọng cho lời thoại",rate:"Tốc độ",pitch:"Cao độ",sleep:"Hẹn giờ tắt",none:"Không",chap:"Hết chương này",fix:"Sửa cách đọc",fixph:"mỗi dòng: từ=cách đọc",amb:"Âm nền",vol:"Âm lượng",close:"Đóng cài đặt",lib:"Thư viện",libname:"Tên",libadd:"Thêm vào thư viện",wt:"Biến mọi văn bản thành sách nói",wp:"Tải tệp .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx, dán văn bản hoặc chọn một mục trong Thư viện.",opendef:"Mở mục mặc định",gt:"Hướng dẫn",disp:"Hiển thị",qnext:"Tự đọc cuốn kế trong Thư viện",find:"Tìm trong sách",notes:"Sổ tay",note:"Ghi chú",tr:"Bản dịch",nonote:"Chưa có đoạn tô sáng hay ghi chú. Bôi đen chữ rồi chọn một màu.",nojunk:"Không thấy dòng rác lặp lại.",rmq:"Bỏ các dòng lặp này ở mọi chương?",bk:"Không đọc được ebook này (có thể bị khoá DRM hoặc định dạng chưa hỗ trợ).",autolang:"Tự nhận diện ngôn ngữ để chọn giọng",same:"Giống người dẫn",auto:"Tự động (giọng khác)",noText:"Không tìm thấy nội dung văn bản.",noDoc:"Hãy tải văn bản trước!",sl:"Đang tải...",so:"Đã tải xong. Số câu:",se:"Không tải được (bị chặn hoặc không có chữ). Thử link khác hoặc dán văn bản.",pe:"PDF không có lớp chữ (bản scan).",pf:"Không mở được PDF.",
+vi:{doc:"Tài liệu",url:"Hoặc tải từ link trang web",load:"Tải",paste:"Hoặc dán văn bản",pasteph:"Dán nội dung truyện/bài viết...",readpaste:"Đọc đoạn đã dán",voice:"Giọng kể",sysv:"Giọng hệ thống (người dẫn)",dlgv:"Giọng cho lời thoại",rate:"Tốc độ",pitch:"Cao độ",sleep:"Hẹn giờ tắt",none:"Không",chap:"Hết chương này",fix:"Sửa cách đọc",fixph:"mỗi dòng: từ=cách đọc",amb:"Âm nền",vol:"Âm lượng",close:"Đóng cài đặt",lib:"Thư viện",libname:"Tên",libadd:"Thêm vào thư viện",wt:"Biến mọi văn bản thành sách nói",wp:"Tải tệp .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx, dán văn bản hoặc chọn một mục trong Thư viện.",opendef:"Mở mục mặc định",gt:"Hướng dẫn",fn:"Chú thích",sall:"Tìm trong cả thư viện (các cuốn đã mở trên máy này)",spellh:"Sửa chính tả khi mở sách",spellph:"sai=đúng (mỗi dòng một cặp)",norm:"Chuẩn hoá văn bản (khoảng trắng, dấu câu)",ocrq:"PDF này không có lớp chữ. Chạy OCR ngay trên máy (chậm, tải dữ liệu ngôn ngữ)?",heavy:"Tính năng này nặng với điện thoại (tải nhiều, chậm, tốn pin). Tiếp tục?",pfail:"Giọng AI không tải được (cần mạng và trình duyệt mới; lần đầu sẽ tải giọng về).",expt:"Xuất EPUB",prtt:"In / PDF khổ A5",pgvt:"Trang gốc của PDF",pybt:"Phiên âm pinyin",plat_desktop:"Phiên bản web (máy tính): dùng được phím tắt; giọng “Natural” của Edge nghe tự nhiên nhất.",plat_android:"Phiên bản Android (điện thoại): hãy cài giọng Google; cần để màn hình sáng khi đọc.",plat_ios:"Phiên bản iPhone/iPad: hãy cài giọng “Linh” tiếng Việt; khoá màn hình sẽ dừng đọc.",disp:"Hiển thị",qnext:"Tự đọc cuốn kế trong Thư viện",find:"Tìm trong sách",notes:"Sổ tay",note:"Ghi chú",tr:"Bản dịch",nonote:"Chưa có đoạn tô sáng hay ghi chú. Bôi đen chữ rồi chọn một màu.",nojunk:"Không thấy dòng rác lặp lại.",rmq:"Bỏ các dòng lặp này ở mọi chương?",bk:"Không đọc được ebook này (có thể bị khoá DRM hoặc định dạng chưa hỗ trợ).",autolang:"Tự nhận diện ngôn ngữ để chọn giọng",same:"Giống người dẫn",auto:"Tự động (giọng khác)",noText:"Không tìm thấy nội dung văn bản.",noDoc:"Hãy tải văn bản trước!",sl:"Đang tải...",so:"Đã tải xong. Số câu:",se:"Không tải được (bị chặn hoặc không có chữ). Thử link khác hoặc dán văn bản.",pe:"PDF không có lớp chữ (bản scan).",pf:"Không mở được PDF.",
 pn:["Mặc định","Kể chuyện trầm ấm","Nam thời sự","Nữ dịu dàng","Nữ tin tức","Nhi đồng"],sn:["Mưa rơi","Lửa trại","Rừng chim","Sóng biển","Gió núi","Ồn nâu","Ồn trắng","Nhạc đọc sách","Nhạc chill","Nhạc cổ điển"],
-g:"1. Mở tài liệu: chọn tệp .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx, dán link hoặc chọn trong Thư viện.\n2. Bấm ▶ để nghe; chạm vào một câu để đọc từ đó.\n3. Giọng đọc lấy từ hệ thống; trên điện thoại hãy cài giọng tiếng Việt.\n4. Thư viện: nhập tên + link rồi Thêm; ⭐ đặt mặc định; ✕ xoá.\n5. Máy tính: Space, ←/→, Ctrl+↑/↓. Khoá màn hình sẽ dừng đọc.\n6. Tải link/PDF chỉ chạy khi mở tệp đã tải về hoặc web riêng."},
-en:{doc:"Document",url:"Or load from a web link",load:"Load",paste:"Or paste text",pasteph:"Paste your text here...",readpaste:"Read pasted text",voice:"Voice",sysv:"Narrator voice",dlgv:"Dialogue voice",rate:"Speed",pitch:"Pitch",sleep:"Sleep timer",none:"Off",chap:"End of chapter",fix:"Pronunciation fixes",fixph:"one per line: word=reading",amb:"Ambient",vol:"Volume",close:"Close settings",lib:"Library",libname:"Name",libadd:"Add to library",wt:"Turn any text into an audiobook",wp:"Open a .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx file, paste text, or pick an item from the Library.",opendef:"Open default item",gt:"Guide",disp:"Display",qnext:"Auto-play next book in Library",find:"Search in book",notes:"Notebook",note:"Note",tr:"Translation",nonote:"No highlights or notes yet. Select text, then tap a color.",nojunk:"No repeated junk lines found.",rmq:"Remove these repeated lines everywhere?",bk:"Could not read this ebook (it may be DRM-protected or an unsupported format).",autolang:"Auto-detect language to pick the voice",same:"Same as narrator",auto:"Auto (other voice)",noText:"No text content found.",noDoc:"Please load a text first!",sl:"Loading...",so:"Loaded. Sentences:",se:"Could not load (blocked or no text). Try another link or paste the text.",pe:"This PDF has no text layer (scanned).",pf:"Could not open the PDF.",
+g:"1. Mở tài liệu: chọn tệp (.txt .pdf .epub .mobi/.azw .fb2 .docx .md .cbz), dán link hoặc văn bản, hoặc chọn trong Thư viện.\n2. Bấm ▶ để nghe; chạm một câu để đọc từ đó. Chữ đang đọc sáng lên trong câu (tuỳ giọng).\n3. Bôi đen chữ: 🔊 đọc riêng đoạn đó · ● 5 màu tô sáng · 📝 ghi chú · 🌐 dịch.\n4. 🔍 tìm trong sách (gõ không dấu vẫn được) · 📒 Sổ tay gom mọi đoạn tô sáng · 🧹 bỏ dòng quảng cáo lặp.\n5. Giọng đọc lấy từ máy. Tự nhận diện ngôn ngữ sẽ chọn giọng cho từng ngôn ngữ; lời thoại trong ngoặc kép có thể dùng giọng hoặc cao độ khác.\n6. Sửa cách đọc: mỗi dòng từ=cách đọc. Có hẹn giờ tắt, thanh tốc độ và cao độ.\n7. Thư viện: nhập tên + link rồi Thêm; ⭐ đặt mặc định; ✕ xoá; tích “tự đọc cuốn kế” để nghe liên tục, có tiếng chuông.\n8. Âm nền: mưa, lửa trại, rừng, sóng, gió, ồn trắng/nâu, nhạc đọc sách, chill, cổ điển — chạy liên tục đến khi bạn bấm tắt.\n9. Hiển thị: 🌓 đổi sáng/sepia/tối, A−/A+, phông, giãn dòng, căn đều.\n10. Máy tính: Space, ←/→, Ctrl+↑/↓. Khoá màn hình có thể làm dừng đọc.\n11. Tải link, PDF, EPUB, Word, CBZ cần có mạng và chỉ chạy khi mở tệp đã tải về hoặc web riêng. Nội dung sách ở lại trên máy bạn.\n12. Mới: OCR cho PDF scan/ảnh (tự hỏi khi PDF không có chữ) · nút 拼 hiện pinyin cho chữ Hán · hình và bảng trong EPUB chạm để phóng to, chú thích gom cuối sách · ⬇️ xuất EPUB · 🖨️ in/PDF khổ A5 · 📄 xem trang gốc của PDF · 2 cột · tìm cả thư viện · lọc Sổ tay theo màu · giọng AI Piper (thử nghiệm, nặng)."},
+en:{doc:"Document",url:"Or load from a web link",load:"Load",paste:"Or paste text",pasteph:"Paste your text here...",readpaste:"Read pasted text",voice:"Voice",sysv:"Narrator voice",dlgv:"Dialogue voice",rate:"Speed",pitch:"Pitch",sleep:"Sleep timer",none:"Off",chap:"End of chapter",fix:"Pronunciation fixes",fixph:"one per line: word=reading",amb:"Ambient",vol:"Volume",close:"Close settings",lib:"Library",libname:"Name",libadd:"Add to library",wt:"Turn any text into an audiobook",wp:"Open a .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx file, paste text, or pick an item from the Library.",opendef:"Open default item",gt:"Guide",fn:"Footnotes",sall:"Search whole library (books opened on this device)",spellh:"Fix spelling when opening a book",spellph:"wrong=right (one per line)",norm:"Tidy text (spaces, punctuation)",ocrq:"This PDF has no text layer. Run OCR on your device (slow, downloads language data)?",heavy:"This is heavy for a phone (big download, slow, battery). Continue?",pfail:"AI voice failed to load (needs internet and a modern browser; the first use downloads the voice).",expt:"Export EPUB",prtt:"Print / PDF (A5)",pgvt:"Original PDF pages",pybt:"Pinyin",plat_desktop:"Web version (computer): keyboard shortcuts work; Edge “Natural” voices sound best.",plat_android:"Android version (phone): install Google speech voices; keep the screen on while reading.",plat_ios:"iPhone/iPad version: install the Vietnamese “Linh” voice; reading stops when the screen locks.",disp:"Display",qnext:"Auto-play next book in Library",find:"Search in book",notes:"Notebook",note:"Note",tr:"Translation",nonote:"No highlights or notes yet. Select text, then tap a color.",nojunk:"No repeated junk lines found.",rmq:"Remove these repeated lines everywhere?",bk:"Could not read this ebook (it may be DRM-protected or an unsupported format).",autolang:"Auto-detect language to pick the voice",same:"Same as narrator",auto:"Auto (other voice)",noText:"No text content found.",noDoc:"Please load a text first!",sl:"Loading...",so:"Loaded. Sentences:",se:"Could not load (blocked or no text). Try another link or paste the text.",pe:"This PDF has no text layer (scanned).",pf:"Could not open the PDF.",
 pn:["Default","Warm storyteller","Male news","Soft female","Female news","Kids"],sn:["Rain","Campfire","Forest","Waves","Wind","Brown noise","White noise","Reading music","Chill lo-fi","Classical"],
-g:"1. Open a document: pick a .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx file, paste a link, or choose from the Library.\n2. Press ▶ to listen; tap any sentence to read from there.\n3. Voices come from your device; on phones install the voice pack for your language.\n4. Library: enter a name + link, then Add; ⭐ sets the default; ✕ deletes.\n5. Desktop: Space, ←/→, Ctrl+↑/↓. Locking the screen stops reading.\n6. Link/PDF loading works only from the downloaded file or your own website."},
+g:"1. Open a document: pick a file (.txt .pdf .epub .mobi/.azw .fb2 .docx .md .cbz), paste a link or text, or choose from the Library.\n2. Press ▶ to listen; tap a sentence to start there. The word being read lights up (depends on the voice).\n3. Select text: 🔊 read only that part · ● 5 highlight colors · 📝 note · 🌐 translate.\n4. 🔍 search the book (accents optional) · 📒 Notebook of all highlights · 🧹 remove repeated ad lines.\n5. Voices come from your device. Auto-detect language picks a voice per language; dialogue in quotes can use another voice or pitch.\n6. Fix pronunciation: one per line, word=reading. There is a sleep timer, speed and pitch.\n7. Library: enter a name + link, then Add; ⭐ sets the default; ✕ deletes; tick “auto-play next book” to listen non-stop, with a chime.\n8. Ambient: rain, campfire, forest, waves, wind, white/brown noise, reading, chill and classical music — plays until you turn it off.\n9. Display: 🌓 light/sepia/dark, A−/A+, font, line spacing, justify.\n10. Desktop: Space, ←/→, Ctrl+↑/↓. Locking the screen may stop reading.\n11. Loading links, PDF, EPUB, Word and CBZ needs internet and works from the downloaded file or your own website. Book content stays on your device.\n12. New: OCR for scanned PDFs/images (asked when a PDF has no text) · 拼 shows pinyin over Chinese · EPUB images and tables tap to enlarge, footnotes gathered at the end · ⬇️ export EPUB · 🖨️ print/PDF A5 · 📄 original PDF pages · 2 columns · search the whole library · filter Notebook by color · Piper AI voices (experimental, heavy)."},
 es:{doc:"Documento",url:"O carga desde un enlace web",load:"Cargar",paste:"O pega texto",pasteph:"Pega tu texto aquí...",readpaste:"Leer el texto pegado",voice:"Voz",sysv:"Voz del narrador",dlgv:"Voz de diálogos",rate:"Velocidad",pitch:"Tono",sleep:"Temporizador",none:"No",chap:"Fin del capítulo",fix:"Corregir pronunciación",fixph:"una por línea: palabra=lectura",amb:"Ambiente",vol:"Volumen",close:"Cerrar ajustes",lib:"Biblioteca",libname:"Nombre",libadd:"Añadir a la biblioteca",wt:"Convierte cualquier texto en audiolibro",wp:"Abre un archivo .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx, pega texto o elige un elemento de la Biblioteca.",opendef:"Abrir el predeterminado",gt:"Guía",bk:"No se pudo leer este ebook (puede tener DRM o un formato no compatible).",autolang:"Detectar idioma y elegir la voz",same:"Igual que el narrador",auto:"Auto (otra voz)",noText:"No se encontró texto.",noDoc:"¡Carga primero un texto!",sl:"Cargando...",so:"Cargado. Frases:",se:"No se pudo cargar (bloqueado o sin texto). Prueba otro enlace o pega el texto.",pe:"Este PDF no tiene capa de texto (escaneado).",pf:"No se pudo abrir el PDF.",
 pn:["Predeterminada","Narrador cálido","Locutor","Voz suave","Locutora","Infantil"],sn:["Lluvia","Fogata","Bosque","Olas","Viento","Ruido marrón","Ruido blanco","Música para leer","Chill lo-fi","Clásica"],
-g:"1. Abrir un documento: elige un archivo .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx, pega un enlace o usa la Biblioteca.\n2. Pulsa ▶ para escuchar; toca una frase para leer desde ahí.\n3. Las voces vienen del dispositivo; en el móvil instala el paquete de voz de tu idioma.\n4. Biblioteca: escribe nombre + enlace y pulsa Añadir; ⭐ marca el predeterminado; ✕ borra.\n5. PC: Espacio, ←/→, Ctrl+↑/↓. Bloquear la pantalla detiene la lectura.\n6. Cargar enlaces/PDF solo funciona con el archivo descargado o en tu propio sitio web."},
+g:"1. Abrir: elige un archivo (.txt .pdf .epub .mobi/.azw .fb2 .docx .md .cbz), pega un enlace o texto, o usa la Biblioteca.\n2. Pulsa ▶ para escuchar; toca una frase para leer desde ahí. La palabra leída se ilumina (según la voz).\n3. Selecciona texto: 🔊 leer solo eso · ● 5 colores de resaltado · 📝 nota · 🌐 traducir.\n4. 🔍 buscar en el libro (con o sin tildes) · 📒 Cuaderno con todos los resaltados · 🧹 quitar líneas de publicidad repetidas.\n5. Las voces vienen del dispositivo. La detección de idioma elige una voz por idioma; los diálogos entre comillas pueden usar otra voz o tono.\n6. Corregir pronunciación: una por línea, palabra=lectura. Hay temporizador, velocidad y tono.\n7. Biblioteca: nombre + enlace y Añadir; ⭐ predeterminado; ✕ borra; marca «siguiente libro» para escuchar seguido, con una campanilla.\n8. Ambiente: lluvia, fogata, bosque, olas, viento, ruido blanco/marrón, música para leer, chill y clásica; suena hasta que lo desactives.\n9. Pantalla: 🌓 claro/sepia/oscuro, A−/A+, fuente, interlineado, justificar.\n10. PC: Espacio, ←/→, Ctrl+↑/↓. Bloquear la pantalla puede detener la lectura.\n11. Cargar enlaces, PDF, EPUB, Word y CBZ necesita internet y funciona con el archivo descargado o en tu sitio. El contenido del libro queda en tu dispositivo.\n12. Novedades: OCR para PDF/imágenes escaneados · 拼 muestra pinyin sobre el chino · imágenes y tablas de EPUB ampliables, notas al final · ⬇️ exportar EPUB · 🖨️ imprimir/PDF A5 · 📄 páginas originales del PDF · 2 columnas · buscar en toda la biblioteca · filtrar el Cuaderno por color · voces IA Piper (experimental, pesado)."},
 th:{doc:"เอกสาร",url:"หรือโหลดจากลิงก์เว็บ",load:"โหลด",paste:"หรือวางข้อความ",pasteph:"วางเนื้อหาที่นี่...",readpaste:"อ่านข้อความที่วาง",voice:"เสียงอ่าน",sysv:"เสียงผู้บรรยาย",dlgv:"เสียงบทสนทนา",rate:"ความเร็ว",pitch:"ระดับเสียง",sleep:"ตั้งเวลาปิด",none:"ไม่ตั้ง",chap:"จบบทนี้",fix:"แก้การออกเสียง",fixph:"บรรทัดละ: คำ=คำอ่าน",amb:"เสียงบรรยากาศ",vol:"ความดัง",close:"ปิดการตั้งค่า",lib:"คลังหนังสือ",libname:"ชื่อ",libadd:"เพิ่มในคลัง",wt:"เปลี่ยนข้อความทุกอย่างเป็นหนังสือเสียง",wp:"เปิดไฟล์ .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx วางข้อความ หรือเลือกจากคลังหนังสือ",opendef:"เปิดรายการเริ่มต้น",gt:"คู่มือ",bk:"อ่านอีบุ๊กนี้ไม่ได้ (อาจมี DRM หรือเป็นรูปแบบที่ไม่รองรับ)",autolang:"ตรวจจับภาษาเพื่อเลือกเสียงอัตโนมัติ",same:"เหมือนผู้บรรยาย",auto:"อัตโนมัติ (เสียงอื่น)",noText:"ไม่พบเนื้อหาข้อความ",noDoc:"กรุณาโหลดข้อความก่อน!",sl:"กำลังโหลด...",so:"โหลดเสร็จแล้ว จำนวนประโยค:",se:"โหลดไม่ได้ (ถูกบล็อกหรือไม่มีข้อความ) ลองลิงก์อื่นหรือวางข้อความ",pe:"PDF ไม่มีข้อความ (เป็นภาพสแกน)",pf:"เปิด PDF ไม่ได้",
 pn:["ค่าเริ่มต้น","นักเล่าเสียงอุ่น","ผู้ประกาศชาย","หญิงอ่อนโยน","ผู้ประกาศหญิง","เด็ก"],sn:["ฝน","กองไฟ","ป่า","คลื่น","ลม","เสียงรบกวนสีน้ำตาล","ไวต์นอยส์","เพลงอ่านหนังสือ","ชิลล์ lo-fi","คลาสสิก"],
-g:"1. เปิดเอกสาร: เลือกไฟล์ .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx วางลิงก์ หรือเลือกจากคลังหนังสือ\n2. กด ▶ เพื่อฟัง แตะประโยคใดก็ได้เพื่ออ่านต่อจากตรงนั้น\n3. เสียงมาจากอุปกรณ์ของคุณ บนมือถือให้ติดตั้งชุดเสียงภาษาที่ต้องการ\n4. คลังหนังสือ: ใส่ชื่อ + ลิงก์ แล้วกดเพิ่ม ⭐ ตั้งค่าเริ่มต้น ✕ ลบ\n5. คอมพิวเตอร์: Space, ←/→, Ctrl+↑/↓ การล็อกหน้าจอจะหยุดการอ่าน\n6. การโหลดลิงก์/PDF ใช้ได้เฉพาะไฟล์ที่ดาวน์โหลดหรือเว็บไซต์ของคุณเอง"},
+g:"1. เปิดเอกสาร: เลือกไฟล์ (.txt .pdf .epub .mobi/.azw .fb2 .docx .md .cbz) วางลิงก์หรือข้อความ หรือเลือกจากคลังหนังสือ\n2. กด ▶ เพื่อฟัง แตะประโยคเพื่ออ่านจากตรงนั้น คำที่กำลังอ่านจะสว่างขึ้น (ขึ้นกับเสียง)\n3. เลือกข้อความ: 🔊 อ่านเฉพาะส่วนนั้น · ● ไฮไลต์ 5 สี · 📝 บันทึก · 🌐 แปล\n4. 🔍 ค้นหาในหนังสือ (พิมพ์ไม่มีวรรณยุกต์ก็ได้) · 📒 สมุดโน้ตรวมไฮไลต์ทั้งหมด · 🧹 ลบบรรทัดโฆษณาที่ซ้ำ\n5. เสียงมาจากอุปกรณ์ การตรวจจับภาษาจะเลือกเสียงตามภาษา บทสนทนาในเครื่องหมายคำพูดใช้เสียงหรือระดับเสียงอื่นได้\n6. แก้การออกเสียง: บรรทัดละ คำ=คำอ่าน มีตั้งเวลาปิด ปรับความเร็วและระดับเสียง\n7. คลังหนังสือ: ใส่ชื่อ + ลิงก์ แล้วกดเพิ่ม ⭐ ตั้งค่าเริ่มต้น ✕ ลบ ติ๊ก “เล่นเล่มถัดไป” เพื่อฟังต่อเนื่อง มีเสียงระฆัง\n8. เสียงบรรยากาศ: ฝน กองไฟ ป่า คลื่น ลม ไวต์/บราวน์นอยส์ เพลงอ่านหนังสือ ชิลล์ คลาสสิก เล่นต่อเนื่องจนกว่าจะปิด\n9. การแสดงผล: 🌓 สว่าง/ซีเปีย/มืด, A−/A+, ฟอนต์, ระยะบรรทัด, ชิดขอบ\n10. คอมพิวเตอร์: Space, ←/→, Ctrl+↑/↓ การล็อกหน้าจออาจหยุดการอ่าน\n11. การโหลดลิงก์ PDF EPUB Word CBZ ต้องใช้อินเทอร์เน็ตและใช้ได้กับไฟล์ที่ดาวน์โหลดหรือเว็บของคุณ เนื้อหาหนังสืออยู่ในอุปกรณ์ของคุณ\n12. ใหม่: OCR สำหรับ PDF/รูปภาพสแกน · ปุ่ม 拼 แสดงพินอินบนอักษรจีน · รูปและตารางใน EPUB แตะเพื่อขยาย รวมเชิงอรรถไว้ท้ายเล่ม · ⬇️ ส่งออก EPUB · 🖨️ พิมพ์/PDF A5 · 📄 หน้าต้นฉบับของ PDF · 2 คอลัมน์ · ค้นหาทั้งคลัง · กรองสมุดโน้ตตามสี · เสียง AI Piper (ทดลอง, หนัก)"},
 lo:{doc:"ເອກະສານ",url:"ຫຼືໂຫຼດຈາກລິ້ງເວັບ",load:"ໂຫຼດ",paste:"ຫຼືວາງຂໍ້ຄວາມ",pasteph:"ວາງເນື້ອຫາບ່ອນນີ້...",readpaste:"ອ່ານຂໍ້ຄວາມທີ່ວາງ",voice:"ສຽງອ່ານ",sysv:"ສຽງຜູ້ບັນຍາຍ",dlgv:"ສຽງບົດສົນທະນາ",rate:"ຄວາມໄວ",pitch:"ລະດັບສຽງ",sleep:"ຕັ້ງເວລາປິດ",none:"ບໍ່ຕັ້ງ",chap:"ຈົບບົດນີ້",fix:"ແກ້ການອອກສຽງ",fixph:"ແຕ່ລະແຖວ: ຄຳ=ຄຳອ່ານ",amb:"ສຽງບັນຍາກາດ",vol:"ຄວາມດັງ",close:"ປິດການຕັ້ງຄ່າ",lib:"ຫ້ອງສະໝຸດ",libname:"ຊື່",libadd:"ເພີ່ມເຂົ້າຫ້ອງສະໝຸດ",wt:"ປ່ຽນທຸກຂໍ້ຄວາມເປັນປຶ້ມສຽງ",wp:"ເປີດໄຟລ໌ .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx ວາງຂໍ້ຄວາມ ຫຼືເລືອກຈາກຫ້ອງສະໝຸດ",opendef:"ເປີດລາຍການເລີ່ມຕົ້ນ",gt:"ຄູ່ມື",bk:"ອ່ານປຶ້ມອີເລັກໂຕຣນິກນີ້ບໍ່ໄດ້ (ອາດມີ DRM ຫຼືຮູບແບບທີ່ບໍ່ຮອງຮັບ)",autolang:"ກວດພາສາເພື່ອເລືອກສຽງອັດຕະໂນມັດ",same:"ຄືຜູ້ບັນຍາຍ",auto:"ອັດຕະໂນມັດ (ສຽງອື່ນ)",noText:"ບໍ່ພົບເນື້ອຫາຂໍ້ຄວາມ",noDoc:"ກະລຸນາໂຫຼດຂໍ້ຄວາມກ່ອນ!",sl:"ກຳລັງໂຫຼດ...",so:"ໂຫຼດສຳເລັດ ຈຳນວນປະໂຫຍກ:",se:"ໂຫຼດບໍ່ໄດ້ (ຖືກບລັອກ ຫຼືບໍ່ມີຂໍ້ຄວາມ) ລອງລິ້ງອື່ນ ຫຼືວາງຂໍ້ຄວາມ",pe:"PDF ບໍ່ມີຂໍ້ຄວາມ (ເປັນຮູບສະແກນ)",pf:"ເປີດ PDF ບໍ່ໄດ້",
 pn:["ຄ່າເລີ່ມຕົ້ນ","ນັກເລົ່າສຽງອຸ່ນ","ຜູ້ປະກາດຊາຍ","ຍິງອ່ອນໂຍນ","ຜູ້ປະກາດຍິງ","ເດັກນ້ອຍ"],sn:["ຝົນ","ກອງໄຟ","ປ່າ","ຄື້ນ","ລົມ","ສຽງລົບກວນສີນ້ຳຕານ","ສຽງຂາວ","ເພງອ່ານປຶ້ມ","ຊິວ lo-fi","ຄລາສສິກ"],
-g:"1. ເປີດເອກະສານ: ເລືອກໄຟລ໌ .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx ວາງລິ້ງ ຫຼືເລືອກຈາກຫ້ອງສະໝຸດ\n2. ກົດ ▶ ເພື່ອຟັງ ແຕະປະໂຫຍກໃດກໍໄດ້ເພື່ອອ່ານຕໍ່ຈາກບ່ອນນັ້ນ\n3. ສຽງມາຈາກອຸປະກອນຂອງທ່ານ ເທິງມືຖືໃຫ້ຕິດຕັ້ງຊຸດສຽງພາສາທີ່ຕ້ອງການ\n4. ຫ້ອງສະໝຸດ: ໃສ່ຊື່ + ລິ້ງ ແລ້ວກົດເພີ່ມ ⭐ ຕັ້ງຄ່າເລີ່ມຕົ້ນ ✕ ລຶບ\n5. ຄອມພິວເຕີ: Space, ←/→, Ctrl+↑/↓ ການລັອກໜ້າຈໍຈະຢຸດການອ່ານ\n6. ການໂຫຼດລິ້ງ/PDF ໃຊ້ໄດ້ສະເພາະໄຟລ໌ທີ່ດາວໂຫຼດ ຫຼືເວັບໄຊຂອງທ່ານເອງ"},
+g:"1. ເປີດເອກະສານ: ເລືອກໄຟລ໌ (.txt .pdf .epub .mobi/.azw .fb2 .docx .md .cbz) ວາງລິ້ງ ຫຼືຂໍ້ຄວາມ ຫຼືເລືອກຈາກຫ້ອງສະໝຸດ\n2. ກົດ ▶ ເພື່ອຟັງ ແຕະປະໂຫຍກເພື່ອອ່ານຈາກບ່ອນນັ້ນ ຄຳທີ່ກຳລັງອ່ານຈະສະຫວ່າງຂຶ້ນ (ຂຶ້ນກັບສຽງ)\n3. ເລືອກຂໍ້ຄວາມ: 🔊 ອ່ານສະເພາະສ່ວນນັ້ນ · ● ໄຮໄລ້ 5 ສີ · 📝 ບັນທຶກ · 🌐 ແປ\n4. 🔍 ຄົ້ນຫາໃນປຶ້ມ (ພິມບໍ່ມີວັນນະຍຸດກໍໄດ້) · 📒 ສະໝຸດບັນທຶກລວມໄຮໄລ້ທັງໝົດ · 🧹 ລຶບແຖວໂຄສະນາທີ່ຊ້ຳ\n5. ສຽງມາຈາກອຸປະກອນ ການກວດພາສາຈະເລືອກສຽງຕາມພາສາ ບົດສົນທະນາໃນເຄື່ອງໝາຍຄຳເວົ້າໃຊ້ສຽງ ຫຼືລະດັບສຽງອື່ນໄດ້\n6. ແກ້ການອອກສຽງ: ແຕ່ລະແຖວ ຄຳ=ຄຳອ່ານ ມີຕັ້ງເວລາປິດ ປັບຄວາມໄວ ແລະລະດັບສຽງ\n7. ຫ້ອງສະໝຸດ: ໃສ່ຊື່ + ລິ້ງ ແລ້ວກົດເພີ່ມ ⭐ ຕັ້ງຄ່າເລີ່ມຕົ້ນ ✕ ລຶບ ຕິກ “ຫຼິ້ນເຫຼັ້ມຖັດໄປ” ເພື່ອຟັງຕໍ່ເນື່ອງ ມີສຽງລະຄັງ\n8. ສຽງບັນຍາກາດ: ຝົນ ກອງໄຟ ປ່າ ຄື້ນ ລົມ ສຽງຂາວ/ນ້ຳຕານ ເພງອ່ານປຶ້ມ ຊິວ ຄລາສສິກ ຫຼິ້ນຕໍ່ເນື່ອງຈົນກວ່າຈະປິດ\n9. ການສະແດງຜົນ: 🌓 ສະຫວ່າງ/ຊີເປຍ/ມືດ, A−/A+, ຟອນ, ໄລຍະແຖວ, ຈັດຊິດຂອບ\n10. ຄອມພິວເຕີ: Space, ←/→, Ctrl+↑/↓ ການລັອກໜ້າຈໍອາດຢຸດການອ່ານ\n11. ການໂຫຼດລິ້ງ PDF EPUB Word CBZ ຕ້ອງມີອິນເຕີເນັດ ແລະໃຊ້ໄດ້ກັບໄຟລ໌ທີ່ດາວໂຫຼດ ຫຼືເວັບຂອງທ່ານ ເນື້ອຫາປຶ້ມຢູ່ໃນອຸປະກອນຂອງທ່ານ\n12. ໃໝ່: OCR ສຳລັບ PDF/ຮູບສະແກນ · ປຸ່ມ 拼 ສະແດງພິນອິນເທິງຕົວອັກສອນຈີນ · ຮູບ ແລະຕາຕະລາງໃນ EPUB ແຕະເພື່ອຂະຫຍາຍ ລວມໝາຍເຫດໄວ້ທ້າຍເຫຼັ້ມ · ⬇️ ສົ່ງອອກ EPUB · 🖨️ ພິມ/PDF A5 · 📄 ໜ້າຕົ້ນສະບັບຂອງ PDF · 2 ຄໍລຳ · ຄົ້ນຫາທັງຫ້ອງສະໝຸດ · ກັ່ນຕອງສະໝຸດບັນທຶກຕາມສີ · ສຽງ AI Piper (ທົດລອງ, ໜັກ)"},
 zh:{doc:"文档",url:"或从网页链接加载",load:"加载",paste:"或粘贴文本",pasteph:"在此粘贴内容...",readpaste:"朗读粘贴的文本",voice:"朗读声音",sysv:"旁白声音",dlgv:"对话声音",rate:"语速",pitch:"音调",sleep:"定时关闭",none:"不设置",chap:"本章结束",fix:"修正读音",fixph:"每行：词=读法",amb:"环境音",vol:"音量",close:"关闭设置",lib:"书库",libname:"名称",libadd:"添加到书库",wt:"把任何文字变成有声书",wp:"打开 .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx 文件、粘贴文本，或从书库中选择。",opendef:"打开默认项",gt:"使用指南",bk:"无法读取此电子书（可能有 DRM 保护或格式不受支持）。",autolang:"自动识别语言并选择声音",same:"与旁白相同",auto:"自动（另一种声音）",noText:"未找到文本内容。",noDoc:"请先加载文本！",sl:"加载中...",so:"加载完成，句数：",se:"无法加载（被拦截或没有文字）。请换个链接或粘贴文本。",pe:"此 PDF 没有文字层（扫描件）。",pf:"无法打开 PDF。",
 pn:["默认","温暖讲述","男声新闻","温柔女声","女声新闻","儿童"],sn:["雨声","篝火","森林","海浪","山风","棕噪音","白噪音","阅读音乐","轻松 lo-fi","古典音乐"],
-g:"1. 打开文档：选择 .txt/.pdf/.epub/.mobi/.azw/.fb2/.docx 文件、粘贴链接，或从书库中选择。\n2. 点击 ▶ 收听；点按任意句子即可从该句开始朗读。\n3. 声音来自你的设备；手机上请安装对应语言的语音包。\n4. 书库：输入名称和链接后点“添加”；⭐ 设为默认；✕ 删除。\n5. 电脑：空格、←/→、Ctrl+↑/↓。锁屏会中断朗读。\n6. 链接/PDF 加载仅在下载后的文件或你自己的网站上可用。"}};
+g:"1. 打开：选择文件（.txt .pdf .epub .mobi/.azw .fb2 .docx .md .cbz）、粘贴链接或文本，或从书库中选择。\n2. 点击 ▶ 收听；点按句子即可从该句开始。正在朗读的字词会高亮（取决于声音）。\n3. 选中文字：🔊 只读这一段 · ● 5 种高亮颜色 · 📝 笔记 · 🌐 翻译。\n4. 🔍 在书中搜索（可不带声调） · 📒 笔记本汇总所有高亮 · 🧹 删除重复的广告行。\n5. 声音来自你的设备。语言自动识别会按语言选声音；引号内的对话可用另一种声音或音调。\n6. 修正读音：每行 词=读法。可设置定时关闭、语速和音调。\n7. 书库：输入名称和链接后点“添加”；⭐ 设为默认；✕ 删除；勾选“自动播放下一本”可连续收听，并有提示音。\n8. 环境音：雨声、篝火、森林、海浪、山风、白/棕噪音、阅读音乐、轻松、古典——持续播放直到你关闭。\n9. 显示：🌓 切换明亮/护眼/深色，A−/A+，字体、行距、两端对齐。\n10. 电脑：空格、←/→、Ctrl+↑/↓。锁屏可能会中断朗读。\n11. 加载链接、PDF、EPUB、Word、CBZ 需要联网，并在下载后的文件或你自己的网站上可用。书籍内容保留在你的设备上。\n12. 新功能：扫描版 PDF/图片 OCR · 按 拼 在汉字上显示拼音 · EPUB 图片和表格点按放大，脚注集中在书末 · ⬇️ 导出 EPUB · 🖨️ 打印/A5 PDF · 📄 查看 PDF 原页 · 双栏 · 搜索整个书库 · 按颜色筛选笔记本 · Piper AI 语音（实验性，较重）"}};
 const nav2=(navigator.language||'vi').slice(0,2);let lang=store.get('lang',L[nav2]?nav2:'en');
 function t(k){return(L[lang]&&L[lang][k])||L.en[k]||k}
 function apply(){document.documentElement.lang=lang;$('langBtn').innerHTML='<span class="fl">'+FL[lang]+'</span>';
   document.querySelectorAll('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));
   document.querySelectorAll('[data-ph]').forEach(e=>e.placeholder=t(e.dataset.ph));
   VL=[t('same'),t('auto')];[...$('voice2').options].slice(0,2).forEach((o,i)=>o.text=VL[i]);
-  $('closeSet').textContent='✕ '+t('close');$('gbody').textContent=t('g');$('help').title=t('gt');document.querySelectorAll('.sb').forEach(e=>e.title=t('find'));document.querySelectorAll('.nb').forEach(e=>e.title=t('notes'));$('clean').title=t('rmq');
+  $('closeSet').textContent='✕ '+t('close');$('gbody').textContent=t('g');$('help').title=t('gt');document.querySelectorAll('.sb').forEach(e=>e.title=t('find'));document.querySelectorAll('.nb').forEach(e=>e.title=t('notes'));$('clean').title=t('rmq');$('exp').title=t('expt');$('prt').title=t('prtt');$('pgv').title=t('pgvt');$('pyb').title=t('pybt');$('plat').textContent=({desktop:'🖥️ ',android:'🤖 ',ios:'🍎 '})[PF]+t('plat_'+PF);
   [...P.children].forEach((b,i)=>b.textContent=t('pn')[i]);[...A.children].forEach((b,i)=>b.textContent=AMB[i][1]+' '+t('sn')[i])}
 const LANGS=[['vi','🇻🇳','Tiếng Việt'],['en','🇬🇧','English'],['es','🇪🇸','Español'],['th','🇹🇭','ไทย'],['lo','🇱🇦','ລາວ'],['zh','🇨🇳','中文']],FL={};
 LANGS.forEach(([c,f,n])=>{FL[c]=f;const b=document.createElement('button');b.className='b';b.innerHTML='<span class="fl">'+f+'</span> '+n;
@@ -561,27 +597,29 @@ $('la').onclick=()=>{let u=$('lu').value.trim(),n=$('ln').value.trim();if(!u)ret
   lib.push({name:n||u.replace(/^https?:\/\//,'').slice(0,40),url:u});saveLib();$('ln').value=$('lu').value='';renderLib()};
 $('openDef').onclick=()=>openLib(lib[dfl]||lib[0]);
 /* ---------- Tìm kiếm, tô sáng, sổ tay, dịch, hàng chờ, giao diện ---------- */
-const nz=x=>x.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/gi,'d').toLowerCase();
+const nz=x=>x.normalize('NFC').replace(/[\s\S]/g,c=>{const d=c.normalize('NFD')[0];return d==='đ'||d==='Đ'?'d':d}).toLowerCase();
 function panel(title,c){$('ptitle').textContent=title;$('pbody').innerHTML='';$('pbody').append(c);$('panel').hidden=false}
 $('pclose').onclick=()=>{$('panel').hidden=true};$('panel').onclick=e=>{if(e.target===$('panel'))$('panel').hidden=true};
-function openSearch(){const box=document.createElement('div'),inp=document.createElement('input'),out=document.createElement('div');inp.type='text';inp.placeholder=t('find');box.append(inp,out);panel(t('find'),box);inp.focus();
-  if(!S.ns)S.ns=S.sents.map(nz);let tm;inp.oninput=()=>{clearTimeout(tm);tm=setTimeout(()=>{out.innerHTML='';const q=nz(inp.value.trim());if(q.length<2)return;let n=0;
+function openSearch(){const box=document.createElement('div'),inp=document.createElement('input'),lab=document.createElement('label'),all=document.createElement('input'),out=document.createElement('div');
+  inp.type='text';inp.placeholder=t('find');all.type='checkbox';all.style.width='auto';lab.style.cssText='display:flex;gap:8px;align-items:center;margin:8px 0';lab.append(all,t('sall'));box.append(inp,lab,out);panel(t('find'),box);inp.focus();
+  if(!S.ns)S.ns=S.sents.map(nz);let tm;const go=()=>{clearTimeout(tm);tm=setTimeout(()=>{out.innerHTML='';const q=nz(inp.value.trim());if(q.length<2)return;if(all.checked)return libSearch(q,out);let n=0;
     for(let i=0;i<S.ns.length&&n<60;i++){if(S.ns[i].indexOf(q)<0)continue;n++;const d=document.createElement('div');d.className='res';d.textContent=(i+1)+'. '+S.sents[i].slice(0,120);
-      d.onclick=()=>{$('panel').hidden=true;jump(i);const e=$('s'+i);if(e)e.scrollIntoView({block:'center'})};out.appendChild(d)}},200)}}
+      d.onclick=()=>{$('panel').hidden=true;jump(i);const e=$('s'+i);if(e)e.scrollIntoView({block:'center'})};out.appendChild(d)}},200)};inp.oninput=go;all.onchange=go}
 const HC=['#fde68a','#bbf7d0','#bfdbfe','#fbcfe8','#fed7aa'];
 function applyHL(){document.querySelectorAll('.s[style]').forEach(e=>{e.style.boxShadow='';e.removeAttribute('title')});
   ((store.get('hl',{})[S.key])||{items:[]}).items.forEach(it=>{const e=$('s'+it.i);if(e){e.style.boxShadow='inset 0 -.55em 0 '+it.c;if(it.n)e.title=it.n}})}
 function hl(ix,c,n){const all=store.get('hl',{}),b=all[S.key]||(all[S.key]={title:S.title||'',items:[]});
   const same=!n&&ix.every(i=>b.items.some(x=>x.i===i&&x.c===c));b.items=b.items.filter(x=>!ix.includes(x.i));
   if(!same)ix.forEach(i=>b.items.push({i,c,n,x:S.sents[i].slice(0,120)}));b.items.sort((p,q)=>p.i-q.i);store.set('hl',all);applyHL()}
-function openNotes(){const all=store.get('hl',{}),box=document.createElement('div');let any=false;
-  Object.values(all).forEach(b=>{if(!b.items.length)return;any=true;const h=document.createElement('h3');h.textContent=b.title||'';box.appendChild(h);
-    b.items.forEach((it,j)=>{const d=document.createElement('div');d.className='res';const dot=document.createElement('span');dot.textContent='● ';dot.style.color=it.c;d.append(dot,it.x+(it.n?'  📝 '+it.n:''));
-      const x=document.createElement('button');x.className='b';x.textContent='✕';x.style.marginLeft='8px';x.onclick=e=>{e.stopPropagation();b.items.splice(j,1);store.set('hl',all);applyHL();openNotes()};d.appendChild(x);
+function openNotes(f){const all=store.get('hl',{}),box=document.createElement('div'),bar=document.createElement('div');let any=false;
+  [null,...HC].forEach(c=>{const x=document.createElement('button');x.className='b';x.textContent=c?'●':'∗';if(c)x.style.color=c;x.style.marginRight='6px';x.onclick=()=>openNotes(c);bar.appendChild(x)});box.appendChild(bar);
+  Object.values(all).forEach(b=>{const its=b.items.filter(it=>!f||it.c===f);if(!its.length)return;any=true;const h=document.createElement('h3');h.textContent=b.title||'';box.appendChild(h);
+    its.forEach(it=>{const d=document.createElement('div');d.className='res';const dot=document.createElement('span');dot.textContent='● ';dot.style.color=it.c;d.append(dot,it.x+(it.n?'  📝 '+it.n:''));
+      const x=document.createElement('button');x.className='b';x.textContent='✕';x.style.marginLeft='8px';x.onclick=e=>{e.stopPropagation();b.items.splice(b.items.indexOf(it),1);store.set('hl',all);applyHL();openNotes(f)};d.appendChild(x);
       d.onclick=()=>{if(all[S.key]===b){$('panel').hidden=true;jump(it.i)}};box.appendChild(d)})});
-  if(!any)box.textContent=t('nonote');panel(t('notes'),box)}
-document.querySelectorAll('.sb').forEach(b=>b.onclick=()=>{if(!S.sents.length)return alert(t('noDoc'));openSearch()});
-document.querySelectorAll('.nb').forEach(b=>b.onclick=openNotes);
+  if(!any)box.append(t('nonote'));panel(t('notes'),box)}
+document.querySelectorAll('.sb').forEach(b=>b.onclick=openSearch);
+document.querySelectorAll('.nb').forEach(b=>b.onclick=()=>openNotes());
 /* thanh công cụ khi bôi đen chữ */
 const tb=$('seltb');HC.forEach((c,i)=>{const b=document.createElement('button');b.className='b';b.dataset.c=i;b.textContent='●';b.style.color=c;tb.insertBefore(b,tb.querySelector('[data-a=note]'))});
 function selIdx(){const r=getSelection().getRangeAt(0);return[...$('doc').querySelectorAll('.s')].filter(e=>r.intersectsNode(e)).map(e=>+e.id.slice(1))}
@@ -609,9 +647,67 @@ async function nextBook(it){chime();S.libIdx=lib.indexOf(it);$('url').value=it.u
 $('qnext').checked=store.get('qn',false);$('qnext').onchange=()=>store.set('qn',$('qnext').checked);
 /* hiển thị: phông, giãn dòng, căn đều */
 const AP=Object.assign({ff:'serif',lh:1.85,jus:false},store.get('ap',{}));
-function applyAp(){const r=document.documentElement.style;r.setProperty('--ff',AP.ff==='sans'?'system-ui,"Segoe UI",Roboto,sans-serif':'Georgia,"Times New Roman",serif');r.setProperty('--lh',AP.lh);r.setProperty('--ta',AP.jus?'justify':'left');
+function applyAp(){const r=document.documentElement.style;r.setProperty('--ff',AP.ff==='sans'?'system-ui,"Segoe UI",Roboto,sans-serif':'Georgia,"Times New Roman",serif');r.setProperty('--lh',AP.lh);r.setProperty('--ta',AP.jus?'justify':'left');$('doc').classList.toggle('cols',!!AP.cols);$('cols').checked=!!AP.cols;
   $('ff').value=AP.ff;$('lh').value=AP.lh;$('jus').checked=AP.jus;$('lhv').textContent=(+AP.lh).toFixed(2);store.set('ap',AP)}
-$('ff').onchange=()=>{AP.ff=$('ff').value;applyAp()};$('lh').oninput=()=>{AP.lh=+$('lh').value;applyAp()};$('jus').onchange=()=>{AP.jus=$('jus').checked;applyAp()};applyAp();
+$('ff').onchange=()=>{AP.ff=$('ff').value;applyAp()};$('lh').oninput=()=>{AP.lh=+$('lh').value;applyAp()};$('jus').onchange=()=>{AP.jus=$('jus').checked;applyAp()};$('cols').onchange=()=>{AP.cols=$('cols').checked;applyAp()};applyAp();
+/* ---------- Nhận diện nền tảng, OCR, pinyin, thư viện, xuất sách, giọng AI ---------- */
+const UA=navigator.userAgent,PF=/iPhone|iPad|iPod/.test(UA)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)?'ios':/Android/i.test(UA)?'android':'desktop',MOB=PF!=='desktop';
+document.documentElement.dataset.platform=PF;
+function fsShow(n){let f=$('fs');if(!f){f=document.createElement('div');f.id='fs';f.onclick=()=>{f.hidden=true};document.body.appendChild(f)}f.innerHTML='';f.appendChild(n);f.hidden=false}
+/* chuẩn hoá & sửa chính tả khi mở sách */
+function tidy(x){x=x.normalize('NFC');
+  if($('norm').checked)x=x.replace(/[ \t]+([,.;:!?…])/g,'$1').replace(/([,;!?])(?=\p{L})/gu,'$1 ').replace(/\.{4,}/g,'…').replace(/ {2,}/g,' ').replace(/([!?]){2,}/g,'$1').replace(/-\n(?=\p{Ll})/gu,'');
+  ($('spell').value||'').split('\n').forEach(l=>{const i=l.indexOf('=');if(i>0){const a=l.slice(0,i).trim(),b=l.slice(i+1).trim();if(a)x=x.replace(new RegExp('(?<![\\p{L}\\p{N}])'+a.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![\\p{L}\\p{N}])','gu'),b)}});return x}
+$('spell').value=store.get('spell','');$('spell').oninput=()=>store.set('spell',$('spell').value);$('norm').checked=store.get('norm',true);$('norm').onchange=()=>store.set('norm',$('norm').checked);
+/* OCR cho PDF scan và ảnh chụp (Tesseract.js, chạy ngay trên máy) */
+const OL={vi:'vie+eng',en:'eng',es:'spa+eng',th:'tha+eng',lo:'lao+eng',zh:'chi_sim+eng'};
+const ocrFlow=x=>x.replace(/([^\n])\n(?!\n)/g,'$1 ');
+async function ocrStart(){if(!window.Tesseract)await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js');return Tesseract.createWorker(OL[lang]||'eng')}
+async function pdfOcr(f){if(MOB&&!confirm(t('heavy')))throw new Error('x');await loadPdfLib();const pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise,w=await ocrStart(),out=[];S.pdfDoc=pdf;
+  for(let p=1;p<=pdf.numPages;p++){$('urlSt').textContent='OCR '+p+'/'+pdf.numPages;const pg=await pdf.getPage(p),vp=pg.getViewport({scale:2}),cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
+    await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;out.push(ocrFlow((await w.recognize(cv)).data.text))}
+  await w.terminate();return out.join('\n\n')}
+/* pinyin trên chữ Hán */
+let RB=false;const esc=x=>x.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+$('pyb').onclick=async()=>{try{if(!window.pinyinPro)await loadScript('https://cdn.jsdelivr.net/npm/pinyin-pro@3.26.0/dist/index.js');RB=!RB;
+  document.querySelectorAll('.s').forEach(e=>{const x=S.sents[+e.id.slice(1)];if(!/[\u4e00-\u9fff]/.test(x))return;if(RB)e.innerHTML=pinyinPro.html(esc(x))+' ';else e.textContent=x+' '});
+  applyHL();$('pyb').classList.toggle('pri',RB)}catch(e){alert(t('pf'))}};
+/* xem trang gốc của PDF */
+let PV=false;$('pgv').onclick=()=>{PV=!PV;$('doc').hidden=PV;let v=$('pdfv');
+  if(!PV){if(v)v.hidden=true;return}
+  if(!v){v=document.createElement('div');v.id='pdfv';v.style.cssText='max-width:900px;margin:0 auto;padding:12px';$('sec').appendChild(v)}v.hidden=false;
+  if(v.dataset.k===S.key)return;v.dataset.k=S.key;v.innerHTML='';
+  const io=new IntersectionObserver(es=>es.forEach(async en=>{if(!en.isIntersecting)return;const cv=en.target;io.unobserve(cv);const pg=await S.pdfDoc.getPage(+cv.dataset.p),v0=pg.getViewport({scale:1}),vp=pg.getViewport({scale:Math.min(2.5,(v.clientWidth||800)/v0.width*1.5)});
+    cv.width=vp.width;cv.height=vp.height;await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise}),{root:$('sec'),rootMargin:'900px'});
+  for(let p=1;p<=S.pdfDoc.numPages;p++){const cv=document.createElement('canvas');cv.dataset.p=p;cv.width=600;cv.height=800;cv.style.cssText='width:100%;height:auto;background:#fff;margin-bottom:8px';v.appendChild(cv);io.observe(cv)}};
+/* thư viện: lưu nội dung các cuốn đã mở để tìm trong cả thư viện */
+const idb=()=>new Promise((ok,no)=>{const r=indexedDB.open('lazi',1);r.onupgradeneeded=()=>r.result.createObjectStore('b');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
+async function idbPut(k,v){try{if(v.text.length<3e7){const d=await idb();d.transaction('b','readwrite').objectStore('b').put(v,k)}}catch(e){}}
+async function idbAll(){try{const d=await idb();return await new Promise(ok=>{const o={},c=d.transaction('b').objectStore('b').openCursor();c.onsuccess=()=>{const x=c.result;if(x){o[x.key]=x.value;x.continue()}else ok(o)};c.onerror=()=>ok(o)})}catch(e){return{}}}
+async function libSearch(q,out){const all=await idbAll();let n=0;
+  for(const k in all){const b=all[k],tx=b.text.normalize('NFC'),nt=nz(tx);let pos=0,c=0;
+    while(c<4&&n<60&&(pos=nt.indexOf(q,pos))>=0){n++;c++;const d=document.createElement('div');d.className='res';d.textContent='📖 '+b.title+' — …'+tx.slice(Math.max(0,pos-25),pos+80).replace(/\s+/g,' ');
+      d.onclick=()=>{$('panel').hidden=true;if(S.key!==k)load(b.text,b.title);const i=S.sents.findIndex(x=>nz(x).includes(q));if(i>=0){jump(i);const e=$('s'+i);if(e)e.scrollIntoView({block:'center'})}};out.appendChild(d);pos+=q.length}}}
+/* xuất EPUB 3 gọn và in khổ A5 */
+$('exp').onclick=async()=>{if(!S.text)return;await needZip();const z=new JSZip(),title=S.title||'Book',E=esc;
+  const ps=S.text.split(/\n\n+/).map(x=>x.trim()).filter(x=>x&&!/^¤/.test(x)),chs=[];let cur={t:title,p:[]};
+  ps.forEach(x=>{if(x.startsWith('§§ ')||isChap(x)){if(cur.p.length||chs.length)chs.push(cur);cur={t:x.replace(/^§§ /,''),p:[]}}else cur.p.push(x)});chs.push(cur);
+  z.file('mimetype','application/epub+zip',{compression:'STORE'});
+  z.file('META-INF/container.xml','<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+  z.file('OEBPS/style.css','body{font-family:serif;line-height:1.6}h1{color:#b3362b;font-size:1.4em;margin:1.2em 0 .8em}p{margin:0 0 .8em;text-indent:1.2em}h1+p:first-letter{font-size:2.2em;float:left;line-height:1;padding-right:.1em;color:#b3362b}');
+  chs.forEach((c,i)=>z.file('OEBPS/c'+i+'.xhtml','<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml"><head><title>'+E(c.t)+'</title><link rel="stylesheet" href="style.css"/></head><body><h1>'+E(c.t)+'</h1>'+c.p.map(x=>'<p>'+E(x)+'</p>').join('')+'</body></html>'));
+  z.file('OEBPS/nav.xhtml','<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>TOC</title></head><body><nav epub:type="toc"><ol>'+chs.map((c,i)=>'<li><a href="c'+i+'.xhtml">'+E(c.t)+'</a></li>').join('')+'</ol></nav></body></html>');
+  z.file('OEBPS/content.opf','<?xml version="1.0" encoding="utf-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="id">'+S.key+'</dc:identifier><dc:title>'+E(title)+'</dc:title><dc:language>'+(S.dom||lang)+'</dc:language><meta property="dcterms:modified">'+new Date().toISOString().slice(0,19)+'Z</meta></metadata><manifest><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/><item id="css" href="style.css" media-type="text/css"/>'+chs.map((c,i)=>'<item id="c'+i+'" href="c'+i+'.xhtml" media-type="application/xhtml+xml"/>').join('')+'</manifest><spine>'+chs.map((c,i)=>'<itemref idref="c'+i+'"/>').join('')+'</spine></package>');
+  const b=await z.generateAsync({type:'blob',mimeType:'application/epub+zip'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=title.replace(/[^\p{L}\p{N}]+/gu,'_')+'.epub';a.click()};
+$('prt').onclick=()=>window.print();
+/* giọng AI chạy trên máy (Piper qua vits-web) — thử nghiệm */
+const PQ=new Map();let tts=null;
+async function piperWav(pid,txt){const k=pid+'|'+txt;
+  if(!PQ.has(k)){PQ.set(k,(async()=>{if(!tts){$('urlSt').textContent=t('sl');tts=await import('https://cdn.jsdelivr.net/npm/@diffusionstudio/vits-web@1.0.3/+esm')}
+    const w=await tts.predict({text:txt,voiceId:pid});$('urlSt').textContent='';return URL.createObjectURL(w)})());if(PQ.size>8)PQ.delete(PQ.keys().next().value)}return PQ.get(k)}
+function piperSay(pid,txt,dlg,my){const nx=S.sents[S.idx+1];if(nx)piperWav(pid,fixes(nx)).catch(()=>{});
+  piperWav(pid,txt).then(url=>{if(my!==S.tok||!S.on)return;const a=new Audio(url);S.audio=a;a.preservesPitch=!dlg;a.playbackRate=Math.min(3,Math.max(.5,+$('rate').value*(dlg?+$('dpitch').value:1)));
+    a.onended=()=>{if(my!==S.tok||!S.on)return;S.idx++;setTimeout(say,120)};a.onerror=()=>{if(my!==S.tok)return;S.idx++;say()};a.play().catch(()=>{})}).catch(()=>{$('urlSt').textContent=t('pfail');stop()})}
 $('dpitch').value=store.get('dp',1.2);$('dpv').textContent=(+$('dpitch').value).toFixed(2);
 $('dpitch').oninput=()=>{$('dpv').textContent=(+$('dpitch').value).toFixed(2);store.set('dp',$('dpitch').value)};
 renderLib();apply();
