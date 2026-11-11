@@ -187,6 +187,23 @@
                     </div>
                     <input type="range" id="sliderStyleIntensity" min="0" max="100" value="100" class="w-full accent-brand-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer">
                 </div>
+                <div id="scopeWrap" class="hidden space-y-1.5">
+                    <label for="selectStyleScope" class="text-xs text-slate-300 font-medium block">Phạm vi áp dụng</label>
+                    <select id="selectStyleScope" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-500">
+                        <option value="all">Toàn bộ bức tranh</option>
+                        <option value="region">Các vùng khoanh thủ công (mỗi vùng một phong cách)</option>
+                    </select>
+                </div>
+                <div id="regionPanel" class="hidden space-y-2 p-3 bg-slate-900/50 rounded-lg border border-slate-800/50">
+                    <p class="text-[11px] text-slate-400 leading-relaxed">Chọn phong cách ở trên, khoanh quanh một vùng trên ảnh Tivi rồi bấm "Hoàn thành vùng". Lặp lại với phong cách khác cho vùng khác. "Vẽ lại" sẽ vẽ lại vùng cuối cùng.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="btnRegionDone" type="button" class="px-3 py-2 rounded-lg text-xs font-semibold border border-emerald-500/50 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 transition">Hoàn thành vùng (áp dụng)</button>
+                        <button id="btnRegionUndo" type="button" class="px-3 py-2 rounded-lg text-xs font-medium border border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 transition">Hoàn tác nét khoanh</button>
+                        <button id="btnRegionDraw" type="button" class="px-3 py-2 rounded-lg text-xs font-medium border border-cyan-500/50 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 transition">Khoanh vùng: BẬT</button>
+                    </div>
+                    <ul id="regionList" class="space-y-1 text-xs"></ul>
+                    <button id="btnRegionClear" type="button" class="px-3 py-2 rounded-lg text-xs font-medium border border-rose-500/50 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 transition">Xóa tất cả vùng</button>
+                </div>
                 <p class="text-[11px] text-slate-400 leading-relaxed">Hiệu ứng được vẽ bằng thuật toán ngay trong trình duyệt (mô phỏng cách vẽ của từng họa sĩ, không phải AI). "Vẽ lại" cho ra bức khác. Ảnh lớn có thể mất vài giây để xử lý.</p>
             </div>
 
@@ -421,7 +438,7 @@
     <script>
         // ===== Đa ngôn ngữ (i18n) =====
         // Khóa = câu tiếng Việt gốc; giá trị = [en, lo, th, es, zh]
-        const I18N = {"Xử lý ngay trên thiết bị": ["Processed on your device", "ປະມວນຜົນໃນອຸປະກອນຂອງທ່ານ", "ประมวลผลบนอุปกรณ์ของคุณ", "Se procesa en tu dispositivo", "在您的设备上本地处理"], "Mặc định": ["Reset", "ຣີເຊັດ", "รีเซ็ต", "Restablecer", "重置"], "1. Đưa tranh vào cọ": ["1. Add your artwork", "1. ເພີ່ມຮູບຂອງທ່ານ", "1. เพิ่มภาพของคุณ", "1. Añade tu obra", "1. 添加您的作品"], "Nhấn để chọn ảnh": ["Click to choose an image", "ກົດເພື່ອເລືອກຮູບ", "แตะเพื่อเลือกรูปภาพ", "Haz clic para elegir una imagen", "点击选择图片"], "hoặc kéo thả vào đây": ["or drag and drop it here", "ຫຼື ລາກແລ້ວວາງທີ່ນີ້", "หรือลากมาวางที่นี่", "o arrástrala aquí", "或拖放到此处"], "Hỗ trợ JPG, PNG, WEBP (Khuyên dùng độ phân giải gốc cao)": ["Supports JPG, PNG, WEBP (high original resolution recommended)", "ຮອງຮັບ JPG, PNG, WEBP (ແນະນຳຄວາມລະອຽດຕົ້ນສະບັບສູງ)", "รองรับ JPG, PNG, WEBP (แนะนำให้ใช้ความละเอียดต้นฉบับสูง)", "Admite JPG, PNG, WEBP (se recomienda alta resolución original)", "支持 JPG、PNG、WEBP（建议使用高分辨率原图）"], "Chưa có ảnh?": ["No image yet?", "ຍັງບໍ່ມີຮູບບໍ?", "ยังไม่มีรูปภาพ?", "¿Aún no tienes una imagen?", "还没有图片？"], "Dùng tranh mẫu": ["Use a sample painting", "ໃຊ້ຮູບແຕ້ມຕົວຢ່າງ", "ใช้ภาพวาดตัวอย่าง", "Usar una pintura de muestra", "使用示例画作"], "Biến ảnh thật thành tranh": ["Turn photos into artwork", "ປ່ຽນຮູບຖ່າຍເປັນຮູບສິລະປະ", "เปลี่ยนภาพถ่ายเป็นงานศิลปะ", "Convierte fotos en arte", "将照片变成艺术作品"], "Giữ nguyên ảnh gốc": ["Keep original photo", "ຮັກສາຮູບຕົ້ນສະບັບ", "ใช้ภาพต้นฉบับ", "Mantener la foto original", "保持原图"], "Hoạt hình (Cartoon)": ["Cartoon", "ກາຕູນ", "การ์ตูน", "Dibujo animado", "卡通"], "Phác thảo bút chì (Pencil Sketch)": ["Pencil sketch", "ຮ່າງດ້ວຍສໍ", "ภาพสเก็ตช์ดินสอ", "Boceto a lápiz", "铅笔素描"], "Tranh sơn dầu (Oil Painting)": ["Oil painting", "ຮູບແຕ້ມສີນ້ຳມັນ", "ภาพสีน้ำมัน", "Óleo", "油画"], "Tranh màu nước (Watercolor)": ["Watercolor", "ສີນ້ຳ", "สีน้ำ", "Acuarela", "水彩画"], "Nghệ thuật theo họa sĩ...": ["In the style of an artist…", "ແບບສິລະປິນ…", "สไตล์ศิลปิน…", "Al estilo de un artista…", "按画家风格…"], "Chọn họa sĩ": ["Choose an artist", "ເລືອກສິລະປິນ", "เลือกศิลปิน", "Elige un artista", "选择画家"], "Ấn tượng & Hậu ấn tượng": ["Impressionism & Post-Impressionism", "ອິມເພຣສຊັນນິສ ແລະ ຫຼັງອິມເພຣສຊັນນິສ", "อิมเพรสชันนิสม์และโพสต์อิมเพรสชันนิสม์", "Impresionismo y Postimpresionismo", "印象派与后印象派"], "Biểu hiện, Tân nghệ thuật & Cổ điển": ["Expressionism, Art Nouveau & Classic", "ເອັກສະເປຣສຊັນນິສ, ອາຣ໌ນູໂວ ແລະ ຄລາສສິກ", "เอกซ์เพรสชันนิสม์ อาร์ตนูโว และคลาสสิก", "Expresionismo, Art Nouveau y clásico", "表现主义、新艺术与古典"], "Hiện đại & Đại chúng": ["Modern & Pop", "ທັນສະໄໝ ແລະ ປ໊ອບ", "โมเดิร์นและป๊อป", "Moderno y Pop", "现代与波普"], "Vẽ lại (ra một bức khác)": ["Repaint (get a different result)", "ແຕ້ມໃໝ່ (ໄດ້ຜົນລັບຕ່າງອອກໄປ)", "วาดใหม่ (ได้ผลลัพธ์ที่ต่างออกไป)", "Repintar (otro resultado)", "重绘（得到不同效果）"], "Cường độ hiệu ứng": ["Effect strength", "ຄວາມແຮງຂອງເອັຟເຟັກ", "ความเข้มของเอฟเฟกต์", "Intensidad del efecto", "效果强度"], "Hiệu ứng được vẽ bằng thuật toán ngay trong trình duyệt (mô phỏng cách vẽ của từng họa sĩ, không phải AI). \"Vẽ lại\" cho ra bức khác. Ảnh lớn có thể mất vài giây để xử lý.": ["Effects are drawn by algorithms right in your browser (an imitation of each artist's technique, not AI). \"Repaint\" gives a different result. Large images may take a few seconds.", "ເອັຟເຟັກຖືກແຕ້ມດ້ວຍອັລກໍຣິທຶມໃນບຣາວເຊີຂອງທ່ານ (ຈຳລອງວິທີແຕ້ມຂອງສິລະປິນ, ບໍ່ແມ່ນ AI). \"ແຕ້ມໃໝ່\" ຈະໄດ້ຜົນລັບຕ່າງອອກໄປ. ຮູບໃຫຍ່ອາດໃຊ້ເວລາສອງສາມວິນາທີ.", "เอฟเฟกต์วาดด้วยอัลกอริทึมในเบราว์เซอร์ของคุณ (เลียนแบบเทคนิคของศิลปิน ไม่ใช่ AI) กด \"วาดใหม่\" เพื่อให้ได้ผลลัพธ์ที่ต่างออกไป ภาพขนาดใหญ่อาจใช้เวลาไม่กี่วินาที", "Los efectos se dibujan con algoritmos en tu navegador (imitan la técnica de cada artista, no es IA). «Repintar» da otro resultado. Las imágenes grandes pueden tardar unos segundos.", "效果由浏览器内的算法绘制（模仿画家的画法，并非 AI）。点击“重绘”可得到不同效果。大图可能需要几秒钟。"], "2. Thông số khung & Vignette": ["2. Frame & fade settings", "2. ການຕັ້ງຄ່າກອບ ແລະ ຂອບເລືອນ", "2. ตั้งค่ากรอบและขอบจาง", "2. Marco y desvanecido", "2. 画框与渐隐设置"], "Tỷ lệ Khung Canvas target (16:9)": ["Target canvas size (16:9)", "ຂະໜາດຜ້າໃບເປົ້າໝາຍ (16:9)", "ขนาดผืนผ้าใบเป้าหมาย (16:9)", "Tamaño del lienzo (16:9)", "目标画布尺寸（16:9）"], "Chuẩn Samsung 16:9": ["Samsung 16:9 standard", "ມາດຕະຖານ Samsung 16:9", "มาตรฐาน Samsung 16:9", "Estándar Samsung 16:9", "三星 16:9 标准"], "Chuẩn 4K UHD": ["4K UHD standard", "ມາດຕະຖານ 4K UHD", "มาตรฐาน 4K UHD", "Estándar 4K UHD", "4K UHD 标准"], "Tùy chỉnh Width": ["Custom width", "ກຳນົດຄວາມກວ້າງເອງ", "กำหนดความกว้างเอง", "Ancho personalizado", "自定义宽度"], "Nhập độ phân giải riêng": ["Enter your own resolution", "ປ້ອນຄວາມລະອຽດເອງ", "ระบุความละเอียดเอง", "Introduce tu resolución", "输入自定义分辨率"], "Chiều rộng mờ góc Vignette": ["Edge fade width", "ຄວາມກວ້າງຂອງຂອບເລືອນ", "ความกว้างของขอบจาง", "Ancho del desvanecido", "边缘渐隐宽度"], "Điều chỉnh độ rộng vùng mờ ở rìa tranh.": ["Sets how wide the faded border of the artwork is.", "ກຳນົດຄວາມກວ້າງຂອງຂອບທີ່ເລືອນຈາງຂອງຮູບ.", "กำหนดความกว้างของขอบที่จางลงของภาพ", "Define el ancho del borde desvanecido de la obra.", "设置作品边缘渐隐区域的宽度。"], "Độ mịn màng (GaussianBlur Mask)": ["Mask smoothness (Gaussian blur)", "ຄວາມລຽບຂອງມາສກ໌ (Gaussian blur)", "ความนุ่มนวลของมาสก์ (Gaussian blur)", "Suavidad de la máscara (desenfoque gaussiano)", "蒙版平滑度（高斯模糊）"], "Màu phông nền Canvas (Art Border Color)": ["Canvas background color", "ສີພື້ນຫຼັງຜ້າໃບ", "สีพื้นหลังผืนผ้าใบ", "Color de fondo del lienzo", "画布背景色"], "Chế độ khớp tranh": ["Fit mode", "ໂໝດປັບຮູບ", "โหมดปรับภาพ", "Modo de ajuste", "适配模式"], "Cố định chiều cao (Khuyên dùng - Thêm Vignette 2 bên)": ["Fit height (recommended, fades left & right)", "ປັບຕາມຄວາມສູງ (ແນະນຳ, ຈາງຊ້າຍ-ຂວາ)", "ปรับตามความสูง (แนะนำ ขอบซ้าย-ขวาจาง)", "Ajustar a la altura (recomendado, desvanece a los lados)", "适应高度（推荐，左右渐隐）"], "Cố định chiều ngang (Thêm Vignette trên/dưới)": ["Fit width (fades top & bottom)", "ປັບຕາມຄວາມກວ້າງ (ຈາງເທິງ-ລຸ່ມ)", "ปรับตามความกว้าง (ขอบบน-ล่างจาง)", "Ajustar al ancho (desvanece arriba y abajo)", "适应宽度（上下渐隐）"], "Cắt cúp vừa vặn 16:9 (Phủ kín không cần phông đen)": ["Crop to fill 16:9 (no background bars)", "ຕັດໃຫ້ເຕັມ 16:9 (ບໍ່ມີແຖບພື້ນຫຼັງ)", "ครอปให้เต็ม 16:9 (ไม่มีแถบพื้นหลัง)", "Recortar para llenar 16:9 (sin barras)", "裁剪填满 16:9（无背景边）"], "Hình dạng mặt nạ (Mask Shape)": ["Mask shape", "ຮູບຮ່າງມາສກ໌", "รูปทรงมาสก์", "Forma de la máscara", "蒙版形状"], "Làm mờ cạnh thẳng (Linear Edge Fade)": ["Straight edge fade", "ຈາງຂອບຊື່", "ขอบตรงจางลง", "Desvanecido de bordes rectos", "直边渐隐"], "Hình Oval mờ (Classic Soft Oval)": ["Soft oval", "ຮູບໄຂ່ເລືອນ", "วงรีนุ่ม", "Óvalo suave", "柔边椭圆"], "Hình Tròn mờ (Soft Circle)": ["Soft circle", "ວົງມົນເລືອນ", "วงกลมนุ่ม", "Círculo suave", "柔边圆形"], "Hình Chữ nhật mờ (Soft Rectangle)": ["Soft rectangle", "ສີ່ຫຼ່ຽມຜືນຜ້າເລືອນ", "สี่เหลี่ยมผืนผ้านุ่ม", "Rectángulo suave", "柔边矩形"], "Hình Vuông mờ (Soft Square)": ["Soft square", "ສີ່ຫຼ່ຽມຈັດຕຸລັດເລືອນ", "สี่เหลี่ยมจัตุรัสนุ่ม", "Cuadrado suave", "柔边正方形"], "Tự xóa viền thủ công (Custom Eraser Brush)": ["Manual erase (custom brush)", "ລົບຂອບດ້ວຍມື (ແປງກຳນົດເອງ)", "ลบขอบด้วยตนเอง (แปรงกำหนดเอง)", "Borrado manual (pincel)", "手动擦除边缘（自定义画笔）"], "Tải ảnh chuẩn Art Mode": ["Download Art Mode image", "ດາວໂຫຼດຮູບສຳລັບ Art Mode", "ดาวน์โหลดภาพสำหรับ Art Mode", "Descargar imagen para Art Mode", "下载 Art Mode 图片"], "Kích thước xuất:": ["Export size:", "ຂະໜາດສົ່ງອອກ:", "ขนาดไฟล์ที่ส่งออก:", "Tamaño de exportación:", "导出尺寸："], "| Định dạng: JPEG 100% Quality | Dung lượng ước tính:": ["| Format: JPEG 100% quality | Estimated size:", "| ຮູບແບບ: JPEG ຄຸນນະພາບ 100% | ຂະໜາດໄຟລ໌ໂດຍປະມານ:", "| รูปแบบ: JPEG คุณภาพ 100% | ขนาดไฟล์โดยประมาณ:", "| Formato: JPEG calidad 100% | Tamaño estimado:", "| 格式：JPEG 100% 质量 | 预计大小："], "Xem trước trên Tivi": ["TV preview", "ຕົວຢ່າງໃນໂທລະພາບ", "ตัวอย่างบนทีวี", "Vista previa en el TV", "电视预览"], "Khung tivi:": ["TV frame:", "ກອບທີວີ:", "กรอบทีวี:", "Marco:", "电视边框："], "Gỗ sồi (Teak)": ["Teak", "ໄມ້ສັກ", "ไม้สัก", "Teca", "柚木"], "Gỗ óc chó": ["Walnut", "ໄມ້ວອລນັດ", "ไม้วอลนัต", "Nogal", "胡桃木"], "Trắng Modern": ["Modern white", "ຂາວທັນສະໄໝ", "ขาวโมเดิร์น", "Blanco moderno", "现代白"], "Đen Vỏ thép": ["Black", "ດຳ", "ดำ", "Negro", "黑色"], "Không khung": ["No frame", "ບໍ່ມີກອບ", "ไม่มีกรอบ", "Sin marco", "无边框"], "Công cụ": ["Tool", "ເຄື່ອງມື", "เครื่องมือ", "Herramienta", "工具"], "Khoanh vùng GIỮ LẠI (phần ngoài tự mờ về nền)": ["Lasso: KEEP area (outside fades to background)", "ວົງບໍລິເວນ ເກັບໄວ້ (ສ່ວນນອກຈາງເຂົ້າພື້ນຫຼັງ)", "วงพื้นที่ที่จะเก็บไว้ (ส่วนนอกจางเป็นสีพื้นหลัง)", "Lazo: CONSERVAR zona (el exterior se desvanece)", "套索：保留区域（外部渐隐至背景）"], "Cọ xóa trực tiếp": ["Eraser brush", "ແປງລົບ", "แปรงลบ", "Pincel borrador", "橡皮擦画笔"], "Kích thước cọ xóa (Brush Size)": ["Brush size", "ຂະໜາດແປງ", "ขนาดแปรง", "Tamaño del pincel", "画笔大小"], "Hoàn thành vẽ mask": ["Finish mask", "ສຳເລັດມາສກ໌", "เสร็จสิ้นมาสก์", "Terminar máscara", "完成蒙版"], "Hoàn tác nét khoanh": ["Undo lasso stroke", "ຍົກເລີກເສັ້ນວົງ", "เลิกทำเส้นวง", "Deshacer trazo", "撤销套索笔画"], "Khôi phục lại viền gốc": ["Restore original edges", "ກູ້ຄືນຂອບເດີມ", "คืนค่าขอบเดิม", "Restaurar bordes originales", "恢复原始边缘"], "Khoanh: kéo quanh vùng muốn giữ (nét đứt vàng được giữ lại) rồi bấm \"Hoàn thành vẽ mask\". Cọ xóa: bôi lên ảnh để xóa phần thừa, viền tự mờ khi thả tay.": ["Lasso: drag around the area to keep (the yellow dashed line stays) then press \"Finish mask\". Eraser: paint over parts to remove; edges fade when you release.", "ວົງ: ລາກອ້ອມບໍລິເວນທີ່ຕ້ອງການເກັບໄວ້ (ເສັ້ນປະສີເຫຼືອງຍັງຢູ່) ແລ້ວກົດ \"ສຳເລັດມາສກ໌\". ແປງລົບ: ແຕ້ມທັບສ່ວນທີ່ຕ້ອງການລົບ, ຂອບຈະຈາງເມື່ອປ່ອຍມື.", "วงพื้นที่: ลากรอบส่วนที่ต้องการเก็บ (เส้นประสีเหลืองจะคงอยู่) แล้วกด \"เสร็จสิ้นมาสก์\" แปรงลบ: ระบายทับส่วนที่ต้องการลบ ขอบจะจางเมื่อปล่อยมือ", "Lazo: arrastra alrededor de la zona a conservar (la línea amarilla discontinua permanece) y pulsa «Terminar máscara». Borrador: pinta lo que quieras quitar; los bordes se suavizan al soltar.", "套索：围绕要保留的区域拖动（黄色虚线会保留），然后点击“完成蒙版”。橡皮擦：涂抹要去除的部分，松手后边缘自动渐隐。"], "Chưa có hình ảnh được chọn": ["No image selected", "ຍັງບໍ່ໄດ້ເລືອກຮູບ", "ยังไม่ได้เลือกรูปภาพ", "Ninguna imagen seleccionada", "尚未选择图片"], "Tải ảnh tác phẩm hội họa của bạn lên hoặc trải nghiệm bằng bức tranh mẫu để xem trước ngay.": ["Upload your artwork or try the sample painting to see a preview right away.", "ອັບໂຫຼດຮູບຜົນງານຂອງທ່ານ ຫຼື ລອງໃຊ້ຮູບແຕ້ມຕົວຢ່າງເພື່ອເບິ່ງຕົວຢ່າງທັນທີ.", "อัปโหลดภาพผลงานของคุณ หรือลองใช้ภาพวาดตัวอย่างเพื่อดูตัวอย่างทันที", "Sube tu obra o prueba la pintura de muestra para ver una vista previa al instante.", "上传您的作品，或使用示例画作立即预览。"], "Ảnh gốc:": ["Original:", "ຮູບຕົ້ນສະບັບ:", "ภาพต้นฉบับ:", "Original:", "原图："], "Tại sao cần hiệu ứng Vignette Gradient chuẩn?": ["Why use a soft fade?", "ເປັນຫຍັງຕ້ອງໃຊ້ຂອບເລືອນຈາງ?", "ทำไมต้องใช้ขอบจางนุ่ม?", "¿Por qué usar un desvanecido suave?", "为什么要使用柔和渐隐？"], "Tranh cổ điển thường có khổ dọc hoặc vuông. Khi đưa lên TV 16:9, cắt bớt thì mất chi tiết, còn để dải đen thì tạo đường biên sắc cứng. Mặt nạ mờ dần giúp rìa tranh hòa vào màu nền, như một bức tranh thật treo trên tường.": ["Classic paintings are often portrait or square. On a 16:9 TV, cropping loses detail while plain black bars leave a harsh edge. A soft fade blends the artwork into the background, like a real painting on the wall.", "ຮູບແຕ້ມຄລາສສິກສ່ວນຫຼາຍເປັນແນວຕັ້ງ ຫຼື ສີ່ຫຼ່ຽມຈັດຕຸລັດ. ເມື່ອສະແດງເທິງທີວີ 16:9 ການຕັດຈະເສຍລາຍລະອຽດ ແລະ ແຖບດຳຈະເຮັດໃຫ້ຂອບແຂງກະດ້າງ. ການເລືອນຈາງຈະກົມກຽວຮູບເຂົ້າກັບພື້ນຫຼັງ ຄືຮູບແຕ້ມຈິງທີ່ແຂວນຢູ່ຝາ.", "ภาพวาดคลาสสิกมักเป็นแนวตั้งหรือสี่เหลี่ยมจัตุรัส เมื่อแสดงบนทีวี 16:9 การครอปจะเสียรายละเอียด ส่วนแถบดำทำให้ขอบดูแข็งกระด้าง ขอบจางนุ่มช่วยให้ภาพกลมกลืนกับพื้นหลัง เหมือนภาพวาดจริงบนผนัง", "Las pinturas clásicas suelen ser verticales o cuadradas. En un TV 16:9, recortar pierde detalle y las barras negras dejan un borde duro. Un desvanecido suave integra la obra en el fondo, como un cuadro real en la pared.", "经典画作多为竖幅或方形。放到 16:9 电视上，裁剪会丢失细节，黑边则显得生硬。柔和渐隐能让作品融入背景，就像墙上的真画。"], "Giới thiệu & Hướng dẫn nhanh": ["About & quick guide", "ແນະນຳ ແລະ ຄູ່ມືໃຊ້ງານຫຍໍ້", "แนะนำและคู่มือเริ่มต้นใช้งาน", "Acerca de y guía rápida", "简介与快速指南"], "FrameArt Studio giúp bạn chuẩn bị tranh cho TV The Frame: đưa ảnh về đúng tỉ lệ 16:9, làm mờ rìa để hòa vào màu nền và biến ảnh thật thành tranh nghệ thuật. Mọi xử lý diễn ra ngay trên thiết bị của bạn, ảnh không được tải lên máy chủ nào.": ["FrameArt Studio prepares artwork for The Frame TV: it fits your image to 16:9, fades the edges into the background and can turn photos into art. Everything is processed on your own device; your images are never uploaded to any server.", "FrameArt Studio ຊ່ວຍກຽມຮູບສຳລັບທີວີ The Frame: ປັບຮູບໃຫ້ເປັນສັດສ່ວນ 16:9, ເຮັດໃຫ້ຂອບຈາງເຂົ້າກັບສີພື້ນຫຼັງ ແລະ ປ່ຽນຮູບຖ່າຍເປັນຮູບສິລະປະ. ທຸກຢ່າງປະມວນຜົນໃນອຸປະກອນຂອງທ່ານ, ຮູບບໍ່ຖືກອັບໂຫຼດຂຶ້ນເຊີເວີໃດໆ.", "FrameArt Studio ช่วยเตรียมภาพสำหรับทีวี The Frame: ปรับภาพให้เป็นสัดส่วน 16:9 ทำให้ขอบจางกลืนไปกับสีพื้นหลัง และเปลี่ยนภาพถ่ายเป็นงานศิลปะ การประมวลผลทั้งหมดเกิดขึ้นบนอุปกรณ์ของคุณ ภาพไม่ถูกอัปโหลดไปยังเซิร์ฟเวอร์ใด ๆ", "FrameArt Studio prepara obras para el TV The Frame: ajusta la imagen a 16:9, desvanece los bordes en el fondo y puede convertir fotos en arte. Todo se procesa en tu dispositivo; tus imágenes nunca se suben a ningún servidor.", "FrameArt Studio 帮您为 The Frame 电视准备作品：将图片调整为 16:9，让边缘渐隐融入背景，还能把照片变成艺术作品。所有处理都在您的设备上完成，图片不会上传到任何服务器。"], "Chọn hoặc kéo thả ảnh của bạn (hoặc dùng tranh mẫu).": ["Choose or drag in your image (or use the sample painting).", "ເລືອກ ຫຼື ລາກຮູບຂອງທ່ານມາວາງ (ຫຼື ໃຊ້ຮູບແຕ້ມຕົວຢ່າງ).", "เลือกหรือลากภาพของคุณมาวาง (หรือใช้ภาพวาดตัวอย่าง)", "Elige o arrastra tu imagen (o usa la pintura de muestra).", "选择或拖入您的图片（也可使用示例画作）。"], "Tùy chọn: chọn phong cách (Hoạt hình, Sơn dầu, hoặc họa sĩ như Van Gogh, Monet, Klimt...) và bấm \"Vẽ lại\" để ra bức khác.": ["Optional: pick a style (Cartoon, Oil painting or an artist such as Van Gogh, Monet, Klimt…) and press \"Repaint\" for another result.", "ທາງເລືອກ: ເລືອກແບບ (ກາຕູນ, ສີນ້ຳມັນ ຫຼື ສິລະປິນເຊັ່ນ Van Gogh, Monet, Klimt…) ແລ້ວກົດ \"ແຕ້ມໃໝ່\" ເພື່ອໄດ້ຜົນອື່ນ.", "ตัวเลือก: เลือกสไตล์ (การ์ตูน สีน้ำมัน หรือศิลปินอย่าง Van Gogh, Monet, Klimt…) แล้วกด \"วาดใหม่\" เพื่อให้ได้ผลลัพธ์อื่น", "Opcional: elige un estilo (dibujo animado, óleo o un artista como Van Gogh, Monet, Klimt…) y pulsa «Repintar» para otro resultado.", "可选：选择风格（卡通、油画，或梵高、莫奈、克里姆特等画家），点击“重绘”可得到不同效果。"], "Chọn độ phân giải, chế độ khớp tranh và màu nền.": ["Choose the resolution, fit mode and background color.", "ເລືອກຄວາມລະອຽດ, ໂໝດປັບຮູບ ແລະ ສີພື້ນຫຼັງ.", "เลือกความละเอียด โหมดปรับภาพ และสีพื้นหลัง", "Elige la resolución, el modo de ajuste y el color de fondo.", "选择分辨率、适配模式和背景色。"], "Chọn hình dạng mặt nạ và chỉnh độ mờ. Với \"Tự xóa viền thủ công\", hãy khoanh vùng muốn giữ rồi bấm \"Hoàn thành vẽ mask\".": ["Pick a mask shape and adjust the fade. With \"Manual erase\", lasso the area you want to keep, then press \"Finish mask\".", "ເລືອກຮູບຮ່າງມາສກ໌ ແລະ ປັບຄວາມຈາງ. ຖ້າໃຊ້ \"ລົບຂອບດ້ວຍມື\" ໃຫ້ວົງບໍລິເວນທີ່ຕ້ອງການເກັບໄວ້ ແລ້ວກົດ \"ສຳເລັດມາສກ໌\".", "เลือกรูปทรงมาสก์และปรับความจาง หากใช้ \"ลบขอบด้วยตนเอง\" ให้วงพื้นที่ที่ต้องการเก็บ แล้วกด \"เสร็จสิ้นมาสก์\"", "Elige la forma de la máscara y ajusta el desvanecido. Con «Borrado manual», rodea la zona que quieres conservar y pulsa «Terminar máscara».", "选择蒙版形状并调整渐隐程度。使用“手动擦除边缘”时，先圈出要保留的区域，再点击“完成蒙版”。"], "Xem trước trên khung Tivi và đổi kiểu khung nếu muốn.": ["Check the preview on the TV frame and change the frame style if you like.", "ເບິ່ງຕົວຢ່າງໃນກອບທີວີ ແລະ ປ່ຽນແບບກອບຕາມຕ້ອງການ.", "ดูตัวอย่างบนกรอบทีวี และเปลี่ยนรูปแบบกรอบได้ตามต้องการ", "Revisa la vista previa en el marco del TV y cambia el estilo si quieres.", "在电视边框中查看预览，可按需更换边框样式。"], "Bấm \"Tải ảnh chuẩn Art Mode\", rồi chép file JPEG vào TV (qua USB hoặc ứng dụng SmartThings).": ["Press \"Download Art Mode image\", then transfer the JPEG to your TV (via USB or the SmartThings app).", "ກົດ \"ດາວໂຫຼດຮູບສຳລັບ Art Mode\" ແລ້ວໂອນໄຟລ໌ JPEG ເຂົ້າທີວີ (ຜ່ານ USB ຫຼື ແອັບ SmartThings).", "กด \"ดาวน์โหลดภาพสำหรับ Art Mode\" แล้วโอนไฟล์ JPEG เข้าทีวี (ผ่าน USB หรือแอป SmartThings)", "Pulsa «Descargar imagen para Art Mode» y pasa el JPEG al TV (por USB o con la app SmartThings).", "点击“下载 Art Mode 图片”，再通过 USB 或 SmartThings 应用把 JPEG 传到电视。"], "Mẹo: trên điện thoại, dùng nút nổi ở góc dưới bên trái để chuyển nhanh giữa ảnh xem trước và phần chỉnh.": ["Tip: on a phone, use the floating button at the bottom left to jump between the preview and the settings.", "ເຄັດລັບ: ໃນໂທລະສັບ ໃຫ້ໃຊ້ປຸ່ມລອຍທີ່ມຸມລຸ່ມຊ້າຍ ເພື່ອສະຫຼັບລະຫວ່າງຕົວຢ່າງ ແລະ ການຕັ້ງຄ່າ.", "เคล็ดลับ: บนโทรศัพท์ ให้ใช้ปุ่มลอยที่มุมซ้ายล่างเพื่อสลับระหว่างตัวอย่างกับการตั้งค่า", "Consejo: en el móvil, usa el botón flotante de la esquina inferior izquierda para alternar entre la vista previa y los ajustes.", "提示：在手机上，可使用左下角的悬浮按钮在预览和设置之间快速切换。"], "Nhấn hoặc kéo thả ảnh khác vào đây để thay đổi": ["Click or drop another image here to change it", "ກົດ ຫຼື ລາກຮູບອື່ນມາວາງທີ່ນີ້ເພື່ອປ່ຽນ", "แตะหรือลากภาพอื่นมาวางที่นี่เพื่อเปลี่ยน", "Haz clic o suelta otra imagen aquí para cambiarla", "点击或拖入其他图片以更换"], "✔ Đã chọn:": ["✔ Selected:", "✔ ເລືອກແລ້ວ:", "✔ เลือกแล้ว:", "✔ Seleccionada:", "✔ 已选择："], "Vui lòng chọn file hình ảnh (JPG, PNG, WEBP)": ["Please choose an image file (JPG, PNG, WEBP)", "ກະລຸນາເລືອກໄຟລ໌ຮູບ (JPG, PNG, WEBP)", "กรุณาเลือกไฟล์ภาพ (JPG, PNG, WEBP)", "Elige un archivo de imagen (JPG, PNG, WEBP)", "请选择图片文件（JPG、PNG、WEBP）"], "Đã tải ảnh lên thành công!": ["Image loaded!", "ໂຫຼດຮູບສຳເລັດ!", "โหลดภาพสำเร็จ!", "¡Imagen cargada!", "图片已加载！"], "Đã nạp bức tranh nghệ thuật mẫu!": ["Sample painting loaded!", "ໂຫຼດຮູບແຕ້ມຕົວຢ່າງແລ້ວ!", "โหลดภาพวาดตัวอย่างแล้ว!", "¡Pintura de muestra cargada!", "示例画作已加载！"], "Đã khôi phục cài đặt mặc định": ["Settings reset to defaults", "ຣີເຊັດການຕັ້ງຄ່າເປັນຄ່າເລີ່ມຕົ້ນແລ້ວ", "รีเซ็ตการตั้งค่าเป็นค่าเริ่มต้นแล้ว", "Ajustes restablecidos", "已恢复默认设置"], "Hãy kéo chuột khoanh quanh vùng muốn giữ trước": ["First drag around the area you want to keep", "ກະລຸນາລາກວົງອ້ອມບໍລິເວນທີ່ຕ້ອງການເກັບໄວ້ກ່ອນ", "โปรดลากวงรอบพื้นที่ที่ต้องการเก็บก่อน", "Primero rodea la zona que quieres conservar", "请先围绕要保留的区域拖动鼠标"], "Đã hoàn thành mask: vùng ngoài mờ dần về màu nền": ["Mask done: the outside now fades to the background", "ມາສກ໌ສຳເລັດ: ສ່ວນນອກຈາງເຂົ້າສີພື້ນຫຼັງແລ້ວ", "มาสก์เสร็จแล้ว: ส่วนนอกจางไปเป็นสีพื้นหลัง", "Máscara lista: el exterior se desvanece al fondo", "蒙版完成：外部区域已渐隐至背景"], "đang tính...": ["calculating…", "ກຳລັງຄິດໄລ່…", "กำลังคำนวณ…", "calculando…", "计算中…"], "không xác định": ["unknown", "ບໍ່ຮູ້", "ไม่ทราบ", "desconocido", "未知"], "Đang xử lý phong cách, vui lòng đợi...": ["Applying style, please wait…", "ກຳລັງໃຊ້ແບບ, ກະລຸນາລໍຖ້າ…", "กำลังใช้สไตล์ โปรดรอสักครู่…", "Aplicando estilo, espera un momento…", "正在应用风格，请稍候…"], "Đã áp dụng phong cách!": ["Style applied!", "ໃຊ້ແບບສຳເລັດ!", "ใช้สไตล์แล้ว!", "¡Estilo aplicado!", "风格已应用！"], "Lỗi xử lý phong cách:": ["Style error:", "ຂໍ້ຜິດພາດຂອງແບບ:", "ข้อผิดพลาดของสไตล์:", "Error de estilo:", "风格处理出错："], "Đang đóng gói file 100% Quality...": ["Packing 100% quality file…", "ກຳລັງສ້າງໄຟລ໌ຄຸນນະພາບ 100%…", "กำลังสร้างไฟล์คุณภาพ 100%…", "Generando archivo de calidad 100%…", "正在生成 100% 质量文件…"], "Không tạo được file (có thể thiếu bộ nhớ). Hãy thử độ phân giải thấp hơn.": ["Could not create the file (maybe out of memory). Try a lower resolution.", "ສ້າງໄຟລ໌ບໍ່ໄດ້ (ອາດຈະຫນ່ວຍຄວາມຈຳບໍ່ພໍ). ລອງຄວາມລະອຽດຕ່ຳລົງ.", "สร้างไฟล์ไม่ได้ (อาจหน่วยความจำไม่พอ) ลองใช้ความละเอียดต่ำลง", "No se pudo crear el archivo (quizá falta memoria). Prueba una resolución menor.", "无法生成文件（可能内存不足），请尝试较低分辨率。"], "Đã xuất file tranh Art Mode 16:9 thành công!": ["Art Mode 16:9 image exported!", "ສົ່ງອອກຮູບ Art Mode 16:9 ສຳເລັດ!", "ส่งออกภาพ Art Mode 16:9 สำเร็จ!", "¡Imagen Art Mode 16:9 exportada!", "Art Mode 16:9 图片已导出！"], "Lỗi khi tải file:": ["Download error:", "ຂໍ້ຜິດພາດໃນການດາວໂຫຼດ:", "ข้อผิดพลาดในการดาวน์โหลด:", "Error al descargar:", "下载出错："], "Thông số": ["Settings", "ຕັ້ງຄ່າ", "ตั้งค่า", "Ajustes", "设置"], "Xem tranh": ["Preview", "ເບິ່ງຮູບ", "ดูภาพ", "Vista previa", "预览"]};
+        const I18N = {"Xử lý ngay trên thiết bị": ["Processed on your device", "ປະມວນຜົນໃນອຸປະກອນຂອງທ່ານ", "ประมวลผลบนอุปกรณ์ของคุณ", "Se procesa en tu dispositivo", "在您的设备上本地处理"], "Mặc định": ["Reset", "ຣີເຊັດ", "รีเซ็ต", "Restablecer", "重置"], "1. Đưa tranh vào cọ": ["1. Add your artwork", "1. ເພີ່ມຮູບຂອງທ່ານ", "1. เพิ่มภาพของคุณ", "1. Añade tu obra", "1. 添加您的作品"], "Nhấn để chọn ảnh": ["Click to choose an image", "ກົດເພື່ອເລືອກຮູບ", "แตะเพื่อเลือกรูปภาพ", "Haz clic para elegir una imagen", "点击选择图片"], "hoặc kéo thả vào đây": ["or drag and drop it here", "ຫຼື ລາກແລ້ວວາງທີ່ນີ້", "หรือลากมาวางที่นี่", "o arrástrala aquí", "或拖放到此处"], "Hỗ trợ JPG, PNG, WEBP (Khuyên dùng độ phân giải gốc cao)": ["Supports JPG, PNG, WEBP (high original resolution recommended)", "ຮອງຮັບ JPG, PNG, WEBP (ແນະນຳຄວາມລະອຽດຕົ້ນສະບັບສູງ)", "รองรับ JPG, PNG, WEBP (แนะนำให้ใช้ความละเอียดต้นฉบับสูง)", "Admite JPG, PNG, WEBP (se recomienda alta resolución original)", "支持 JPG、PNG、WEBP（建议使用高分辨率原图）"], "Chưa có ảnh?": ["No image yet?", "ຍັງບໍ່ມີຮູບບໍ?", "ยังไม่มีรูปภาพ?", "¿Aún no tienes una imagen?", "还没有图片？"], "Dùng tranh mẫu": ["Use a sample painting", "ໃຊ້ຮູບແຕ້ມຕົວຢ່າງ", "ใช้ภาพวาดตัวอย่าง", "Usar una pintura de muestra", "使用示例画作"], "Biến ảnh thật thành tranh": ["Turn photos into artwork", "ປ່ຽນຮູບຖ່າຍເປັນຮູບສິລະປະ", "เปลี่ยนภาพถ่ายเป็นงานศิลปะ", "Convierte fotos en arte", "将照片变成艺术作品"], "Giữ nguyên ảnh gốc": ["Keep original photo", "ຮັກສາຮູບຕົ້ນສະບັບ", "ใช้ภาพต้นฉบับ", "Mantener la foto original", "保持原图"], "Hoạt hình (Cartoon)": ["Cartoon", "ກາຕູນ", "การ์ตูน", "Dibujo animado", "卡通"], "Phác thảo bút chì (Pencil Sketch)": ["Pencil sketch", "ຮ່າງດ້ວຍສໍ", "ภาพสเก็ตช์ดินสอ", "Boceto a lápiz", "铅笔素描"], "Tranh sơn dầu (Oil Painting)": ["Oil painting", "ຮູບແຕ້ມສີນ້ຳມັນ", "ภาพสีน้ำมัน", "Óleo", "油画"], "Tranh màu nước (Watercolor)": ["Watercolor", "ສີນ້ຳ", "สีน้ำ", "Acuarela", "水彩画"], "Nghệ thuật theo họa sĩ...": ["In the style of an artist…", "ແບບສິລະປິນ…", "สไตล์ศิลปิน…", "Al estilo de un artista…", "按画家风格…"], "Chọn họa sĩ": ["Choose an artist", "ເລືອກສິລະປິນ", "เลือกศิลปิน", "Elige un artista", "选择画家"], "Ấn tượng & Hậu ấn tượng": ["Impressionism & Post-Impressionism", "ອິມເພຣສຊັນນິສ ແລະ ຫຼັງອິມເພຣສຊັນນິສ", "อิมเพรสชันนิสม์และโพสต์อิมเพรสชันนิสม์", "Impresionismo y Postimpresionismo", "印象派与后印象派"], "Biểu hiện, Tân nghệ thuật & Cổ điển": ["Expressionism, Art Nouveau & Classic", "ເອັກສະເປຣສຊັນນິສ, ອາຣ໌ນູໂວ ແລະ ຄລາສສິກ", "เอกซ์เพรสชันนิสม์ อาร์ตนูโว และคลาสสิก", "Expresionismo, Art Nouveau y clásico", "表现主义、新艺术与古典"], "Hiện đại & Đại chúng": ["Modern & Pop", "ທັນສະໄໝ ແລະ ປ໊ອບ", "โมเดิร์นและป๊อป", "Moderno y Pop", "现代与波普"], "Vẽ lại (ra một bức khác)": ["Repaint (get a different result)", "ແຕ້ມໃໝ່ (ໄດ້ຜົນລັບຕ່າງອອກໄປ)", "วาดใหม่ (ได้ผลลัพธ์ที่ต่างออกไป)", "Repintar (otro resultado)", "重绘（得到不同效果）"], "Cường độ hiệu ứng": ["Effect strength", "ຄວາມແຮງຂອງເອັຟເຟັກ", "ความเข้มของเอฟเฟกต์", "Intensidad del efecto", "效果强度"], "Hiệu ứng được vẽ bằng thuật toán ngay trong trình duyệt (mô phỏng cách vẽ của từng họa sĩ, không phải AI). \"Vẽ lại\" cho ra bức khác. Ảnh lớn có thể mất vài giây để xử lý.": ["Effects are drawn by algorithms right in your browser (an imitation of each artist's technique, not AI). \"Repaint\" gives a different result. Large images may take a few seconds.", "ເອັຟເຟັກຖືກແຕ້ມດ້ວຍອັລກໍຣິທຶມໃນບຣາວເຊີຂອງທ່ານ (ຈຳລອງວິທີແຕ້ມຂອງສິລະປິນ, ບໍ່ແມ່ນ AI). \"ແຕ້ມໃໝ່\" ຈະໄດ້ຜົນລັບຕ່າງອອກໄປ. ຮູບໃຫຍ່ອາດໃຊ້ເວລາສອງສາມວິນາທີ.", "เอฟเฟกต์วาดด้วยอัลกอริทึมในเบราว์เซอร์ของคุณ (เลียนแบบเทคนิคของศิลปิน ไม่ใช่ AI) กด \"วาดใหม่\" เพื่อให้ได้ผลลัพธ์ที่ต่างออกไป ภาพขนาดใหญ่อาจใช้เวลาไม่กี่วินาที", "Los efectos se dibujan con algoritmos en tu navegador (imitan la técnica de cada artista, no es IA). «Repintar» da otro resultado. Las imágenes grandes pueden tardar unos segundos.", "效果由浏览器内的算法绘制（模仿画家的画法，并非 AI）。点击“重绘”可得到不同效果。大图可能需要几秒钟。"], "2. Thông số khung & Vignette": ["2. Frame & fade settings", "2. ການຕັ້ງຄ່າກອບ ແລະ ຂອບເລືອນ", "2. ตั้งค่ากรอบและขอบจาง", "2. Marco y desvanecido", "2. 画框与渐隐设置"], "Tỷ lệ Khung Canvas target (16:9)": ["Target canvas size (16:9)", "ຂະໜາດຜ້າໃບເປົ້າໝາຍ (16:9)", "ขนาดผืนผ้าใบเป้าหมาย (16:9)", "Tamaño del lienzo (16:9)", "目标画布尺寸（16:9）"], "Chuẩn Samsung 16:9": ["Samsung 16:9 standard", "ມາດຕະຖານ Samsung 16:9", "มาตรฐาน Samsung 16:9", "Estándar Samsung 16:9", "三星 16:9 标准"], "Chuẩn 4K UHD": ["4K UHD standard", "ມາດຕະຖານ 4K UHD", "มาตรฐาน 4K UHD", "Estándar 4K UHD", "4K UHD 标准"], "Tùy chỉnh Width": ["Custom width", "ກຳນົດຄວາມກວ້າງເອງ", "กำหนดความกว้างเอง", "Ancho personalizado", "自定义宽度"], "Nhập độ phân giải riêng": ["Enter your own resolution", "ປ້ອນຄວາມລະອຽດເອງ", "ระบุความละเอียดเอง", "Introduce tu resolución", "输入自定义分辨率"], "Chiều rộng mờ góc Vignette": ["Edge fade width", "ຄວາມກວ້າງຂອງຂອບເລືອນ", "ความกว้างของขอบจาง", "Ancho del desvanecido", "边缘渐隐宽度"], "Điều chỉnh độ rộng vùng mờ ở rìa tranh.": ["Sets how wide the faded border of the artwork is.", "ກຳນົດຄວາມກວ້າງຂອງຂອບທີ່ເລືອນຈາງຂອງຮູບ.", "กำหนดความกว้างของขอบที่จางลงของภาพ", "Define el ancho del borde desvanecido de la obra.", "设置作品边缘渐隐区域的宽度。"], "Độ mịn màng (GaussianBlur Mask)": ["Mask smoothness (Gaussian blur)", "ຄວາມລຽບຂອງມາສກ໌ (Gaussian blur)", "ความนุ่มนวลของมาสก์ (Gaussian blur)", "Suavidad de la máscara (desenfoque gaussiano)", "蒙版平滑度（高斯模糊）"], "Màu phông nền Canvas (Art Border Color)": ["Canvas background color", "ສີພື້ນຫຼັງຜ້າໃບ", "สีพื้นหลังผืนผ้าใบ", "Color de fondo del lienzo", "画布背景色"], "Chế độ khớp tranh": ["Fit mode", "ໂໝດປັບຮູບ", "โหมดปรับภาพ", "Modo de ajuste", "适配模式"], "Cố định chiều cao (Khuyên dùng - Thêm Vignette 2 bên)": ["Fit height (recommended, fades left & right)", "ປັບຕາມຄວາມສູງ (ແນະນຳ, ຈາງຊ້າຍ-ຂວາ)", "ปรับตามความสูง (แนะนำ ขอบซ้าย-ขวาจาง)", "Ajustar a la altura (recomendado, desvanece a los lados)", "适应高度（推荐，左右渐隐）"], "Cố định chiều ngang (Thêm Vignette trên/dưới)": ["Fit width (fades top & bottom)", "ປັບຕາມຄວາມກວ້າງ (ຈາງເທິງ-ລຸ່ມ)", "ปรับตามความกว้าง (ขอบบน-ล่างจาง)", "Ajustar al ancho (desvanece arriba y abajo)", "适应宽度（上下渐隐）"], "Cắt cúp vừa vặn 16:9 (Phủ kín không cần phông đen)": ["Crop to fill 16:9 (no background bars)", "ຕັດໃຫ້ເຕັມ 16:9 (ບໍ່ມີແຖບພື້ນຫຼັງ)", "ครอปให้เต็ม 16:9 (ไม่มีแถบพื้นหลัง)", "Recortar para llenar 16:9 (sin barras)", "裁剪填满 16:9（无背景边）"], "Hình dạng mặt nạ (Mask Shape)": ["Mask shape", "ຮູບຮ່າງມາສກ໌", "รูปทรงมาสก์", "Forma de la máscara", "蒙版形状"], "Làm mờ cạnh thẳng (Linear Edge Fade)": ["Straight edge fade", "ຈາງຂອບຊື່", "ขอบตรงจางลง", "Desvanecido de bordes rectos", "直边渐隐"], "Hình Oval mờ (Classic Soft Oval)": ["Soft oval", "ຮູບໄຂ່ເລືອນ", "วงรีนุ่ม", "Óvalo suave", "柔边椭圆"], "Hình Tròn mờ (Soft Circle)": ["Soft circle", "ວົງມົນເລືອນ", "วงกลมนุ่ม", "Círculo suave", "柔边圆形"], "Hình Chữ nhật mờ (Soft Rectangle)": ["Soft rectangle", "ສີ່ຫຼ່ຽມຜືນຜ້າເລືອນ", "สี่เหลี่ยมผืนผ้านุ่ม", "Rectángulo suave", "柔边矩形"], "Hình Vuông mờ (Soft Square)": ["Soft square", "ສີ່ຫຼ່ຽມຈັດຕຸລັດເລືອນ", "สี่เหลี่ยมจัตุรัสนุ่ม", "Cuadrado suave", "柔边正方形"], "Tự xóa viền thủ công (Custom Eraser Brush)": ["Manual erase (custom brush)", "ລົບຂອບດ້ວຍມື (ແປງກຳນົດເອງ)", "ลบขอบด้วยตนเอง (แปรงกำหนดเอง)", "Borrado manual (pincel)", "手动擦除边缘（自定义画笔）"], "Tải ảnh chuẩn Art Mode": ["Download Art Mode image", "ດາວໂຫຼດຮູບສຳລັບ Art Mode", "ดาวน์โหลดภาพสำหรับ Art Mode", "Descargar imagen para Art Mode", "下载 Art Mode 图片"], "Kích thước xuất:": ["Export size:", "ຂະໜາດສົ່ງອອກ:", "ขนาดไฟล์ที่ส่งออก:", "Tamaño de exportación:", "导出尺寸："], "| Định dạng: JPEG 100% Quality | Dung lượng ước tính:": ["| Format: JPEG 100% quality | Estimated size:", "| ຮູບແບບ: JPEG ຄຸນນະພາບ 100% | ຂະໜາດໄຟລ໌ໂດຍປະມານ:", "| รูปแบบ: JPEG คุณภาพ 100% | ขนาดไฟล์โดยประมาณ:", "| Formato: JPEG calidad 100% | Tamaño estimado:", "| 格式：JPEG 100% 质量 | 预计大小："], "Xem trước trên Tivi": ["TV preview", "ຕົວຢ່າງໃນໂທລະພາບ", "ตัวอย่างบนทีวี", "Vista previa en el TV", "电视预览"], "Khung tivi:": ["TV frame:", "ກອບທີວີ:", "กรอบทีวี:", "Marco:", "电视边框："], "Gỗ sồi (Teak)": ["Teak", "ໄມ້ສັກ", "ไม้สัก", "Teca", "柚木"], "Gỗ óc chó": ["Walnut", "ໄມ້ວອລນັດ", "ไม้วอลนัต", "Nogal", "胡桃木"], "Trắng Modern": ["Modern white", "ຂາວທັນສະໄໝ", "ขาวโมเดิร์น", "Blanco moderno", "现代白"], "Đen Vỏ thép": ["Black", "ດຳ", "ดำ", "Negro", "黑色"], "Không khung": ["No frame", "ບໍ່ມີກອບ", "ไม่มีกรอบ", "Sin marco", "无边框"], "Công cụ": ["Tool", "ເຄື່ອງມື", "เครื่องมือ", "Herramienta", "工具"], "Khoanh vùng GIỮ LẠI (phần ngoài tự mờ về nền)": ["Lasso: KEEP area (outside fades to background)", "ວົງບໍລິເວນ ເກັບໄວ້ (ສ່ວນນອກຈາງເຂົ້າພື້ນຫຼັງ)", "วงพื้นที่ที่จะเก็บไว้ (ส่วนนอกจางเป็นสีพื้นหลัง)", "Lazo: CONSERVAR zona (el exterior se desvanece)", "套索：保留区域（外部渐隐至背景）"], "Cọ xóa trực tiếp": ["Eraser brush", "ແປງລົບ", "แปรงลบ", "Pincel borrador", "橡皮擦画笔"], "Kích thước cọ xóa (Brush Size)": ["Brush size", "ຂະໜາດແປງ", "ขนาดแปรง", "Tamaño del pincel", "画笔大小"], "Hoàn thành vẽ mask": ["Finish mask", "ສຳເລັດມາສກ໌", "เสร็จสิ้นมาสก์", "Terminar máscara", "完成蒙版"], "Hoàn tác nét khoanh": ["Undo lasso stroke", "ຍົກເລີກເສັ້ນວົງ", "เลิกทำเส้นวง", "Deshacer trazo", "撤销套索笔画"], "Khôi phục lại viền gốc": ["Restore original edges", "ກູ້ຄືນຂອບເດີມ", "คืนค่าขอบเดิม", "Restaurar bordes originales", "恢复原始边缘"], "Khoanh: kéo quanh vùng muốn giữ (nét đứt vàng được giữ lại) rồi bấm \"Hoàn thành vẽ mask\". Cọ xóa: bôi lên ảnh để xóa phần thừa, viền tự mờ khi thả tay.": ["Lasso: drag around the area to keep (the yellow dashed line stays) then press \"Finish mask\". Eraser: paint over parts to remove; edges fade when you release.", "ວົງ: ລາກອ້ອມບໍລິເວນທີ່ຕ້ອງການເກັບໄວ້ (ເສັ້ນປະສີເຫຼືອງຍັງຢູ່) ແລ້ວກົດ \"ສຳເລັດມາສກ໌\". ແປງລົບ: ແຕ້ມທັບສ່ວນທີ່ຕ້ອງການລົບ, ຂອບຈະຈາງເມື່ອປ່ອຍມື.", "วงพื้นที่: ลากรอบส่วนที่ต้องการเก็บ (เส้นประสีเหลืองจะคงอยู่) แล้วกด \"เสร็จสิ้นมาสก์\" แปรงลบ: ระบายทับส่วนที่ต้องการลบ ขอบจะจางเมื่อปล่อยมือ", "Lazo: arrastra alrededor de la zona a conservar (la línea amarilla discontinua permanece) y pulsa «Terminar máscara». Borrador: pinta lo que quieras quitar; los bordes se suavizan al soltar.", "套索：围绕要保留的区域拖动（黄色虚线会保留），然后点击“完成蒙版”。橡皮擦：涂抹要去除的部分，松手后边缘自动渐隐。"], "Chưa có hình ảnh được chọn": ["No image selected", "ຍັງບໍ່ໄດ້ເລືອກຮູບ", "ยังไม่ได้เลือกรูปภาพ", "Ninguna imagen seleccionada", "尚未选择图片"], "Tải ảnh tác phẩm hội họa của bạn lên hoặc trải nghiệm bằng bức tranh mẫu để xem trước ngay.": ["Upload your artwork or try the sample painting to see a preview right away.", "ອັບໂຫຼດຮູບຜົນງານຂອງທ່ານ ຫຼື ລອງໃຊ້ຮູບແຕ້ມຕົວຢ່າງເພື່ອເບິ່ງຕົວຢ່າງທັນທີ.", "อัปโหลดภาพผลงานของคุณ หรือลองใช้ภาพวาดตัวอย่างเพื่อดูตัวอย่างทันที", "Sube tu obra o prueba la pintura de muestra para ver una vista previa al instante.", "上传您的作品，或使用示例画作立即预览。"], "Ảnh gốc:": ["Original:", "ຮູບຕົ້ນສະບັບ:", "ภาพต้นฉบับ:", "Original:", "原图："], "Tại sao cần hiệu ứng Vignette Gradient chuẩn?": ["Why use a soft fade?", "ເປັນຫຍັງຕ້ອງໃຊ້ຂອບເລືອນຈາງ?", "ทำไมต้องใช้ขอบจางนุ่ม?", "¿Por qué usar un desvanecido suave?", "为什么要使用柔和渐隐？"], "Tranh cổ điển thường có khổ dọc hoặc vuông. Khi đưa lên TV 16:9, cắt bớt thì mất chi tiết, còn để dải đen thì tạo đường biên sắc cứng. Mặt nạ mờ dần giúp rìa tranh hòa vào màu nền, như một bức tranh thật treo trên tường.": ["Classic paintings are often portrait or square. On a 16:9 TV, cropping loses detail while plain black bars leave a harsh edge. A soft fade blends the artwork into the background, like a real painting on the wall.", "ຮູບແຕ້ມຄລາສສິກສ່ວນຫຼາຍເປັນແນວຕັ້ງ ຫຼື ສີ່ຫຼ່ຽມຈັດຕຸລັດ. ເມື່ອສະແດງເທິງທີວີ 16:9 ການຕັດຈະເສຍລາຍລະອຽດ ແລະ ແຖບດຳຈະເຮັດໃຫ້ຂອບແຂງກະດ້າງ. ການເລືອນຈາງຈະກົມກຽວຮູບເຂົ້າກັບພື້ນຫຼັງ ຄືຮູບແຕ້ມຈິງທີ່ແຂວນຢູ່ຝາ.", "ภาพวาดคลาสสิกมักเป็นแนวตั้งหรือสี่เหลี่ยมจัตุรัส เมื่อแสดงบนทีวี 16:9 การครอปจะเสียรายละเอียด ส่วนแถบดำทำให้ขอบดูแข็งกระด้าง ขอบจางนุ่มช่วยให้ภาพกลมกลืนกับพื้นหลัง เหมือนภาพวาดจริงบนผนัง", "Las pinturas clásicas suelen ser verticales o cuadradas. En un TV 16:9, recortar pierde detalle y las barras negras dejan un borde duro. Un desvanecido suave integra la obra en el fondo, como un cuadro real en la pared.", "经典画作多为竖幅或方形。放到 16:9 电视上，裁剪会丢失细节，黑边则显得生硬。柔和渐隐能让作品融入背景，就像墙上的真画。"], "Giới thiệu & Hướng dẫn nhanh": ["About & quick guide", "ແນະນຳ ແລະ ຄູ່ມືໃຊ້ງານຫຍໍ້", "แนะนำและคู่มือเริ่มต้นใช้งาน", "Acerca de y guía rápida", "简介与快速指南"], "FrameArt Studio giúp bạn chuẩn bị tranh cho TV The Frame: đưa ảnh về đúng tỉ lệ 16:9, làm mờ rìa để hòa vào màu nền và biến ảnh thật thành tranh nghệ thuật. Mọi xử lý diễn ra ngay trên thiết bị của bạn, ảnh không được tải lên máy chủ nào.": ["FrameArt Studio prepares artwork for The Frame TV: it fits your image to 16:9, fades the edges into the background and can turn photos into art. Everything is processed on your own device; your images are never uploaded to any server.", "FrameArt Studio ຊ່ວຍກຽມຮູບສຳລັບທີວີ The Frame: ປັບຮູບໃຫ້ເປັນສັດສ່ວນ 16:9, ເຮັດໃຫ້ຂອບຈາງເຂົ້າກັບສີພື້ນຫຼັງ ແລະ ປ່ຽນຮູບຖ່າຍເປັນຮູບສິລະປະ. ທຸກຢ່າງປະມວນຜົນໃນອຸປະກອນຂອງທ່ານ, ຮູບບໍ່ຖືກອັບໂຫຼດຂຶ້ນເຊີເວີໃດໆ.", "FrameArt Studio ช่วยเตรียมภาพสำหรับทีวี The Frame: ปรับภาพให้เป็นสัดส่วน 16:9 ทำให้ขอบจางกลืนไปกับสีพื้นหลัง และเปลี่ยนภาพถ่ายเป็นงานศิลปะ การประมวลผลทั้งหมดเกิดขึ้นบนอุปกรณ์ของคุณ ภาพไม่ถูกอัปโหลดไปยังเซิร์ฟเวอร์ใด ๆ", "FrameArt Studio prepara obras para el TV The Frame: ajusta la imagen a 16:9, desvanece los bordes en el fondo y puede convertir fotos en arte. Todo se procesa en tu dispositivo; tus imágenes nunca se suben a ningún servidor.", "FrameArt Studio 帮您为 The Frame 电视准备作品：将图片调整为 16:9，让边缘渐隐融入背景，还能把照片变成艺术作品。所有处理都在您的设备上完成，图片不会上传到任何服务器。"], "Chọn hoặc kéo thả ảnh của bạn (hoặc dùng tranh mẫu).": ["Choose or drag in your image (or use the sample painting).", "ເລືອກ ຫຼື ລາກຮູບຂອງທ່ານມາວາງ (ຫຼື ໃຊ້ຮູບແຕ້ມຕົວຢ່າງ).", "เลือกหรือลากภาพของคุณมาวาง (หรือใช้ภาพวาดตัวอย่าง)", "Elige o arrastra tu imagen (o usa la pintura de muestra).", "选择或拖入您的图片（也可使用示例画作）。"], "Tùy chọn: chọn phong cách (Hoạt hình, Sơn dầu, hoặc họa sĩ như Van Gogh, Monet, Klimt...) và bấm \"Vẽ lại\" để ra bức khác.": ["Optional: pick a style (Cartoon, Oil painting or an artist such as Van Gogh, Monet, Klimt…) and press \"Repaint\" for another result.", "ທາງເລືອກ: ເລືອກແບບ (ກາຕູນ, ສີນ້ຳມັນ ຫຼື ສິລະປິນເຊັ່ນ Van Gogh, Monet, Klimt…) ແລ້ວກົດ \"ແຕ້ມໃໝ່\" ເພື່ອໄດ້ຜົນອື່ນ.", "ตัวเลือก: เลือกสไตล์ (การ์ตูน สีน้ำมัน หรือศิลปินอย่าง Van Gogh, Monet, Klimt…) แล้วกด \"วาดใหม่\" เพื่อให้ได้ผลลัพธ์อื่น", "Opcional: elige un estilo (dibujo animado, óleo o un artista como Van Gogh, Monet, Klimt…) y pulsa «Repintar» para otro resultado.", "可选：选择风格（卡通、油画，或梵高、莫奈、克里姆特等画家），点击“重绘”可得到不同效果。"], "Chọn độ phân giải, chế độ khớp tranh và màu nền.": ["Choose the resolution, fit mode and background color.", "ເລືອກຄວາມລະອຽດ, ໂໝດປັບຮູບ ແລະ ສີພື້ນຫຼັງ.", "เลือกความละเอียด โหมดปรับภาพ และสีพื้นหลัง", "Elige la resolución, el modo de ajuste y el color de fondo.", "选择分辨率、适配模式和背景色。"], "Chọn hình dạng mặt nạ và chỉnh độ mờ. Với \"Tự xóa viền thủ công\", hãy khoanh vùng muốn giữ rồi bấm \"Hoàn thành vẽ mask\".": ["Pick a mask shape and adjust the fade. With \"Manual erase\", lasso the area you want to keep, then press \"Finish mask\".", "ເລືອກຮູບຮ່າງມາສກ໌ ແລະ ປັບຄວາມຈາງ. ຖ້າໃຊ້ \"ລົບຂອບດ້ວຍມື\" ໃຫ້ວົງບໍລິເວນທີ່ຕ້ອງການເກັບໄວ້ ແລ້ວກົດ \"ສຳເລັດມາສກ໌\".", "เลือกรูปทรงมาสก์และปรับความจาง หากใช้ \"ลบขอบด้วยตนเอง\" ให้วงพื้นที่ที่ต้องการเก็บ แล้วกด \"เสร็จสิ้นมาสก์\"", "Elige la forma de la máscara y ajusta el desvanecido. Con «Borrado manual», rodea la zona que quieres conservar y pulsa «Terminar máscara».", "选择蒙版形状并调整渐隐程度。使用“手动擦除边缘”时，先圈出要保留的区域，再点击“完成蒙版”。"], "Xem trước trên khung Tivi và đổi kiểu khung nếu muốn.": ["Check the preview on the TV frame and change the frame style if you like.", "ເບິ່ງຕົວຢ່າງໃນກອບທີວີ ແລະ ປ່ຽນແບບກອບຕາມຕ້ອງການ.", "ดูตัวอย่างบนกรอบทีวี และเปลี่ยนรูปแบบกรอบได้ตามต้องการ", "Revisa la vista previa en el marco del TV y cambia el estilo si quieres.", "在电视边框中查看预览，可按需更换边框样式。"], "Bấm \"Tải ảnh chuẩn Art Mode\", rồi chép file JPEG vào TV (qua USB hoặc ứng dụng SmartThings).": ["Press \"Download Art Mode image\", then transfer the JPEG to your TV (via USB or the SmartThings app).", "ກົດ \"ດາວໂຫຼດຮູບສຳລັບ Art Mode\" ແລ້ວໂອນໄຟລ໌ JPEG ເຂົ້າທີວີ (ຜ່ານ USB ຫຼື ແອັບ SmartThings).", "กด \"ดาวน์โหลดภาพสำหรับ Art Mode\" แล้วโอนไฟล์ JPEG เข้าทีวี (ผ่าน USB หรือแอป SmartThings)", "Pulsa «Descargar imagen para Art Mode» y pasa el JPEG al TV (por USB o con la app SmartThings).", "点击“下载 Art Mode 图片”，再通过 USB 或 SmartThings 应用把 JPEG 传到电视。"], "Mẹo: trên điện thoại, dùng nút nổi ở góc dưới bên trái để chuyển nhanh giữa ảnh xem trước và phần chỉnh.": ["Tip: on a phone, use the floating button at the bottom left to jump between the preview and the settings.", "ເຄັດລັບ: ໃນໂທລະສັບ ໃຫ້ໃຊ້ປຸ່ມລອຍທີ່ມຸມລຸ່ມຊ້າຍ ເພື່ອສະຫຼັບລະຫວ່າງຕົວຢ່າງ ແລະ ການຕັ້ງຄ່າ.", "เคล็ดลับ: บนโทรศัพท์ ให้ใช้ปุ่มลอยที่มุมซ้ายล่างเพื่อสลับระหว่างตัวอย่างกับการตั้งค่า", "Consejo: en el móvil, usa el botón flotante de la esquina inferior izquierda para alternar entre la vista previa y los ajustes.", "提示：在手机上，可使用左下角的悬浮按钮在预览和设置之间快速切换。"], "Nhấn hoặc kéo thả ảnh khác vào đây để thay đổi": ["Click or drop another image here to change it", "ກົດ ຫຼື ລາກຮູບອື່ນມາວາງທີ່ນີ້ເພື່ອປ່ຽນ", "แตะหรือลากภาพอื่นมาวางที่นี่เพื่อเปลี่ยน", "Haz clic o suelta otra imagen aquí para cambiarla", "点击或拖入其他图片以更换"], "✔ Đã chọn:": ["✔ Selected:", "✔ ເລືອກແລ້ວ:", "✔ เลือกแล้ว:", "✔ Seleccionada:", "✔ 已选择："], "Vui lòng chọn file hình ảnh (JPG, PNG, WEBP)": ["Please choose an image file (JPG, PNG, WEBP)", "ກະລຸນາເລືອກໄຟລ໌ຮູບ (JPG, PNG, WEBP)", "กรุณาเลือกไฟล์ภาพ (JPG, PNG, WEBP)", "Elige un archivo de imagen (JPG, PNG, WEBP)", "请选择图片文件（JPG、PNG、WEBP）"], "Đã tải ảnh lên thành công!": ["Image loaded!", "ໂຫຼດຮູບສຳເລັດ!", "โหลดภาพสำเร็จ!", "¡Imagen cargada!", "图片已加载！"], "Đã nạp bức tranh nghệ thuật mẫu!": ["Sample painting loaded!", "ໂຫຼດຮູບແຕ້ມຕົວຢ່າງແລ້ວ!", "โหลดภาพวาดตัวอย่างแล้ว!", "¡Pintura de muestra cargada!", "示例画作已加载！"], "Đã khôi phục cài đặt mặc định": ["Settings reset to defaults", "ຣີເຊັດການຕັ້ງຄ່າເປັນຄ່າເລີ່ມຕົ້ນແລ້ວ", "รีเซ็ตการตั้งค่าเป็นค่าเริ่มต้นแล้ว", "Ajustes restablecidos", "已恢复默认设置"], "Hãy kéo chuột khoanh quanh vùng muốn giữ trước": ["First drag around the area you want to keep", "ກະລຸນາລາກວົງອ້ອມບໍລິເວນທີ່ຕ້ອງການເກັບໄວ້ກ່ອນ", "โปรดลากวงรอบพื้นที่ที่ต้องการเก็บก่อน", "Primero rodea la zona que quieres conservar", "请先围绕要保留的区域拖动鼠标"], "Đã hoàn thành mask: vùng ngoài mờ dần về màu nền": ["Mask done: the outside now fades to the background", "ມາສກ໌ສຳເລັດ: ສ່ວນນອກຈາງເຂົ້າສີພື້ນຫຼັງແລ້ວ", "มาสก์เสร็จแล้ว: ส่วนนอกจางไปเป็นสีพื้นหลัง", "Máscara lista: el exterior se desvanece al fondo", "蒙版完成：外部区域已渐隐至背景"], "đang tính...": ["calculating…", "ກຳລັງຄິດໄລ່…", "กำลังคำนวณ…", "calculando…", "计算中…"], "không xác định": ["unknown", "ບໍ່ຮູ້", "ไม่ทราบ", "desconocido", "未知"], "Đang xử lý phong cách, vui lòng đợi...": ["Applying style, please wait…", "ກຳລັງໃຊ້ແບບ, ກະລຸນາລໍຖ້າ…", "กำลังใช้สไตล์ โปรดรอสักครู่…", "Aplicando estilo, espera un momento…", "正在应用风格，请稍候…"], "Đã áp dụng phong cách!": ["Style applied!", "ໃຊ້ແບບສຳເລັດ!", "ใช้สไตล์แล้ว!", "¡Estilo aplicado!", "风格已应用！"], "Lỗi xử lý phong cách:": ["Style error:", "ຂໍ້ຜິດພາດຂອງແບບ:", "ข้อผิดพลาดของสไตล์:", "Error de estilo:", "风格处理出错："], "Đang đóng gói file 100% Quality...": ["Packing 100% quality file…", "ກຳລັງສ້າງໄຟລ໌ຄຸນນະພາບ 100%…", "กำลังสร้างไฟล์คุณภาพ 100%…", "Generando archivo de calidad 100%…", "正在生成 100% 质量文件…"], "Không tạo được file (có thể thiếu bộ nhớ). Hãy thử độ phân giải thấp hơn.": ["Could not create the file (maybe out of memory). Try a lower resolution.", "ສ້າງໄຟລ໌ບໍ່ໄດ້ (ອາດຈະຫນ່ວຍຄວາມຈຳບໍ່ພໍ). ລອງຄວາມລະອຽດຕ່ຳລົງ.", "สร้างไฟล์ไม่ได้ (อาจหน่วยความจำไม่พอ) ลองใช้ความละเอียดต่ำลง", "No se pudo crear el archivo (quizá falta memoria). Prueba una resolución menor.", "无法生成文件（可能内存不足），请尝试较低分辨率。"], "Đã xuất file tranh Art Mode 16:9 thành công!": ["Art Mode 16:9 image exported!", "ສົ່ງອອກຮູບ Art Mode 16:9 ສຳເລັດ!", "ส่งออกภาพ Art Mode 16:9 สำเร็จ!", "¡Imagen Art Mode 16:9 exportada!", "Art Mode 16:9 图片已导出！"], "Lỗi khi tải file:": ["Download error:", "ຂໍ້ຜິດພາດໃນການດາວໂຫຼດ:", "ข้อผิดพลาดในการดาวน์โหลด:", "Error al descargar:", "下载出错："], "Thông số": ["Settings", "ຕັ້ງຄ່າ", "ตั้งค่า", "Ajustes", "设置"], "Xem tranh": ["Preview", "ເບິ່ງຮູບ", "ดูภาพ", "Vista previa", "预览"], "Phạm vi áp dụng": ["Apply to", "ໃຊ້ກັບ", "ใช้กับ", "Aplicar a", "应用范围"], "Toàn bộ bức tranh": ["The whole picture", "ທັງຮູບ", "ทั้งภาพ", "Toda la imagen", "整幅图片"], "Các vùng khoanh thủ công (mỗi vùng một phong cách)": ["Selected regions (one style per region)", "ແຕ່ລະບໍລິເວນທີ່ວົງເອງ (ແຕ່ລະບໍລິເວນຄົນລະແບບ)", "เฉพาะบางพื้นที่ที่วงเอง (แต่ละพื้นที่ใช้คนละสไตล์)", "Zonas seleccionadas (un estilo por zona)", "手动圈选的区域（每个区域一种风格）"], "Chọn phong cách ở trên, khoanh quanh một vùng trên ảnh Tivi rồi bấm \"Hoàn thành vùng\". Lặp lại với phong cách khác cho vùng khác. \"Vẽ lại\" sẽ vẽ lại vùng cuối cùng.": ["Pick a style above, lasso a region on the TV preview, then press \"Finish region\". Repeat with another style for another region. \"Repaint\" redraws the last region.", "ເລືອກແບບຂ້າງເທິງ, ວົງບໍລິເວນໃນຕົວຢ່າງທີວີ ແລ້ວກົດ \"ສຳເລັດບໍລິເວນ\". ເຮັດຊ້ຳດ້ວຍແບບອື່ນສຳລັບບໍລິເວນອື່ນ. \"ແຕ້ມໃໝ່\" ຈະແຕ້ມບໍລິເວນສຸດທ້າຍຄືນໃໝ່.", "เลือกสไตล์ด้านบน วงพื้นที่บนตัวอย่างทีวี แล้วกด \"เสร็จสิ้นพื้นที่\" ทำซ้ำด้วยสไตล์อื่นสำหรับพื้นที่อื่น \"วาดใหม่\" จะวาดพื้นที่สุดท้ายใหม่", "Elige un estilo arriba, rodea una zona en la vista previa y pulsa «Terminar zona». Repite con otro estilo para otra zona. «Repintar» vuelve a pintar la última zona.", "先在上方选择风格，在电视预览上圈出一个区域，再点击“完成区域”。换一种风格可继续圈选其他区域。“重绘”会重绘最后一个区域。"], "Hoàn thành vùng (áp dụng)": ["Finish region (apply)", "ສຳເລັດບໍລິເວນ (ນຳໃຊ້)", "เสร็จสิ้นพื้นที่ (นำไปใช้)", "Terminar zona (aplicar)", "完成区域（应用）"], "Khoanh vùng: BẬT": ["Lasso: ON", "ວົງບໍລິເວນ: ເປີດ", "วงพื้นที่: เปิด", "Lazo: ACTIVADO", "圈选：开"], "Khoanh vùng: TẮT": ["Lasso: OFF", "ວົງບໍລິເວນ: ປິດ", "วงพื้นที่: ปิด", "Lazo: DESACTIVADO", "圈选：关"], "Xóa tất cả vùng": ["Remove all regions", "ລຶບທຸກບໍລິເວນ", "ลบทุกพื้นที่", "Quitar todas las zonas", "清除所有区域"], "Vùng": ["Region", "ບໍລິເວນ", "พื้นที่", "Zona", "区域"], "Hãy chọn một phong cách trước": ["Choose a style first", "ກະລຸນາເລືອກແບບກ່ອນ", "โปรดเลือกสไตล์ก่อน", "Elige primero un estilo", "请先选择一种风格"], "Đã áp dụng phong cách cho vùng!": ["Style applied to the region!", "ໃຊ້ແບບກັບບໍລິເວນແລ້ວ!", "ใช้สไตล์กับพื้นที่แล้ว!", "¡Estilo aplicado a la zona!", "已为该区域应用风格！"], "Chưa có vùng nào": ["No regions yet", "ຍັງບໍ່ມີບໍລິເວນ", "ยังไม่มีพื้นที่", "Aún no hay zonas", "还没有区域"]};
         const LANG_IDX = { en: 0, lo: 1, th: 2, es: 3, zh: 4 };
         let currentLang = 'en';
         const t = (key) => (currentLang === 'vi' || !I18N[key]) ? key : I18N[key][LANG_IDX[currentLang]];
@@ -464,6 +481,7 @@
             updateResolutionLabels();
             updateDropText();
             updateJumpLabel();
+            renderRegionList(); updateRegionDrawLabel();
             if (state.image) scheduleSizeEstimate();
         }
 
@@ -619,6 +637,7 @@
             setupCustomMaskDrawing();
             setupStyleControls();
             setupMobileUX();
+            setupRegionControls();
         });
 
         // 1. Upload Handlers
@@ -661,6 +680,7 @@
 
         function markImageLoaded(src, name) {
             state.styled = null; state.styleRaw = null;
+            state.regions = []; state.regionStrokes = []; state.regionSrc = null; renderRegionList();
             if (state.styleMode !== 'none') applyStyle();
             const thumb = document.getElementById('dropThumb');
             thumb.src = src;
@@ -843,6 +863,8 @@
                 updateResolutionLabels();
                 renderArtCanvas();
                 state.styleMode = 'none'; state.styled = null; state.styleRaw = null;
+                state.styleScope = 'all'; state.regions = []; state.regionStrokes = []; state.regionSrc = null;
+                document.getElementById('selectStyleScope').value = 'all'; updateScopeUI(); renderRegionList();
                 document.getElementById('selectStyleMode').value = 'none';
                 document.getElementById('artistWrap').classList.add('hidden');
                 document.getElementById('styleIntensityWrap').classList.add('hidden');
@@ -1041,25 +1063,32 @@
             }
 
             function startDrawing(evt) {
-                if (state.maskShape !== 'custom' || !state.image) return;
+                if (!state.image) return;
+                const reg = regionActive();
+                if (!reg && state.maskShape !== 'custom') return;
                 evt.preventDefault();
-                ensureMaskSize();
                 state.isDrawing = true;
                 const pos = getMousePos(evt);
-                if (state.customTool === 'lasso') {
-                    state.lassoStrokes.push([pos]);   // mỗi lần nhấn chuột là một nét mới, các nét được giữ lại
+                if (reg) {
+                    state.regionStrokes.push([pos]);
                 } else {
-                    state.lastPos = pos;
-                    drawBrushSegment(pos, pos);
+                    ensureMaskSize();
+                    if (state.customTool === 'lasso') state.lassoStrokes.push([pos]);
+                    else { state.lastPos = pos; drawBrushSegment(pos, pos); }
                 }
                 renderArtCanvas();
             }
 
             function drawStroke(evt) {
-                if (!state.isDrawing || state.maskShape !== 'custom') return;
+                if (!state.isDrawing) return;
+                const reg = regionActive();
+                if (!reg && state.maskShape !== 'custom') return;
                 evt.preventDefault();
                 const pos = getMousePos(evt);
-                if (state.customTool === 'lasso') {
+                if (reg) {
+                    const cur = state.regionStrokes[state.regionStrokes.length - 1];
+                    if (cur) cur.push(pos);
+                } else if (state.customTool === 'lasso') {
                     const cur = state.lassoStrokes[state.lassoStrokes.length - 1];
                     if (cur) cur.push(pos);
                 } else {
@@ -1070,10 +1099,10 @@
             }
 
             function stopDrawing(evt) {
-                if (!state.isDrawing || state.maskShape !== 'custom') return;
+                if (!state.isDrawing) return;
                 if (evt && evt.cancelable) evt.preventDefault();
                 state.isDrawing = false;
-                renderArtCanvas();   // lasso: đường nét đứt vẫn giữ; cọ xóa: áp dụng blur viền
+                renderArtCanvas();
             }
 
             previewCanvas.addEventListener('pointerdown', (e) => {
@@ -1118,7 +1147,7 @@
         }
 
         // ===== Biến ảnh thật thành tranh / phong cách =====
-        Object.assign(state, { styleMode: 'none', artist: 'vangogh', styleIntensity: 100, styleSeed: Math.floor(Math.random() * 1e9), styled: null, styleRaw: null, styleSrc: null });
+        Object.assign(state, { styleMode: 'none', artist: 'vangogh', styleIntensity: 100, styleSeed: Math.floor(Math.random() * 1e9), styleScope: 'all', regions: [], regionStrokes: [], regionDrawing: true, regionSrc: null, layout: null, styled: null, styleRaw: null, styleSrc: null });
         let styleToken = 0;
 
         function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
@@ -1445,6 +1474,7 @@
         };
 
         function blendStyled() {
+            if (state.styleScope === 'region') return;
             if (!state.styleRaw || !state.styleSrc) return;
             const s = state.styleSrc, f = document.createElement('canvas');
             f.width = s.width; f.height = s.height;
@@ -1458,6 +1488,7 @@
 
         function applyStyle() {
             if (!state.image) return;
+            if (state.styleScope === 'region') { composeRegions(); return; }
             const mode = state.styleMode;
             if (mode === 'none') { state.styled = null; state.styleRaw = null; renderArtCanvas(); return; }
             showToast('Đang xử lý phong cách, vui lòng đợi...');
@@ -1465,12 +1496,7 @@
             setTimeout(() => {
                 try {
                     const src = workCanvas(state.image, (mode === 'oil' || mode === 'watercolor' ? 1100 : 1500) * (IS_MOBILE ? 0.7 : 1));
-                    let raw;
-                    if (mode === 'cartoon') raw = styleCartoon(src, 6, 30, false);
-                    else if (mode === 'sketch') raw = styleSketch(src);
-                    else if (mode === 'oil') raw = styleOil(src, 4, 20);
-                    else if (mode === 'watercolor') raw = styleWatercolor(src);
-                    else raw = ARTISTS[state.artist](src);
+                    const raw = runStyle(mode, state.artist, src);
                     if (token !== styleToken) return;
                     state.styleSrc = src; state.styleRaw = raw;
                     blendStyled();
@@ -1487,15 +1513,164 @@
                 state.styleMode = e.target.value;
                 document.getElementById('artistWrap').classList.toggle('hidden', state.styleMode !== 'artist');
                 document.getElementById('styleIntensityWrap').classList.toggle('hidden', state.styleMode === 'none');
+                updateScopeUI();
                 applyStyle();
             });
-            document.getElementById('btnReroll').addEventListener('click', () => { state.styleSeed = Math.floor(Math.random() * 1e9); applyStyle(); });
+            document.getElementById('btnReroll').addEventListener('click', () => { state.styleSeed = Math.floor(Math.random() * 1e9); if (state.styleScope === 'region') rerollLastRegion(); else applyStyle(); });
             document.getElementById('selectArtist').addEventListener('change', (e) => { state.artist = e.target.value; applyStyle(); });
             document.getElementById('sliderStyleIntensity').addEventListener('input', (e) => {
                 state.styleIntensity = parseInt(e.target.value);
                 document.getElementById('valStyleIntensity').textContent = state.styleIntensity + '%';
                 blendStyled();
             });
+        }
+
+        // ===== Phong cách theo từng vùng khoanh thủ công =====
+        const regionActive = () => state.styleScope === 'region' && state.styleMode !== 'none' && state.regionDrawing && !!state.image;
+        function updateCanvasMode() {
+            const on = state.maskShape === 'custom' || regionActive();
+            previewCanvas.classList.toggle('cursor-crosshair', on);
+            previewCanvas.classList.toggle('canvas-draw', on);
+        }
+        function updateScopeUI() {
+            const on = state.styleMode !== 'none';
+            document.getElementById('scopeWrap').classList.toggle('hidden', !on);
+            document.getElementById('regionPanel').classList.toggle('hidden', !(on && state.styleScope === 'region'));
+            updateCanvasMode();
+        }
+        function updateRegionDrawLabel() {
+            document.getElementById('btnRegionDraw').textContent = t(state.regionDrawing ? 'Khoanh vùng: BẬT' : 'Khoanh vùng: TẮT');
+        }
+        function runStyle(mode, artist, src, seed) {
+            const old = state.styleSeed;
+            if (seed !== undefined) state.styleSeed = seed;
+            try {
+                if (mode === 'cartoon') return styleCartoon(src, 6, 30, false);
+                if (mode === 'sketch') return styleSketch(src);
+                if (mode === 'oil') return styleOil(src, 4, 20);
+                if (mode === 'watercolor') return styleWatercolor(src);
+                return ARTISTS[artist](src);
+            } finally { state.styleSeed = old; }
+        }
+        function regionLabel(r) {
+            if (r.mode === 'artist') {
+                const o = document.querySelector(`#selectArtist option[value="${r.artist}"]`);
+                return o ? o.textContent.trim() : r.artist;
+            }
+            return t({ cartoon: 'Hoạt hình (Cartoon)', sketch: 'Phác thảo bút chì (Pencil Sketch)', oil: 'Tranh sơn dầu (Oil Painting)', watercolor: 'Tranh màu nước (Watercolor)' }[r.mode]);
+        }
+        function renderRegionList() {
+            const ul = document.getElementById('regionList');
+            if (!ul) return;
+            ul.innerHTML = '';
+            state.regions.forEach((r, i) => {
+                const li = document.createElement('li');
+                li.className = 'flex items-center justify-between gap-2 px-2 py-1 rounded bg-slate-950 border border-slate-800';
+                const sp = document.createElement('span');
+                sp.className = 'text-slate-300 truncate';
+                sp.textContent = `${t('Vùng')} ${i + 1}: ${regionLabel(r)}`;
+                const b = document.createElement('button');
+                b.type = 'button'; b.className = 'text-rose-300 hover:text-rose-200 px-1'; b.setAttribute('aria-label', 'Delete');
+                b.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                b.addEventListener('click', () => { state.regions.splice(i, 1); renderRegionList(); composeRegions(); });
+                li.append(sp, b); ul.appendChild(li);
+            });
+        }
+        function ensureRegionSrc() {
+            if (!state.regionSrc) state.regionSrc = workCanvas(state.image, 1500 * (IS_MOBILE ? 0.7 : 1));
+            return state.regionSrc;
+        }
+        function composeRegions() {
+            if (!state.image) return;
+            if (state.styleMode === 'none' || !state.regions.length || !state.regionSrc) { state.styled = null; renderArtCanvas(); return; }
+            const src = state.regionSrc, w = src.width, h = src.height;
+            const out = document.createElement('canvas'); out.width = w; out.height = h;
+            const c = out.getContext('2d');
+            c.drawImage(src, 0, 0);
+            const L = state.layout || { newW: w };
+            const feather = Math.max(1, (state.blurRadius + state.gradientWidth / 4) * (w / L.newW));
+            for (const r of state.regions) {
+                const layer = document.createElement('canvas'); layer.width = w; layer.height = h;
+                const lc = layer.getContext('2d');
+                lc.drawImage(src, 0, 0);
+                lc.globalAlpha = r.intensity / 100; lc.drawImage(r.raw, 0, 0, w, h); lc.globalAlpha = 1;
+                const m = document.createElement('canvas'); m.width = w; m.height = h;
+                const mc = m.getContext('2d');
+                mc.fillStyle = '#fff'; mc.beginPath();
+                r.pts.forEach((p, i) => (i ? mc.lineTo(p.x * w, p.y * h) : mc.moveTo(p.x * w, p.y * h)));
+                mc.closePath(); mc.fill();
+                lc.globalCompositeOperation = 'destination-in';
+                lc.drawImage(blurCanvas(m, feather), 0, 0);
+                c.drawImage(layer, 0, 0);
+            }
+            state.styled = out;
+            renderArtCanvas();
+        }
+        function finishRegion() {
+            const pts = state.regionStrokes.flat();
+            if (state.styleMode === 'none') { showToast('Hãy chọn một phong cách trước', true); return; }
+            if (pts.length < 3 || !state.layout) { showToast('Hãy kéo chuột khoanh quanh vùng muốn giữ trước', true); return; }
+            const L = state.layout;
+            const norm = pts.map((p) => ({ x: (p.x - L.offsetX) / L.newW, y: (p.y - L.offsetY) / L.newH }));
+            const mode = state.styleMode, artist = state.artist, intensity = state.styleIntensity;
+            showToast('Đang xử lý phong cách, vui lòng đợi...');
+            setTimeout(() => {
+                try {
+                    const seed = Math.floor(Math.random() * 1e9);
+                    const raw = runStyle(mode, artist, ensureRegionSrc(), seed);
+                    state.regions.push({ pts: norm, mode, artist, seed, intensity, raw });
+                    state.regionStrokes = [];
+                    renderRegionList(); composeRegions();
+                    showToast('Đã áp dụng phong cách cho vùng!');
+                } catch (err) { showToast(t('Lỗi xử lý phong cách:') + ' ' + err.message, true); }
+            }, 60);
+        }
+        function rerollLastRegion() {
+            const r = state.regions[state.regions.length - 1];
+            if (!r) { showToast('Chưa có vùng nào', true); return; }
+            showToast('Đang xử lý phong cách, vui lòng đợi...');
+            setTimeout(() => {
+                try {
+                    r.seed = Math.floor(Math.random() * 1e9);
+                    r.raw = runStyle(r.mode, r.artist, ensureRegionSrc(), r.seed);
+                    composeRegions();
+                    showToast('Đã áp dụng phong cách cho vùng!');
+                } catch (err) { showToast(t('Lỗi xử lý phong cách:') + ' ' + err.message, true); }
+            }, 60);
+        }
+        function drawRegionOutline() {
+            const strokes = state.regionStrokes;
+            if (!strokes.length || !state.regionDrawing || state.styleScope !== 'region') return;
+            const p = previewCanvas.getContext('2d'), lw = Math.max(2, state.targetWidth / 300);
+            p.save();
+            const kk = previewCanvas.width / state.targetWidth; p.scale(kk, kk);
+            p.lineWidth = lw; p.lineJoin = 'round'; p.lineCap = 'round';
+            p.setLineDash([lw * 3, lw * 2]); p.strokeStyle = '#22d3ee';
+            strokes.forEach((st) => {
+                if (st.length < 2) return;
+                p.beginPath(); p.moveTo(st[0].x, st[0].y);
+                for (let i = 1; i < st.length; i++) p.lineTo(st[i].x, st[i].y);
+                p.stroke();
+            });
+            const first = strokes[0][0], ls = strokes[strokes.length - 1], last = ls[ls.length - 1];
+            p.globalAlpha = 0.5; p.beginPath(); p.moveTo(last.x, last.y); p.lineTo(first.x, first.y); p.stroke();
+            p.restore();
+        }
+        function setupRegionControls() {
+            const redo = (() => { let tm; return () => { clearTimeout(tm); tm = setTimeout(() => { if (state.styleScope === 'region' && state.regions.length) composeRegions(); }, 120); }; })();
+            document.getElementById('sliderGradientWidth').addEventListener('input', redo);
+            document.getElementById('sliderBlurRadius').addEventListener('input', redo);
+            document.getElementById('selectMaskShape').addEventListener('change', updateCanvasMode);
+            document.getElementById('selectStyleScope').addEventListener('change', (e) => {
+                state.styleScope = e.target.value;
+                updateScopeUI();
+                if (state.image) { if (state.styleScope === 'region') composeRegions(); else applyStyle(); }
+            });
+            document.getElementById('btnRegionDone').addEventListener('click', finishRegion);
+            document.getElementById('btnRegionUndo').addEventListener('click', () => { state.regionStrokes.pop(); renderArtCanvas(); });
+            document.getElementById('btnRegionDraw').addEventListener('click', () => { state.regionDrawing = !state.regionDrawing; updateRegionDrawLabel(); updateCanvasMode(); renderArtCanvas(); });
+            document.getElementById('btnRegionClear').addEventListener('click', () => { state.regions = []; state.regionStrokes = []; renderRegionList(); composeRegions(); });
+            updateScopeUI(); renderRegionList();
         }
 
         // 3. Core Image Processing
@@ -1539,6 +1714,7 @@
 
             const offsetX = Math.floor((targetW - newW) / 2);
             const offsetY = Math.floor((targetH - newH) / 2);
+            state.layout = { offsetX, offsetY, newW, newH };
             tCtx.imageSmoothingEnabled = true;
             tCtx.imageSmoothingQuality = 'high';
             tCtx.drawImage(img, offsetX, offsetY, newW, newH);
@@ -1622,6 +1798,7 @@
             if (!full) {
                 updatePreviewDisplay(canvas);
                 drawLassoOutline();
+                drawRegionOutline();
                 scheduleSizeEstimate();
             }
             return canvas;
