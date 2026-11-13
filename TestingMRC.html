@@ -87,6 +87,10 @@ footer h4{color:#fff;margin:0 0 10px}footer a{display:block;padding:3px 0}footer
 .copy{border-top:1px solid rgba(255,255,255,.14);margin-top:24px;padding-top:16px;font-size:12.5px}
 .langsel{background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:8px;height:38px;padding:0 8px;font:inherit;font-size:14px;cursor:pointer}.langsel option{color:#12263a}
 html[lang=th] body{line-height:1.8}html[lang=my] body{line-height:2.05}html[lang=th] h1,html[lang=th] h2{line-height:1.45}html[lang=my] h1,html[lang=my] h2{line-height:1.75}html[lang=my] .btn,html[lang=my] .chip{line-height:1.9}html[lang=lo] body{line-height:1.8}html[lang=km] body{line-height:1.95}html[lang=lo] h1,html[lang=lo] h2{line-height:1.5}html[lang=km] h1,html[lang=km] h2{line-height:1.7}html[lang=km] .btn,html[lang=km] .chip{line-height:1.8}
+.langbox{position:relative}#langbtn{display:inline-flex;align-items:center;gap:8px;padding:0 10px;font-weight:600}#langbtn::after{content:"▾";font-size:12px;opacity:.8}#langbtn svg,#langlist svg{width:24px;height:16px;border-radius:3px;box-shadow:0 0 0 1px rgba(0,0,0,.25);flex:none}
+#langlist{position:absolute;right:0;top:46px;margin:0;padding:6px;list-style:none;min-width:190px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 34px rgba(7,41,77,.28);z-index:70}
+#langlist li{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:14px}#langlist li:hover,#langlist li[aria-selected=true]{background:var(--bg)}
+@media (max-width:900px){#langlist{left:0;right:auto}}
 .pub .cover{position:relative;overflow:hidden}.pub .cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.pub .cover.has{height:170px;font-size:0}.vid .thumb{background-size:cover;background-position:center}.mapframe{border-radius:16px;overflow:hidden;border:1px solid var(--line);height:min(72vh,580px);background:var(--bg)}.mapframe iframe{width:100%;height:100%;border:0}#logo{height:44px;width:auto;background:#fff;border-radius:8px;padding:4px 10px}#map .legend .chip{cursor:default}
 #top{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:44px;height:44px;border-radius:50%;border:0;background:var(--teal);color:#fff;font-size:18px;cursor:pointer;display:none;box-shadow:0 6px 16px rgba(0,0,0,.25);z-index:40}
 @media (max-width:900px){
@@ -109,7 +113,8 @@ html[lang=th] body{line-height:1.8}html[lang=my] body{line-height:2.05}html[lang
   <button class="icon-btn" id="burger" aria-label="Menu">☰</button>
   <nav id="nav">
    <a href="#countries">Countries</a><a href="#map">Map</a><a href="#water">Water Levels</a><a href="#publications">Publications</a><a href="#videos">Videos</a><a href="#news">News</a>
-   <select id="lang" class="langsel" aria-label="Language"><option value="en">English</option><option value="vi">Tiếng Việt</option><option value="lo">ລາວ</option><option value="km">ខ្មែរ</option><option value="th">ไทย</option><option value="my">မြန်မာ</option><option value="zh">中文</option></select>
+   <div class="langbox"><button type="button" id="langbtn" class="langsel" aria-haspopup="listbox" aria-expanded="false" aria-label="Language"></button><ul id="langlist" role="listbox" hidden></ul></div>
+   <select id="lang" class="langsel" aria-label="Language" hidden><option value="en">English</option><option value="vi">Tiếng Việt</option><option value="lo">ລາວ</option><option value="km">ខ្មែរ</option><option value="th">ไทย</option><option value="my">မြန်မာ</option><option value="zh">中文</option></select>
    <button class="icon-btn" id="theme" aria-label="Toggle theme">◐</button>
   </nav>
  </div>
@@ -418,10 +423,28 @@ html[lang=th] body{line-height:1.8}html[lang=my] body{line-height:2.05}html[lang
  P.push("ค้นหาสิ่งพิมพ์…","ထုတ်ဝေမှုများရှာရန်…","搜索出版物…");
  T.forEach(function(r){map[r[0]]=r});
  while((nd=tw.nextNode())){var pn=nd.parentNode.nodeName,k=nd.nodeValue.trim();if(pn!=='SCRIPT'&&pn!=='STYLE'&&pn!=='OPTION'&&map[k])nodes.push([nd,nd.nodeValue,k])}
+ /* language dropdown with flags */
+ var FL={
+en:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#012169"/><path d="M0 0l30 20M30 0L0 20" stroke="#fff" stroke-width="4"/><path d="M0 0l30 20M30 0L0 20" stroke="#c8102e" stroke-width="1.6"/><path d="M15 0v20M0 10h30" stroke="#fff" stroke-width="6"/><path d="M15 0v20M0 10h30" stroke="#c8102e" stroke-width="3.4"/></svg>',
+vi:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#da251d"/><path d="M15 4l1.8 5.5h5.8l-4.7 3.4 1.8 5.5-4.7-3.4-4.7 3.4 1.8-5.5-4.7-3.4h5.8z" fill="#ff0"/></svg>',
+lo:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#ce1126"/><rect y="5" width="30" height="10" fill="#002868"/><circle cx="15" cy="10" r="3.8" fill="#fff"/></svg>',
+km:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#032ea1"/><rect y="5" width="30" height="10" fill="#e00025"/><path d="M8.5 13.5h13v-1h-1.2v-2h-1V9h-1V7.5h-1V6.5h-1.6V8h-1.4V6.5h-1.6V8h-1v1.5h-1v1.5h-1v2H8.5z" fill="#fff"/></svg>',
+th:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#a51931"/><rect y="3.3" width="30" height="13.4" fill="#f4f5f8"/><rect y="6.7" width="30" height="6.6" fill="#2d2a4a"/></svg>',
+my:'<svg viewBox="0 0 30 20"><rect width="30" height="6.7" fill="#fecb00"/><rect y="6.7" width="30" height="6.6" fill="#34b233"/><rect y="13.3" width="30" height="6.7" fill="#ea2839"/><path d="M15 3.8l1.9 5.9h6.2l-5 3.6 1.9 5.9-5-3.6-5 3.6 1.9-5.9-5-3.6h6.2z" fill="#fff"/></svg>',
+zh:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#de2910"/><path d="M5 2.5l1.1 3.4h3.6l-2.9 2.1 1.1 3.4L5 9.3l-2.9 2.1 1.1-3.4L.3 5.9h3.6z" fill="#ffde00"/></svg>'},
+ NM={en:'English',vi:'Tiếng Việt',lo:'ລາວ',km:'ខ្មែរ',th:'ไทย',my:'မြန်မာ',zh:'中文'},
+ lb=document.getElementById('langbtn'),ll=document.getElementById('langlist');
+ L.forEach(function(c){var li=document.createElement('li');li.setAttribute('role','option');li.dataset.l=c;li.innerHTML=FL[c]+'<span>'+NM[c]+'</span>';ll.appendChild(li)});
+ function syncLang(c){lb.innerHTML=FL[c]+'<span>'+c.toUpperCase()+'</span>';[].forEach.call(ll.children,function(li){li.setAttribute('aria-selected',li.dataset.l===c)})}
+ lb.onclick=function(e){e.stopPropagation();var o=ll.hidden;ll.hidden=!o;lb.setAttribute('aria-expanded',o)};
+ ll.onclick=function(e){var li=e.target.closest('li');if(!li)return;ll.hidden=true;lb.setAttribute('aria-expanded',false);setLang(li.dataset.l)};
+ document.addEventListener('click',function(){ll.hidden=true});
+ document.addEventListener('keydown',function(e){if(e.key==='Escape')ll.hidden=true});
+ syncLang('en');
  var title0=document.title;
  function setLang(l){var i=L.indexOf(l);if(i<0)i=0;
   nodes.forEach(function(x){var m=x[1].match(/^(\s*)[\s\S]*?(\s*)$/);x[0].nodeValue=m[1]+(map[x[2]][i]||map[x[2]][0])+m[2]});
-  q.placeholder=P[i];root.lang=L[i];sel.value=L[i];document.title=map[title0]?map[title0][i]:title0;
+  q.placeholder=P[i];root.lang=L[i];sel.value=L[i];syncLang(L[i]);document.title=map[title0]?map[title0][i]:title0;
   try{localStorage.setItem('mk-lang',L[i])}catch(e){}}
  sel.onchange=function(){setLang(sel.value)};
  var saved='en';try{saved=localStorage.getItem('mk-lang')||'en'}catch(e){}
@@ -432,7 +455,7 @@ html[lang=th] body{line-height:1.8}html[lang=my] body{line-height:2.05}html[lang
  pre(A+'daily-water-levels/bulletin.png',function(u){var b=document.getElementById('bulletin');b.src=u;b.hidden=false;document.getElementById('gsvg').style.display='none'});
  var tu=[A+'video_thumb/vdo_thumb3.png','https://img.youtube.com/vi/lVQWfxSEvYE/hqdefault.jpg',A+'video_thumb/vdo_thumb2.png'];
  document.querySelectorAll('#videos .thumb').forEach(function(t,i){pre(tu[i],function(u){t.style.backgroundImage='url('+u+')'})});
- (function(){var l=document.getElementById('logo'),C=['https://www.mrcmekong.org/mrcmekong/images/mrc/MRC-logo.svg','mrc-logo.png'];function t(i){if(i>=C.length)return;pre(C[i],function(u){l.src=u;l.hidden=false;document.getElementById('logosvg').style.display='none'});var im=new Image();im.onerror=function(){t(i+1)};im.src=C[i]}t(0)})();
+ (function(){var l=document.getElementById('logo'),C=['mrc-logo.svg','mrc-logo.png','https://www.mrcmekong.org/mrcmekong/images/mrc/MRC-logo.svg'];function t(i){if(i>=C.length)return;pre(C[i],function(u){l.src=u;l.hidden=false;document.getElementById('logosvg').style.display='none'});var im=new Image();im.onerror=function(){t(i+1)};im.src=C[i]}t(0)})();
  /* MRC Atlas (TerriaJS) with the same layers as the original portal */
  var M={};function g(id,p,o){M[id]={isOpen:o,knownContainerUniqueIds:[p],type:'group'}}function w(id,p,x){M[id]=Object.assign({knownContainerUniqueIds:[p],type:'wms'},x||{})}
  var R='Root Group/Lower Mekong Basin Atlas',BD='Mekong Basin Atlas/Baseline Data',NT=BD+'/Navigation & Transport',ED='Mekong Basin Atlas/Environmental Dimension',DP=ED+'/Deep Pools & Rapids',CR=ED+'/Core River Monitoring Network',EC='Mekong Basin Atlas/Economic Dimension';
