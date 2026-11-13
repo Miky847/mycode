@@ -333,7 +333,7 @@
                 </div>
             </div>
 
-            <!-- Thanh công cụ Tự xóa viền thủ công (nằm trên ảnh đang thao tác) -->
+   <!-- Thanh công cụ Tự xóa viền thủ công (nằm trên ảnh đang thao tác) -->
             <div id="customBrushControls" class="hidden bg-dark-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="space-y-1.5">
@@ -436,8 +436,7 @@
     </footer>
 
     <script>
-
-      // ===== Đa ngôn ngữ (i18n) =====
+        // ===== Đa ngôn ngữ (i18n) =====
         // Khóa = câu tiếng Việt gốc; giá trị = [en, lo, th, es, zh]
         const I18N = {"Xử lý ngay trên thiết bị": ["Processed on your device", "ປະມວນຜົນໃນອຸປະກອນຂອງທ່ານ", "ประมวลผลบนอุปกรณ์ของคุณ", "Se procesa en tu dispositivo", "在您的设备上本地处理"], "Mặc định": ["Reset", "ຣີເຊັດ", "รีเซ็ต", "Restablecer", "重置"], "1. Đưa tranh vào cọ": ["1. Add your artwork", "1. ເພີ່ມຮູບຂອງທ່ານ", "1. เพิ่มภาพของคุณ", "1. Añade tu obra", "1. 添加您的作品"], "Nhấn để chọn ảnh": ["Click to choose an image", "ກົດເພື່ອເລືອກຮູບ", "แตะเพื่อเลือกรูปภาพ", "Haz clic para elegir una imagen", "点击选择图片"], "hoặc kéo thả vào đây": ["or drag and drop it here", "ຫຼື ລາກແລ້ວວາງທີ່ນີ້", "หรือลากมาวางที่นี่", "o arrástrala aquí", "或拖放到此处"], "Hỗ trợ JPG, PNG, WEBP (Khuyên dùng độ phân giải gốc cao)": ["Supports JPG, PNG, WEBP (high original resolution recommended)", "ຮອງຮັບ JPG, PNG, WEBP (ແນະນຳຄວາມລະອຽດຕົ້ນສະບັບສູງ)", "รองรับ JPG, PNG, WEBP (แนะนำให้ใช้ความละเอียดต้นฉบับสูง)", "Admite JPG, PNG, WEBP (se recomienda alta resolución original)", "支持 JPG、PNG、WEBP（建议使用高分辨率原图）"], "Chưa có ảnh?": ["No image yet?", "ຍັງບໍ່ມີຮູບບໍ?", "ยังไม่มีรูปภาพ?", "¿Aún no tienes una imagen?", "还没有图片？"], "Dùng tranh mẫu": ["Use a sample painting", "ໃຊ້ຮູບແຕ້ມຕົວຢ່າງ", "ใช้ภาพวาดตัวอย่าง", "Usar una pintura de muestra", "使用示例画作"], "Biến ảnh thật thành tranh": ["Turn photos into artwork", "ປ່ຽນຮູບຖ່າຍເປັນຮູບສິລະປະ", "เปลี่ยนภาพถ่ายเป็นงานศิลปะ", "Convierte fotos en arte", "将照片变成艺术作品"], "Giữ nguyên ảnh gốc": ["Keep original photo", "ຮັກສາຮູບຕົ້ນສະບັບ", "ใช้ภาพต้นฉบับ", "Mantener la foto original", "保持原图"], "Hoạt hình (Cartoon)": ["Cartoon", "ກາຕູນ", "การ์ตูน", "Dibujo animado", "卡通"], "Phác thảo bút chì (Pencil Sketch)": ["Pencil sketch", "ຮ່າງດ້ວຍສໍ", "ภาพสเก็ตช์ดินสอ", "Boceto a lápiz", "铅笔素描"], "Tranh sơn dầu (Oil Painting)": ["Oil painting", "ຮູບແຕ້ມສີນ້ຳມັນ", "ภาพสีน้ำมัน", "Óleo", "油画"], "Tranh màu nước (Watercolor)": ["Watercolor", "ສີນ້ຳ", "สีน้ำ", "Acuarela", "水彩画"], "Nghệ thuật theo họa sĩ...": ["In the style of an artist…", "ແບບສິລະປິນ…", "สไตล์ศิลปิน…", "Al estilo de un artista…", "按画家风格…"], "Chọn họa sĩ": ["Choose an artist", "ເລືອກສິລະປິນ", "เลือกศิลปิน", "Elige un artista", "选择画家"], "Ấn tượng & Hậu ấn tượng": ["Impressionism & Post-Impressionism", "ອິມເພຣສຊັນນິສ ແລະ ຫຼັງອິມເພຣສຊັນນິສ", "อิมเพรสชันนิสม์และโพสต์อิมเพรสชันนิสม์", "Impresionismo y Postimpresionismo", "印象派与后印象派"], "Biểu hiện, Tân nghệ thuật & Cổ điển": ["Expressionism, Art Nouveau & Classic", "ເອັກສະເປຣສຊັນນິສ, ອາຣ໌ນູໂວ ແລະ ຄລາສສິກ", "เอกซ์เพรสชันนิสม์ อาร์ตนูโว และคลาสสิก", "Expresionismo, Art Nouveau y clásico", "表现主义、新艺术与古典"], "Hiện đại & Đại chúng": ["Modern & Pop", "ທັນສະໄໝ ແລະ ປ໊ອບ", "โมเดิร์นและป๊อป", "Moderno y Pop", "现代与波普"], "Vẽ lại (ra một bức khác)": ["Repaint (get a different result)", "ແຕ້ມໃໝ່ (ໄດ້ຜົນລັບຕ່າງອອກໄປ)", "วาดใหม่ (ได้ผลลัพธ์ที่ต่างออกไป)", "Repintar (otro resultado)", "重绘（得到不同效果）"], "Cường độ hiệu ứng": ["Effect strength", "ຄວາມແຮງຂອງເອັຟເຟັກ", "ความเข้มของเอฟเฟกต์", "Intensidad del efecto", "效果强度"], "Hiệu ứng được vẽ bằng thuật toán ngay trong trình duyệt (mô phỏng cách vẽ của từng họa sĩ, không phải AI). \"Vẽ lại\" cho ra bức khác. Ảnh lớn có thể mất vài giây để xử lý.": ["Effects are drawn by algorithms right in your browser (an imitation of each artist's technique, not AI). \"Repaint\" gives a different result. Large images may take a few seconds.", "ເອັຟເຟັກຖືກແຕ້ມດ້ວຍອັລກໍຣິທຶມໃນບຣາວເຊີຂອງທ່ານ (ຈຳລອງວິທີແຕ້ມຂອງສິລະປິນ, ບໍ່ແມ່ນ AI). \"ແຕ້ມໃໝ່\" ຈະໄດ້ຜົນລັບຕ່າງອອກໄປ. ຮູບໃຫຍ່ອາດໃຊ້ເວລາສອງສາມວິນາທີ.", "เอฟเฟกต์วาดด้วยอัลกอริทึมในเบราว์เซอร์ของคุณ (เลียนแบบเทคนิคของศิลปิน ไม่ใช่ AI) กด \"วาดใหม่\" เพื่อให้ได้ผลลัพธ์ที่ต่างออกไป ภาพขนาดใหญ่อาจใช้เวลาไม่กี่วินาที", "Los efectos se dibujan con algoritmos en tu navegador (imitan la técnica de cada artista, no es IA). «Repintar» da otro resultado. Las imágenes grandes pueden tardar unos segundos.", 
 "效果由浏览器内的算法绘制（模仿画家的画法，并非 AI）。点击“重绘”可得到不同效果。大图可能需要几秒钟。"], "2. Thông số khung & Vignette": ["2. Frame & fade settings", "2. ການຕັ້ງຄ່າກອບ ແລະ ຂອບເລືອນ", "2. ตั้งค่ากรอบและขอบจาง", "2. Marco y desvanecido", "2. 画框与渐隐设置"], "Tỷ lệ Khung Canvas target (16:9)": ["Target canvas size (16:9)", "ຂະໜາດຜ້າໃບເປົ້າໝາຍ (16:9)", "ขนาดผืนผ้าใบเป้าหมาย (16:9)", "Tamaño del lienzo (16:9)", "目标画布尺寸（16:9）"], "Chuẩn Samsung 16:9": ["Samsung 16:9 standard", "ມາດຕະຖານ Samsung 16:9", "มาตรฐาน Samsung 16:9", "Estándar Samsung 16:9", "三星 16:9 标准"], "Chuẩn 4K UHD": ["4K UHD standard", "ມາດຕະຖານ 4K UHD", "มาตรฐาน 4K UHD", "Estándar 4K UHD", "4K UHD 标准"], "Tùy chỉnh Width": ["Custom width", "ກຳນົດຄວາມກວ້າງເອງ", "กำหนดความกว้างเอง", "Ancho personalizado", "自定义宽度"], "Nhập độ phân giải riêng": ["Enter your own resolution", "ປ້ອນຄວາມລະອຽດເອງ", "ระบุความละเอียดเอง", "Introduce tu resolución", "输入自定义分辨率"], "Chiều rộng mờ góc Vignette": ["Edge fade width", "ຄວາມກວ້າງຂອງຂອບເລືອນ", "ความกว้างของขอบจาง", "Ancho del desvanecido", "边缘渐隐宽度"], "Điều chỉnh độ rộng vùng mờ ở rìa tranh.": ["Sets how wide the faded border of the artwork is.", "ກຳນົດຄວາມກວ້າງຂອງຂອບທີ່ເລືອນຈາງຂອງຮູບ.", "กำหนดความกว้างของขอบที่จางลงของภาพ", "Define el ancho del borde desvanecido de la obra.", "设置作品边缘渐隐区域的宽度。"], "Độ mịn màng (GaussianBlur Mask)": ["Mask smoothness (Gaussian blur)", "ຄວາມລຽບຂອງມາສກ໌ (Gaussian blur)", "ความนุ่มนวลของมาสก์ (Gaussian blur)", "Suavidad de la máscara (desenfoque gaussiano)", "蒙版平滑度（高斯模糊）"], "Màu phông nền Canvas (Art Border Color)": ["Canvas background color", "ສີພື້ນຫຼັງຜ້າໃບ", "สีพื้นหลังผืนผ้าใบ", "Color de fondo del lienzo", "画布背景色"], "Chế độ khớp tranh": ["Fit mode", "ໂໝດປັບຮູບ", "โหมดปรับภาพ", "Modo de ajuste", "适配模式"], "Cố định chiều cao (Khuyên dùng - Thêm Vignette 2 bên)": ["Fit height (recommended, fades left & right)", "ປັບຕາມຄວາມສູງ (ແນະນຳ, ຈາງຊ້າຍ-ຂວາ)", "ปรับตามความสูง (แนะนำ ขอบซ้าย-ขวาจาง)", "Ajustar a la altura (recomendado, desvanece a los lados)", "适应高度（推荐，左右渐隐）"], "Cố định chiều ngang (Thêm Vignette trên/dưới)": ["Fit width (fades top & bottom)", "ປັບຕາມຄວາມກວ້າງ (ຈາງເທິງ-ລຸ່ມ)", "ปรับตามความกว้าง (ขอบบน-ล่างจาง)", "Ajustar al ancho (desvanece arriba y abajo)", "适应宽度（上下渐隐）"], "Cắt cúp vừa vặn 16:9 (Phủ kín không cần phông đen)": ["Crop to fill 16:9 (no background bars)", "ຕັດໃຫ້ເຕັມ 16:9 (ບໍ່ມີແຖບພື້ນຫຼັງ)", "ครอปให้เต็ม 16:9 (ไม่มีแถบพื้นหลัง)", "Recortar para llenar 16:9 (sin barras)", "裁剪填满 16:9（无背景边）"], "Hình dạng mặt nạ (Mask Shape)": ["Mask shape", "ຮູບຮ່າງມາສກ໌", "รูปทรงมาสก์", "Forma de la máscara", "蒙版形状"], "Làm mờ cạnh thẳng (Linear Edge Fade)": ["Straight edge fade", "ຈາງຂອບຊື່", "ขอบตรงจางลง", "Desvanecido de bordes rectos", "直边渐隐"], "Hình Oval mờ (Classic Soft Oval)": ["Soft oval", "ຮູບໄຂ່ເລືອນ", "วงรีนุ่ม", "Óvalo suave", "柔边椭圆"], "Hình Tròn mờ (Soft Circle)": ["Soft circle", "ວົງມົນເລືອນ", "วงกลมนุ่ม", "Círculo suave", "柔边圆形"], "Hình Chữ nhật mờ (Soft Rectangle)": ["Soft rectangle", "ສີ່ຫຼ່ຽມຜືນຜ້າເລືອນ", "สี่เหลี่ยมผืนผ้านุ่ม", "Rectángulo suave", "柔边矩形"], "Hình Vuông mờ (Soft Square)": ["Soft square", "ສີ່ຫຼ່ຽມຈັດຕຸລັດເລືອນ", "สี่เหลี่ยมจัตุรัสนุ่ม", "Cuadrado suave", "柔边正方形"], "Tự xóa viền thủ công (Custom Eraser Brush)": ["Manual erase (custom brush)", "ລົບຂອບດ້ວຍມື (ແປງກຳນົດເອງ)", "ลบขอบด้วยตนเอง (แปรงกำหนดเอง)", "Borrado manual (pincel)", "手动擦除边缘（自定义画笔）"], "Tải ảnh chuẩn Art Mode": ["Download Art Mode image", "ດາວໂຫຼດຮູບສຳລັບ Art Mode", "ดาวน์โหลดภาพสำหรับ Art Mode", "Descargar imagen para Art Mode", "下载 Art Mode 图片"], "Kích thước xuất:": ["Export size:", "ຂະໜາດສົ່ງອອກ:", "ขนาดไฟล์ที่ส่งออก:", "Tamaño de exportación:", "导出尺寸："], "| Định dạng: JPEG 100% Quality | Dung lượng ước tính:": ["| Format: JPEG 100% quality | Estimated size:", "| ຮູບແບບ: JPEG ຄຸນນະພາບ 100% | ຂະໜາດໄຟລ໌ໂດຍປະມານ:", "| รูปแบบ: JPEG คุณภาพ 100% | 
@@ -491,7 +490,7 @@ file…", "ກຳລັງສ້າງໄຟລ໌ຄຸນນະພາບ 100%�
             if (state.image) scheduleSizeEstimate();
         }
 
-        // ===== Cờ quốc gia thay chữ + hộp hướng dẫn =====
+// ===== Cờ quốc gia thay chữ + hộp hướng dẫn =====
         const LANG_NAMES = { en: 'English', vi: 'Tiếng Việt', lo: 'ລາວ', th: 'ไทย', es: 'Español', zh: '中文' };
         const star = (cx, cy, R, fill) => {
             const pts = [];
@@ -1151,8 +1150,7 @@ file…", "ກຳລັງສ້າງໄຟລ໌ຄຸນນະພາບ 100%�
                 }, 'image/jpeg', 1.0);
             }, 500);
         }
-
-        // ===== Biến ảnh thật thành tranh / phong cách =====
+// ===== Biến ảnh thật thành tranh / phong cách =====
         Object.assign(state, { styleMode: 'none', artist: 'vangogh', styleIntensity: 100, styleSeed: Math.floor(Math.random() * 1e9), styleScope: 'all', regions: [], regionStrokes: [], regionDrawing: true, regionSrc: null, layout: null, styled: null, styleRaw: null, styleSrc: null });
         let styleToken = 0;
 
@@ -1531,8 +1529,7 @@ file…", "ກຳລັງສ້າງໄຟລ໌ຄຸນນະພາບ 100%�
             });
         }
 
-
-// ===== Phong cách theo từng vùng khoanh thủ công =====
+        // ===== Phong cách theo từng vùng khoanh thủ công =====
         const regionActive = () => state.styleScope === 'region' && state.styleMode !== 'none' && state.regionDrawing && !!state.image;
         function updateCanvasMode() {
             const on = state.maskShape === 'custom' || regionActive();
@@ -1879,4 +1876,3 @@ file…", "ກຳລັງສ້າງໄຟລ໌ຄຸນນະພາບ 100%�
     </script>
 </body>
 </html>
-
