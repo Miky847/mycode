@@ -333,7 +333,7 @@
                 </div>
             </div>
 
-   <!-- Thanh công cụ Tự xóa viền thủ công (nằm trên ảnh đang thao tác) -->
+            <!-- Thanh công cụ Tự xóa viền thủ công (nằm trên ảnh đang thao tác) -->
             <div id="customBrushControls" class="hidden bg-dark-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="space-y-1.5">
@@ -490,7 +490,7 @@ file…", "ກຳລັງສ້າງໄຟລ໌ຄຸນນະພາບ 100%�
             if (state.image) scheduleSizeEstimate();
         }
 
-// ===== Cờ quốc gia thay chữ + hộp hướng dẫn =====
+        // ===== Cờ quốc gia thay chữ + hộp hướng dẫn =====
         const LANG_NAMES = { en: 'English', vi: 'Tiếng Việt', lo: 'ລາວ', th: 'ไทย', es: 'Español', zh: '中文' };
         const star = (cx, cy, R, fill) => {
             const pts = [];
@@ -774,7 +774,7 @@ file…", "ກຳລັງສ້າງໄຟລ໌ຄຸນນະພາບ 100%�
             img.src = demoCanvas.toDataURL('image/jpeg');
         }
 
-        // 2. Control Listeners
+// 2. Control Listeners
         function setupControlListeners() {
             sliderGradientWidth.addEventListener('input', (e) => {
                 state.gradientWidth = parseInt(e.target.value);
@@ -1150,7 +1150,8 @@ file…", "ກຳລັງສ້າງໄຟລ໌ຄຸນນະພາບ 100%�
                 }, 'image/jpeg', 1.0);
             }, 500);
         }
-// ===== Biến ảnh thật thành tranh / phong cách =====
+
+        // ===== Biến ảnh thật thành tranh / phong cách =====
         Object.assign(state, { styleMode: 'none', artist: 'vangogh', styleIntensity: 100, styleSeed: Math.floor(Math.random() * 1e9), styleScope: 'all', regions: [], regionStrokes: [], regionDrawing: true, regionSrc: null, layout: null, styled: null, styleRaw: null, styleSrc: null });
         let styleToken = 0;
 
@@ -1334,7 +1335,8 @@ file…", "ກຳລັງສ້າງໄຟລ໌ຄຸນນະພາບ 100%�
             return out;
         }
 
-        // Lichtenstein: chấm Ben-Day + viền đen dày
+
+// Lichtenstein: chấm Ben-Day + viền đen dày
         function styleLichtenstein(src) {
             const w = src.width, h = src.height, s = Math.max(w, h) / 1400;
             const d = pix(blurCanvas(src, 2 * s)).data;
@@ -1852,7 +1854,7 @@ file…", "ກຳລັງສ້າງໄຟລ໌ຄຸນນະພາບ 100%�
             }, 100);
         }
 
-        // ===== Tối ưu cho điện thoại =====
+// ===== Tối ưu cho điện thoại =====
         function setupMobileUX() {
             if (IS_MOBILE) {
                 const big = document.querySelector('[data-width="7111"]');
