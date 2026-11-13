@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mekong Navigation Information Services</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Noto+Sans+Lao:wght@400;600;700&family=Noto+Sans+Khmer:wght@400;600;700&family=Noto+Sans+Thai:wght@400;600;700&family=Noto+Sans+Myanmar:wght@400;600;700&display=swap">
+<style>
+:root{
+  --navy:#07294d;--blue:#004c97;--river:#1288d6;--teal:#0fa3a3;--gold:#f2a900;
+  --bg:#f4f8fb;--surface:#fff;--text:#12263a;--muted:#5a6b7d;--line:#dce6ee;--hero-a:#07294d;--hero-b:#0b5394;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#081521;--surface:#0e2236;--text:#e6eef6;--muted:#93a7bb;--line:#1d3a55;--hero-a:#04162b;--hero-b:#0a3d6b}}
+:root[data-theme="dark"]{--bg:#081521;--surface:#0e2236;--text:#e6eef6;--muted:#93a7bb;--line:#1d3a55;--hero-a:#04162b;--hero-b:#0a3d6b}
+html{scroll-behavior:smooth;scroll-padding-top:calc(76px + env(safe-area-inset-top,0px))}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Be Vietnam Pro","Noto Sans Lao","Noto Sans Khmer","Noto Sans Thai","Noto Sans Myanmar","PingFang SC","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.6}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--navy);z-index:60}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--navy);color:#fff;border-bottom:3px solid var(--teal)}
+.bar{display:flex;align-items:center;gap:16px;height:68px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700;line-height:1.15}
+.brand small{display:block;font-weight:500;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#9fd8e8}
+nav{margin-left:auto;display:flex;gap:4px;align-items:center}
+nav a{padding:8px 12px;border-radius:8px;font-size:14px;font-weight:500;color:#d6e6f3}
+nav a:hover,nav a.on{background:rgba(255,255,255,.12);color:#fff}
+.icon-btn{background:rgba(255,255,255,.1);border:0;color:#fff;border-radius:8px;width:38px;height:38px;cursor:pointer;font-size:16px}
+.icon-btn:hover{background:rgba(255,255,255,.2)}
+#burger{display:none}
+.hero{background:linear-gradient(135deg,var(--hero-a),var(--hero-b));color:#fff;position:relative;overflow:hidden}
+.hero svg.waves{position:absolute;left:0;bottom:-2px;width:100%;height:90px}
+.hero .wrap{padding:72px 20px 120px;position:relative;z-index:1;display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center}
+.tag{display:inline-block;background:rgba(15,163,163,.25);border:1px solid rgba(15,163,163,.6);color:#a8eeee;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+h1{font-size:clamp(30px,4.6vw,50px);line-height:1.12;margin:16px 0;font-weight:800}
+.hero p{font-size:17px;color:#cfe2f1;max-width:560px}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:10px;font-weight:600;font-size:15px;border:2px solid transparent;cursor:pointer;transition:.2s}
+.btn.p{background:var(--gold);color:#1b1400}.btn.p:hover{background:#ffbe2e;transform:translateY(-1px)}
+.btn.g{border-color:rgba(255,255,255,.4);color:#fff}.btn.g:hover{background:rgba(255,255,255,.12)}
+.btn.o{border-color:var(--blue);color:var(--blue);background:transparent}.btn.o:hover{background:var(--blue);color:#fff}
+.stats{display:grid;gap:12px}
+.stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:16px;backdrop-filter:blur(6px)}
+.stat b{font-size:32px;font-weight:800;color:var(--gold);min-width:64px}
+.stat span{font-size:14px;color:#cfe2f1}
+section{padding:64px 0}
+.eyebrow{color:var(--teal);font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h2{font-size:clamp(24px,3vw,34px);margin:6px 0 10px;color:var(--blue);font-weight:800}
+:root[data-theme="dark"] h2{color:#7cc4f5}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) h2{color:#7cc4f5}}
+.lead{color:var(--muted);max-width:720px;margin:0 0 28px}
+.grid{display:grid;gap:20px}
+.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr 1fr}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;transition:.2s;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(7,41,77,.14);border-color:var(--river)}
+.card h3{margin:10px 0 8px;font-size:18px;color:var(--text)}
+.card p{margin:0 0 16px;color:var(--muted);font-size:14.5px;flex:1}
+.card .go{font-weight:600;color:var(--river);font-size:14px}
+.flag{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--teal));display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px}
+.band{background:var(--surface);border-block:1px solid var(--line)}
+.mapbox{position:relative;border-radius:18px;overflow:hidden;background:linear-gradient(160deg,#0a4a7c,#0fa3a3);min-height:320px;color:#fff;display:flex;align-items:flex-end}
+.mapbox svg{position:absolute;inset:0;width:100%;height:100%}
+.mapbox .in{position:relative;padding:26px;background:linear-gradient(0deg,rgba(7,41,77,.92),rgba(7,41,77,0));width:100%}
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--text);padding:7px 14px;border-radius:99px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+.chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.mapbox .chip{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35);color:#fff}
+.search{width:100%;max-width:420px;padding:12px 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit;font-size:15px}
+.search:focus,.chip:focus-visible,a:focus-visible,.btn:focus-visible{outline:3px solid var(--river);outline-offset:2px}
+.tools{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.pub .cover{height:96px;border-radius:10px;background:linear-gradient(135deg,var(--navy),var(--river));display:grid;place-items:center;color:#fff;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.pub .cover.t{background:linear-gradient(135deg,#0a6d6d,var(--teal))}
+.pub .cover.d{background:linear-gradient(135deg,#8a5a00,var(--gold));color:#1b1400}
+.pub h3{font-size:15.5px}
+.empty{display:none;padding:28px;text-align:center;color:var(--muted)}
+.water{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.gauge{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px}
+.vid .thumb{aspect-ratio:16/9;border-radius:10px;background:linear-gradient(135deg,var(--navy),var(--blue));display:grid;place-items:center;position:relative}
+.vid .thumb i{width:54px;height:54px;border-radius:50%;background:var(--gold);display:grid;place-items:center;color:#1b1400;font-style:normal;font-size:20px;padding-left:4px}
+.vid time{font-size:12px;color:var(--teal);font-weight:600}
+.vid h3{font-size:15.5px;margin:4px 0 6px}
+footer{background:var(--navy);color:#b9cfe2;padding:40px 0 28px;font-size:14px;margin-top:20px}
+footer .cols{display:grid;grid-template-columns:2fr 1fr 1fr;gap:28px}
+footer h4{color:#fff;margin:0 0 10px}footer a{display:block;padding:3px 0}footer a:hover{color:#fff}
+.copy{border-top:1px solid rgba(255,255,255,.14);margin-top:24px;padding-top:16px;font-size:12.5px}
+.langsel{background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:8px;height:38px;padding:0 8px;font:inherit;font-size:14px;cursor:pointer}.langsel option{color:#12263a}
+html[lang=th] body{line-height:1.8}html[lang=my] body{line-height:2.05}html[lang=th] h1,html[lang=th] h2{line-height:1.45}html[lang=my] h1,html[lang=my] h2{line-height:1.75}html[lang=my] .btn,html[lang=my] .chip{line-height:1.9}html[lang=lo] body{line-height:1.8}html[lang=km] body{line-height:1.95}html[lang=lo] h1,html[lang=lo] h2{line-height:1.5}html[lang=km] h1,html[lang=km] h2{line-height:1.7}html[lang=km] .btn,html[lang=km] .chip{line-height:1.8}
+.pub .cover{position:relative;overflow:hidden}.pub .cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.pub .cover.has{height:170px;font-size:0}.vid .thumb{background-size:cover;background-position:center}.mapframe{border-radius:16px;overflow:hidden;border:1px solid var(--line);height:min(72vh,580px);background:var(--bg)}.mapframe iframe{width:100%;height:100%;border:0}#logo{height:44px;width:auto;background:#fff;border-radius:8px;padding:4px 10px}#map .legend .chip{cursor:default}
+#top{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:44px;height:44px;border-radius:50%;border:0;background:var(--teal);color:#fff;font-size:18px;cursor:pointer;display:none;box-shadow:0 6px 16px rgba(0,0,0,.25);z-index:40}
+@media (max-width:900px){
+ .hero .wrap{grid-template-columns:1fr;padding-top:48px}
+ .g4,.g3{grid-template-columns:1fr 1fr}.water,footer .cols{grid-template-columns:1fr}
+ #burger{display:block;margin-left:auto}
+ nav{display:none;position:absolute;top:68px;left:0;right:0;background:var(--navy);flex-direction:column;align-items:stretch;padding:10px 20px 16px;margin:0}
+ nav.open{display:flex}
+}
+@media (max-width:560px){.g4,.g3,.g2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+ <div class="wrap bar">
+  <a class="brand" href="#top-of-page">
+   <img id="logo" src="mrc-logo.png" alt="MRC logo" hidden><svg id="logosvg" width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="#0fa3a3"/><path d="M5 24c5-6 8 6 12 0s8 6 12 0 5 2 6 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M5 15c5-6 8 6 12 0s8 6 12 0 5 2 6 0" stroke="#f2a900" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+   <span><small>Mekong River Commission</small>Mekong Navigation</span>
+  </a>
+  <button class="icon-btn" id="burger" aria-label="Menu">☰</button>
+  <nav id="nav">
+   <a href="#countries">Countries</a><a href="#map">Map</a><a href="#water">Water Levels</a><a href="#publications">Publications</a><a href="#videos">Videos</a><a href="#news">News</a>
+   <select id="lang" class="langsel" aria-label="Language"><option value="en">English</option><option value="vi">Tiếng Việt</option><option value="lo">ລາວ</option><option value="km">ខ្មែរ</option><option value="th">ไทย</option><option value="my">မြန်မာ</option><option value="zh">中文</option></select>
+   <button class="icon-btn" id="theme" aria-label="Toggle theme">◐</button>
+  </nav>
+ </div>
+</header>
+
+<div id="top-of-page" class="hero">
+ <div class="wrap">
+  <div>
+   <span class="tag">Regional Navigation Portal</span>
+   <h1>Mekong Navigation Information Services</h1>
+   <p>Centralized access to navigation data, safety information, notices to skippers, hydrological updates and waterway services across the Mekong member countries.</p>
+   <div class="cta"><a class="btn p" href="#countries">Explore systems →</a><a class="btn g" href="#water">Today’s water levels</a></div>
+  </div>
+  <div class="stats">
+   <div class="stat"><b>4</b><span>Country navigation systems</span></div>
+   <div class="stat"><b>24/7</b><span>Navigation information access</span></div>
+   <div class="stat"><b>1</b><span>Centralized, secure platform</span></div>
+  </div>
+ </div>
+ <svg class="waves" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 50c120 30 240 30 360 0s240-30 360 0 240 30 360 0 240-30 360 0v40H0z" fill="var(--bg)"/><path d="M0 62c120 20 240 20 360 0s240-20 360 0 240 20 360 0 240-20 360 0" stroke="#0fa3a3" stroke-width="2" fill="none" opacity=".6"/></svg>
+</div>
+
+<section id="countries"><div class="wrap">
+ <div class="eyebrow">National portals</div><h2>Country Navigation Systems</h2>
+ <p class="lead">Open the navigation information system of each member country — notices to skippers, river conditions and digital navigation services.</p>
+ <div class="grid g4">
+  <a class="card" href="https://navigation.mrcmekong.org/cambodia" target="_blank" rel="noopener"><div class="flag">KH</div><h3>Cambodia</h3><p>Notices to skippers, river conditions, navigation safety information and digital navigation services.</p><span class="go">Visit Cambodia portal →</span></a>
+  <a class="card" href="https://navigation.mrcmekong.org/laos" target="_blank" rel="noopener"><div class="flag">LA</div><h3>Laos</h3><p>Navigation data, information systems, river monitoring and integrated Mekong navigation management.</p><span class="go">Visit Laos portal →</span></a>
+  <a class="card" href="https://laws.md.go.th/mrc/index.php" target="_blank" rel="noopener"><div class="flag">TH</div><h3>Thailand</h3><p>Mekong navigation, waterway information, navigation safety and regional data services.</p><span class="go">Visit Thailand portal →</span></a>
+  <a class="card" href="https://navigation.mrcmekong.org/vietnam" target="_blank" rel="noopener"><div class="flag">VN</div><h3>Vietnam</h3><p>Navigation information management, notices to skippers and navigation safety management.</p><span class="go">Visit Vietnam portal →</span></a>
+ </div>
+</div></section>
+
+<section id="map" class="band"><div class="wrap">
+ <div class="eyebrow">Geospatial</div><h2>Regional Navigation Map</h2>
+ <p class="lead">Explore ports, bridges, vessel size classes, rapids, deep pools and hydro-met stations on the MRC Lower Mekong Basin Atlas.</p>
+ <div class="legend"><span class="chip">⚓ Major inland ports</span><span class="chip">🌉 Bridges</span><span class="chip">🚢 Vessel size</span><span class="chip">🌊 Rapids &amp; deep pools</span></div><div class="mapframe"><iframe id="geo" title="MRC Lower Mekong Basin Atlas" loading="lazy" allowfullscreen></iframe></div><p style="margin-top:14px"><a class="btn p" id="geolink" href="https://geo.mrcmekong.org/" target="_blank" rel="noopener">Open interactive map ↗</a></p>
+</div></section>
+
+<section id="water"><div class="wrap water">
+ <div><div class="eyebrow">Hydrological information</div><h2>Daily Water Levels</h2>
+  <p class="lead" style="margin-bottom:20px">Daily Mekong water-level bulletins, hydrological monitoring updates and river-condition information supporting navigation safety.</p>
+  <a class="btn o" href="https://ffw.mrcmekong.org/bulletin_wet.php" target="_blank" rel="noopener">Browse daily water levels →</a></div>
+ <div class="gauge"><img id="bulletin" alt="Daily water levels map" hidden style="width:100%;border-radius:10px"><svg id="gsvg" viewBox="0 0 400 170" width="100%" role="img" aria-label="Illustration of river level chart"><rect width="400" height="170" rx="10" fill="var(--bg)"/><g stroke="var(--line)"><path d="M20 40h360M20 85h360M20 130h360"/></g><path d="M20 120c50-10 70-60 120-50s70 40 120 10 80-50 120-30V150H20z" fill="#1288d6" opacity=".25"/><path d="M20 120c50-10 70-60 120-50s70 40 120 10 80-50 120-30" stroke="#1288d6" stroke-width="3" fill="none"/><circle cx="380" cy="50" r="5" fill="#f2a900"/></svg>
+  <p style="margin:10px 0 0;font-size:13px;color:var(--muted)">Illustrative graphic — live bulletin is on the MRC Flood Forecasting site.</p></div>
+</div></section>
+
+<section id="publications" class="band"><div class="wrap">
+ <div class="eyebrow">Knowledge products</div><h2>Publications</h2>
+ <p class="lead">Key MRC reports, technical papers and safety booklets.</p>
+ <div class="tools">
+  <input class="search" id="q" type="search" placeholder="Search publications…" aria-label="Search publications">
+  <div class="legend" id="chips" style="margin:0">
+   <button class="chip on" data-f="all">All</button><button class="chip" data-f="plan">Master plan</button><button class="chip" data-f="dg">Dangerous goods</button><button class="chip" data-f="std">Standards</button>
+  </div>
+ </div>
+ <div class="grid g3" id="pubs">
+  <a class="card pub" data-c="plan" href="https://www.mrcmekong.org/?download_document=1&amp;document_id=01FKR5T6PNH7CLP36NE5DJC7JHUDXWPVCG&amp;name=Design-of%20a%20Master%20Plan%20for%20Regional%20Waterborne%20Transport%20in%20the%20Mekong%20River%20Basin%20(Volume%201)" target="_blank" rel="noopener"><div class="cover">Master Plan · Vol. 1</div><h3>Master Plan for Regional Waterborne Transport in the Mekong River Basin (Volume 1)</h3><p>Short- and long-term program to rehabilitate the transport network. Covers current situation, baseline, forecasts, scenarios and action plan.</p><span class="go">Download PDF →</span></a>
+  <a class="card pub" data-c="plan" href="https://www.mrcmekong.org/?download_document=1&amp;document_id=01FKR5T6NDRT5FIBUYBRG3FH4CEBIO6UOD&amp;name=Design-of%20a%20Master%20Plan%20for%20Regional%20Waterborne%20Transport%20in%20the%20Mekong%20River%20Basin%20(Volume%202)" target="_blank" rel="noopener"><div class="cover">Master Plan · Vol. 2</div><h3>Master Plan for Regional Waterborne Transport in the Mekong River Basin (Volume 2)</h3><p>A full portfolio of the elaborated Action Files.</p><span class="go">Download PDF →</span></a>
+  <a class="card pub" data-c="dg" href="https://www.mrcmekong.org/?download_document=1&amp;document_id=01FKR5T6JLZ4JNTMZ5BNAYZZNMU6FAX3MZ&amp;name=Regional-Action%20Plan%20for%20Sustainable%20Transport%20of%20Dangerous%20Goods%20along%20the%20Mekong%20River" target="_blank" rel="noopener"><div class="cover d">Action Plan</div><h3>Regional Action Plan for Sustainable Transport of Dangerous Goods along the Mekong River</h3><p>National and cross-border projects to reduce accidents, spillages and pollution, with an implementation strategy.</p><span class="go">Download PDF →</span></a>
+  <a class="card pub" data-c="std" href="https://www.mrcmekong.org/?download_document=1&amp;document_id=01FKR5T6KMGCYMUNW6VJAISYUFWYJZXR5H&amp;name=Standardization-of%20a%20vessel%20and%20waterway%20classification%20in%20the%20MRC" target="_blank" rel="noopener"><div class="cover t">Standardisation</div><h3>Standardisation of a Vessel and Waterway Classification in the Mekong River Basin</h3><p>Harmonised vessel and waterway classifications proposed for Lao PDR, Thailand, Cambodia and Vietnam.</p><span class="go">Download PDF →</span></a>
+  <a class="card pub" data-c="dg" href="https://www.mrcmekong.org/?download_document=1&amp;document_id=01FKR5T6NOPFAQZPLH7ZG2X3H2ML5ZTHRB&amp;name=Safety-Booklet%20for%20port%20staff" target="_blank" rel="noopener"><div class="cover d">Safety Booklet · Ports</div><h3>Safety Booklet for Port Staff: handling and storage of dangerous goods</h3><p>Helps port staff ensure safe, efficient and environmentally responsible handling and storage of dangerous goods.</p><span class="go">Download PDF →</span></a>
+  <a class="card pub" data-c="dg" href="https://www.mrcmekong.org/?download_document=1&amp;document_id=01FKR5T6PLJSFHFNYY7RFKCXNIXCKW4CZA&amp;name=Safety-Booklet%20for%20vessel%20crew" target="_blank" rel="noopener"><div class="cover d">Safety Booklet · Crew</div><h3>Safety Booklet for Vessel Crew: carriage, handling and storage of dangerous goods</h3><p>Guidance for vessel crew on safe carriage of dangerous goods along the Mekong.</p><span class="go">Download PDF →</span></a>
+ </div>
+ <div class="empty" id="empty">No publications match your search.</div>
+ <p style="margin-top:22px"><a class="btn o" href="https://www.mrcmekong.org/publication/" target="_blank" rel="noopener">Browse all publications →</a></p>
+</div></section>
+
+<section id="videos"><div class="wrap">
+ <div class="eyebrow">Media</div><h2>Videos</h2>
+ <p class="lead">Navigation videos, regional cooperation updates and waterway information resources.</p>
+ <div class="grid g3">
+  <a class="card vid" href="https://www.youtube.com/watch?v=Qf7hm-FRrcM" target="_blank" rel="noopener"><div class="thumb"><i>▶</i></div><time>14 July 2026</time><h3>Harmonised Regulations for Safety of Navigation and Pollution Prevention</h3><p>13 harmonised regulations on navigation safety, emergency response, pollution prevention, inspections, search and rescue, and dangerous goods.</p></a>
+  <a class="card vid" href="https://www.youtube.com/watch?v=lVQWfxSEvYE" target="_blank" rel="noopener"><div class="thumb"><i>▶</i></div><time>22 November 2019</time><h3>Mekong Navigation Overview</h3><p>Navigation cooperation, river transport and digital information services across the region.</p></a>
+  <a class="card vid" href="https://www.youtube.com/watch?v=xnUr0TBeSJ8" target="_blank" rel="noopener"><div class="thumb"><i>▶</i></div><time>17 July 2014</time><h3>Navigation Safety and River Transport</h3><p>Key safety practices and information tools for safer navigation on the Mekong.</p></a>
+ </div>
+</div></section>
+
+<section id="news" class="band"><div class="wrap">
+ <div class="eyebrow">Latest updates</div><h2>News and Events</h2>
+ <p class="lead">Regional navigation news, events, capacity-building activities and announcements.</p>
+ <a class="btn p" href="https://navigation.mrcmekong.org/all-news-events.html" target="_blank" rel="noopener">View all news and events →</a>
+</div></section>
+
+<footer><div class="wrap">
+ <div class="cols">
+  <div><h4>Mekong Navigation Information Services</h4>Centralized access portal for regional navigation data, navigation safety, notices to skippers and waterway information across the Mekong member countries.</div>
+  <div><h4>Portals</h4><a href="https://navigation.mrcmekong.org/cambodia">Cambodia</a><a href="https://navigation.mrcmekong.org/laos">Laos</a><a href="https://laws.md.go.th/mrc/index.php">Thailand</a><a href="https://navigation.mrcmekong.org/vietnam">Vietnam</a></div>
+  <div><h4>Resources</h4><a href="https://geo.mrcmekong.org/">MRC Atlas map</a><a href="https://ffw.mrcmekong.org/bulletin_wet.php">Water levels</a><a href="https://www.mrcmekong.org/publication/">Publications</a></div>
+ </div>
+ <div class="copy">Unofficial redesign concept based on navigation.mrcmekong.org. Not an official MRC product.</div>
+</div></footer>
+<button id="top" aria-label="Back to top">↑</button>
+
+<script>
+(function(){
+ var root=document.documentElement,nav=document.getElementById('nav');
+ document.getElementById('burger').onclick=function(){nav.classList.toggle('open')};
+ nav.addEventListener('click',function(e){if(e.target.tagName==='A')nav.classList.remove('open')});
+ document.getElementById('theme').onclick=function(){
+  var dark=root.getAttribute('data-theme')==='dark'||(!root.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme:dark)').matches);
+  root.setAttribute('data-theme',dark?'light':'dark');
+ };
+ var cards=[].slice.call(document.querySelectorAll('#pubs .card')),q=document.getElementById('q'),f='all';
+ function run(){var t=q.value.trim().toLowerCase(),n=0;
+  cards.forEach(function(c){var ok=(f==='all'||c.dataset.c===f)&&c.textContent.toLowerCase().indexOf(t)>-1;c.style.display=ok?'':'none';if(ok)n++});
+  document.getElementById('empty').style.display=n?'none':'block'}
+ q.oninput=run;
+ document.getElementById('chips').onclick=function(e){var b=e.target.closest('.chip');if(!b)return;
+  [].forEach.call(this.children,function(x){x.classList.remove('on')});b.classList.add('on');f=b.dataset.f;run()};
+ var top=document.getElementById('top');
+ addEventListener('scroll',function(){top.style.display=scrollY>500?'block':'none'},{passive:true});
+ top.onclick=function(){scrollTo({top:0,behavior:'smooth'})};
+ /* i18n: rows are [English, Tiếng Việt, ລາວ, ខ្មែរ] */
+ var T=[
+ ["Mekong River Commission","Ủy hội sông Mê Công","ຄະນະກຳມາທິການແມ່ນ້ຳຂອງ","គណៈកម្មការទន្លេមេគង្គ"],
+ ["Mekong Navigation","Giao thông thủy Mê Công","ການເດີນເຮືອແມ່ນ້ຳຂອງ","នាវាចរណ៍មេគង្គ"],
+ ["Countries","Quốc gia","ປະເທດ","ប្រទេស"],
+ ["Map","Bản đồ","ແຜນທີ່","ផែនទី"],
+ ["Water Levels","Mực nước","ລະດັບນ້ຳ","កម្រិតទឹក"],
+ ["Publications","Ấn phẩm","ສິ່ງພິມ","ឯកសារផ្សព្វផ្សាយ"],
+ ["Videos","Video","ວິດີໂອ","វីដេអូ"],
+ ["News","Tin tức","ຂ່າວ","ព័ត៌មាន"],
+ ["Regional Navigation Portal","Cổng thông tin giao thông thủy khu vực","ປະຕູຂໍ້ມູນການເດີນເຮືອພາກພື້ນ","វិបផតថលនាវាចរណ៍ក្នុងតំបន់"],
+ ["Mekong Navigation Information Services","Dịch vụ thông tin giao thông thủy Mê Công","ບໍລິການຂໍ້ມູນການເດີນເຮືອແມ່ນ້ຳຂອງ","សេវាព័ត៌មាននាវាចរណ៍មេគង្គ"],
+ ["Centralized access to navigation data, safety information, notices to skippers, hydrological updates and waterway services across the Mekong member countries.","Truy cập tập trung dữ liệu giao thông thủy, thông tin an toàn, thông báo cho thuyền trưởng, cập nhật thủy văn và dịch vụ đường thủy của các nước thành viên Mê Công.","ເຂົ້າເຖິງຂໍ້ມູນການເດີນເຮືອ, ຂໍ້ມູນຄວາມປອດໄພ, ແຈ້ງການເຖິງນາຍເຮືອ, ຂໍ້ມູນອຸທົກກະສາດ ແລະ ບໍລິການທາງນ້ຳ ໃນບັນດາປະເທດສະມາຊິກແມ່ນ້ຳຂອງ ຢູ່ບ່ອນດຽວ.","ចូលប្រើទិន្នន័យនាវាចរណ៍ ព័ត៌មានសុវត្ថិភាព សេចក្តីជូនដំណឹងដល់ប្រធានទូក ព័ត៌មានជលសាស្ត្រ និងសេវាផ្លូវទឹក នៅទូទាំងប្រទេសសមាជិកមេគង្គ។"],
+ ["Explore systems →","Khám phá hệ thống →","ສຳຫຼວດລະບົບ →","ស្វែងរកប្រព័ន្ធ →"],
+ ["Today’s water levels","Mực nước hôm nay","ລະດັບນ້ຳມື້ນີ້","កម្រិតទឹកថ្ងៃនេះ"],
+ ["Country navigation systems","Hệ thống giao thông thủy của các nước","ລະບົບການເດີນເຮືອຂອງແຕ່ລະປະເທດ","ប្រព័ន្ធនាវាចរណ៍របស់ប្រទេសនីមួយៗ"],
+ ["Navigation information access","Truy cập thông tin giao thông thủy","ເຂົ້າເຖິງຂໍ້ມູນການເດີນເຮືອ","ការចូលប្រើព័ត៌មាននាវាចរណ៍"],
+ ["Centralized, secure platform","Nền tảng tập trung, an toàn","ແພລັດຟອມສູນກາງທີ່ປອດໄພ"," វេទិកាកណ្តាលដែលមានសុវត្ថិភាព"],
+ ["National portals","Cổng thông tin quốc gia","ປະຕູຂໍ້ມູນແຫ່ງຊາດ","វិបផតថលថ្នាក់ជាតិ"],
+ ["Country Navigation Systems","Hệ thống giao thông thủy các quốc gia","ລະບົບການເດີນເຮືອຂອງແຕ່ລະປະເທດ","ប្រព័ន្ធនាវាចរណ៍តាមប្រទេស"],
+ ["Open the navigation information system of each member country — notices to skippers, river conditions and digital navigation services.","Mở hệ thống thông tin giao thông thủy của từng nước thành viên — thông báo cho thuyền trưởng, tình trạng sông và dịch vụ số.","ເປີດລະບົບຂໍ້ມູນການເດີນເຮືອຂອງແຕ່ລະປະເທດສະມາຊິກ — ແຈ້ງການເຖິງນາຍເຮືອ, ສະພາບແມ່ນ້ຳ ແລະ ບໍລິການດິຈິຕອນ.","បើកប្រព័ន្ធព័ត៌មាននាវាចរណ៍របស់ប្រទេសសមាជិកនីមួយៗ — សេចក្តីជូនដំណឹងដល់ប្រធានទូក ស្ថានភាពទន្លេ និងសេវាឌីជីថល។"],
+ ["Cambodia","Campuchia","ກຳປູເຈຍ","កម្ពុជា"],
+ ["Notices to skippers, river conditions, navigation safety information and digital navigation services.","Thông báo cho thuyền trưởng, tình trạng sông, thông tin an toàn giao thông thủy và dịch vụ số.","ແຈ້ງການເຖິງນາຍເຮືອ, ສະພາບແມ່ນ້ຳ, ຂໍ້ມູນຄວາມປອດໄພການເດີນເຮືອ ແລະ ບໍລິການດິຈິຕອນ.","សេចក្តីជូនដំណឹងដល់ប្រធានទូក ស្ថានភាពទន្លេ ព័ត៌មានសុវត្ថិភាពនាវាចរណ៍ និងសេវាឌីជីថល។"],
+ ["Visit Cambodia portal →","Truy cập cổng Campuchia →","ເຂົ້າປະຕູກຳປູເຈຍ →","ចូលវិបផតថលកម្ពុជា →"],
+ ["Laos","Lào","ລາວ","ឡាវ"],
+ ["Navigation data, information systems, river monitoring and integrated Mekong navigation management.","Dữ liệu giao thông thủy, hệ thống thông tin, giám sát sông và quản lý tổng hợp giao thông thủy Mê Công.","ຂໍ້ມູນການເດີນເຮືອ, ລະບົບຂໍ້ມູນ, ການຕິດຕາມແມ່ນ້ຳ ແລະ ການຄຸ້ມຄອງການເດີນເຮືອແມ່ນ້ຳຂອງແບບປະສົມປະສານ.","ទិន្នន័យនាវាចរណ៍ ប្រព័ន្ធព័ត៌មាន ការត្រួតពិនិត្យទន្លេ និងការគ្រប់គ្រងនាវាចរណ៍មេគង្គរួមបញ្ចូលគ្នា។"],
+ ["Visit Laos portal →","Truy cập cổng Lào →","ເຂົ້າປະຕູລາວ →","ចូលវិបផតថលឡាវ →"],
+ ["Thailand","Thái Lan","ໄທ","ថៃ"],
+ ["Mekong navigation, waterway information, navigation safety and regional data services.","Giao thông thủy Mê Công, thông tin đường thủy, an toàn giao thông thủy và dịch vụ dữ liệu khu vực.","ການເດີນເຮືອແມ່ນ້ຳຂອງ, ຂໍ້ມູນທາງນ້ຳ, ຄວາມປອດໄພການເດີນເຮືອ ແລະ ບໍລິການຂໍ້ມູນພາກພື້ນ.","នាវាចរណ៍មេគង្គ ព័ត៌មានផ្លូវទឹក សុវត្ថិភាពនាវាចរណ៍ និងសេវាទិន្នន័យក្នុងតំបន់។"],
+ ["Visit Thailand portal →","Truy cập cổng Thái Lan →","ເຂົ້າປະຕູໄທ →","ចូលវិបផតថលថៃ →"],
+ ["Vietnam","Việt Nam","ຫວຽດນາມ","វៀតណាម"],
+ ["Navigation information management, notices to skippers and navigation safety management.","Quản lý thông tin giao thông thủy, thông báo cho thuyền trưởng và quản lý an toàn giao thông thủy.","ການຄຸ້ມຄອງຂໍ້ມູນການເດີນເຮືອ, ແຈ້ງການເຖິງນາຍເຮືອ ແລະ ການຄຸ້ມຄອງຄວາມປອດໄພການເດີນເຮືອ.","ការគ្រប់គ្រងព័ត៌មាននាវាចរណ៍ សេចក្តីជូនដំណឹងដល់ប្រធានទូក និងការគ្រប់គ្រងសុវត្ថិភាពនាវាចរណ៍។"],
+ ["Visit Vietnam portal →","Truy cập cổng Việt Nam →","ເຂົ້າປະຕູຫວຽດນາມ →","ចូលវិបផតថលវៀតណាម →"],
+ ["Geospatial","Dữ liệu không gian","ຂໍ້ມູນພູມສາດ","ទិន្នន័យភូមិសាស្ត្រ"],
+ ["Regional Navigation Map","Bản đồ giao thông thủy khu vực","ແຜນທີ່ການເດີນເຮືອພາກພື້ນ","ផែនទីនាវាចរណ៍ក្នុងតំបន់"],
+ ["Explore ports, bridges, vessel size classes, rapids, deep pools and hydro-met stations on the MRC Lower Mekong Basin Atlas.","Khám phá cảng, cầu, cấp phương tiện, thác ghềnh, vực sâu và trạm thủy văn trên Atlas Hạ lưu sông Mê Công của MRC.","ສຳຫຼວດທ່າເຮືອ, ຂົວ, ຂະໜາດເຮືອ, ແກ່ງ, ວັງເລິກ ແລະ ສະຖານີອຸທົກກະສາດ ໃນແຜນທີ່ລຸ່ມແມ່ນ້ຳຂອງຂອງ MRC.","ស្វែងរកកំពង់ផែ ស្ពាន ទំហំនាវា ជ្រោះ អណ្តូងជ្រៅ និងស្ថានីយជលឧតុនិយម លើផែនទីអាត្លាសអាងទន្លេមេគង្គក្រោមរបស់ MRC។"],
+ ["⚓ Major inland ports","⚓ Cảng nội địa chính","⚓ ທ່າເຮືອພາຍໃນຫຼັກ","⚓ កំពង់ផែក្នុងប្រទេសសំខាន់ៗ"],
+ ["🌉 Bridges","🌉 Cầu","🌉 ຂົວ","🌉 ស្ពាន"],
+ ["🚢 Vessel size","🚢 Cấp phương tiện","🚢 ຂະໜາດເຮືອ","🚢 ទំហំនាវា"],
+ ["🌊 Rapids & deep pools","🌊 Thác ghềnh & vực sâu","🌊 ແກ່ງ ແລະ ວັງເລິກ","🌊 ជ្រោះ និងអណ្តូងជ្រៅ"],
+ ["Open interactive map ↗","Mở bản đồ tương tác ↗","ເປີດແຜນທີ່ແບບໂຕ້ຕອບ ↗","បើកផែនទីអន្តរកម្ម ↗"],
+ ["Hydrological information","Thông tin thủy văn","ຂໍ້ມູນອຸທົກກະສາດ","ព័ត៌មានជលសាស្ត្រ"],
+ ["Daily Water Levels","Mực nước hằng ngày","ລະດັບນ້ຳປະຈຳວັນ","កម្រិតទឹករាល់ថ្ងៃ"],
+ ["Daily Mekong water-level bulletins, hydrological monitoring updates and river-condition information supporting navigation safety.","Bản tin mực nước Mê Công hằng ngày, cập nhật giám sát thủy văn và thông tin tình trạng sông hỗ trợ an toàn giao thông thủy.","ຂ່າວສານລະດັບນ້ຳແມ່ນ້ຳຂອງປະຈຳວັນ, ການຕິດຕາມອຸທົກກະສາດ ແລະ ສະພາບແມ່ນ້ຳ ເພື່ອຄວາມປອດໄພການເດີນເຮືອ.","ព្រឹត្តិប័ត្រកម្រិតទឹកទន្លេមេគង្គរាល់ថ្ងៃ ការតាមដានជលសាស្ត្រ និងព័ត៌មានស្ថានភាពទន្លេ ដើម្បីសុវត្ថិភាពនាវាចរណ៍។"],
+ ["Browse daily water levels →","Xem mực nước hằng ngày →","ເບິ່ງລະດັບນ້ຳປະຈຳວັນ →","មើលកម្រិតទឹករាល់ថ្ងៃ →"],
+ ["Illustrative graphic — live bulletin is on the MRC Flood Forecasting site.","Hình minh họa — bản tin trực tiếp có trên trang Dự báo lũ của MRC.","ຮູບປະກອບ — ຂ່າວສານສົດຢູ່ເວັບໄຊພະຍາກອນນ້ຳຖ້ວມຂອງ MRC.","រូបភាពបង្ហាញ — ព្រឹត្តិប័ត្របច្ចុប្បន្នមាននៅគេហទំព័រព្យាករណ៍ទឹកជំនន់ MRC។"],
+ ["Knowledge products","Sản phẩm tri thức","ຜະລິດຕະພັນຄວາມຮູ້","ផលិតផលចំណេះដឹង"],
+ ["Key MRC reports, technical papers and safety booklets.","Các báo cáo chính của MRC, tài liệu kỹ thuật và sổ tay an toàn.","ບົດລາຍງານຫຼັກຂອງ MRC, ເອກະສານວິຊາການ ແລະ ປຶ້ມຄູ່ມືຄວາມປອດໄພ.","របាយការណ៍សំខាន់ៗរបស់ MRC ឯកសារបច្ចេកទេស និងសៀវភៅណែនាំសុវត្ថិភាព។"],
+ ["All","Tất cả","ທັງໝົດ","ទាំងអស់"],
+ ["Master plan","Quy hoạch tổng thể","ແຜນແມ່ບົດ","ផែនការមេ"],
+ ["Dangerous goods","Hàng nguy hiểm","ສິນຄ້າອັນຕະລາຍ","ទំនិញគ្រោះថ្នាក់"],
+ ["Standards","Tiêu chuẩn","ມາດຕະຖານ","ស្តង់ដារ"],
+ ["Master Plan · Vol. 1","Quy hoạch tổng thể · Tập 1","ແຜນແມ່ບົດ · ເຫຼັ້ມ 1","ផែនការមេ · ភាគ ១"],
+ ["Master Plan · Vol. 2","Quy hoạch tổng thể · Tập 2","ແຜນແມ່ບົດ · ເຫຼັ້ມ 2","ផែនការមេ · ភាគ ២"],
+ ["Master Plan for Regional Waterborne Transport in the Mekong River Basin (Volume 1)","Quy hoạch tổng thể vận tải thủy khu vực lưu vực sông Mê Công (Tập 1)","ແຜນແມ່ບົດການຂົນສົ່ງທາງນ້ຳພາກພື້ນໃນອ່າງແມ່ນ້ຳຂອງ (ເຫຼັ້ມ 1)","ផែនការមេដឹកជញ្ជូនផ្លូវទឹកក្នុងតំបន់ នៅអាងទន្លេមេគង្គ (ភាគ ១)"],
+ ["Short- and long-term program to rehabilitate the transport network. Covers current situation, baseline, forecasts, scenarios and action plan.","Chương trình ngắn hạn và dài hạn để cải tạo mạng lưới vận tải. Gồm hiện trạng, cơ sở, dự báo, kịch bản và kế hoạch hành động.","ໂຄງການໄລຍະສັ້ນ ແລະ ໄລຍະຍາວ ເພື່ອຟື້ນຟູເຄືອຂ່າຍຂົນສົ່ງ. ກວມເອົາສະພາບປັດຈຸບັນ, ຂໍ້ມູນພື້ນຖານ, ການຄາດຄະເນ, ສະຖານະການ ແລະ ແຜນປະຕິບັດງານ.","កម្មវិធីរយៈពេលខ្លី និងវែង ដើម្បីស្តារបណ្តាញដឹកជញ្ជូន។ គ្របដណ្តប់ស្ថានភាពបច្ចុប្បន្ន មូលដ្ឋាន ការព្យាករណ៍ សេណារីយ៉ូ និងផែនការសកម្មភាព។"],
+ ["Download PDF →","Tải PDF →","ດາວໂຫຼດ PDF →","ទាញយក PDF →"],
+ ["Master Plan for Regional Waterborne Transport in the Mekong River Basin (Volume 2)","Quy hoạch tổng thể vận tải thủy khu vực lưu vực sông Mê Công (Tập 2)","ແຜນແມ່ບົດການຂົນສົ່ງທາງນ້ຳພາກພື້ນໃນອ່າງແມ່ນ້ຳຂອງ (ເຫຼັ້ມ 2)","ផែនការមេដឹកជញ្ជូនផ្លូវទឹកក្នុងតំបន់ នៅអាងទន្លេមេគង្គ (ភាគ ២)"],
+ ["A full portfolio of the elaborated Action Files.","Bộ hồ sơ hành động chi tiết đầy đủ.","ຊຸດເອກະສານປະຕິບັດງານລະອຽດຄົບຖ້ວນ.","ឯកសារសកម្មភាពលម្អិតពេញលេញ។"],
+ ["Action Plan","Kế hoạch hành động","ແຜນປະຕິບັດງານ","ផែនការសកម្មភាព"],
+ ["Regional Action Plan for Sustainable Transport of Dangerous Goods along the Mekong River","Kế hoạch hành động khu vực về vận chuyển hàng nguy hiểm bền vững dọc sông Mê Công","ແຜນປະຕິບັດງານພາກພື້ນ ການຂົນສົ່ງສິນຄ້າອັນຕະລາຍແບບຍືນຍົງຕາມແມ່ນ້ຳຂອງ","ផែនការសកម្មភាពតំបន់ ស្តីពីការដឹកជញ្ជូនទំនិញគ្រោះថ្នាក់ប្រកបដោយចីរភាពតាមទន្លេមេគង្គ"],
+ ["National and cross-border projects to reduce accidents, spillages and pollution, with an implementation strategy.","Các dự án quốc gia và xuyên biên giới nhằm giảm tai nạn, tràn đổ và ô nhiễm, kèm chiến lược thực hiện.","ໂຄງການລະດັບຊາດ ແລະ ຂ້າມແດນ ເພື່ອຫຼຸດຜ່ອນອຸປະຕິເຫດ, ການຮົ່ວໄຫຼ ແລະ ມົນລະພິດ ພ້ອມຍຸດທະສາດການຈັດຕັ້ງປະຕິບັດ.","គម្រោងថ្នាក់ជាតិ និងឆ្លងដែន ដើម្បីកាត់បន្ថយគ្រោះថ្នាក់ ការហូរហៀរ និងការបំពុល ព្រមទាំងយុទ្ធសាស្ត្រអនុវត្ត។"],
+ ["Standardisation","Tiêu chuẩn hóa","ການກຳນົດມາດຕະຖານ","ស្តង់ដារកម្ម"],
+ ["Standardisation of a Vessel and Waterway Classification in the Mekong River Basin","Tiêu chuẩn hóa phân cấp phương tiện và đường thủy trong lưu vực sông Mê Công","ການກຳນົດມາດຕະຖານການຈັດປະເພດເຮືອ ແລະ ທາງນ້ຳ ໃນອ່າງແມ່ນ້ຳຂອງ","ការធ្វើស្តង់ដារការចាត់ថ្នាក់នាវា និងផ្លូវទឹកក្នុងអាងទន្លេមេគង្គ"],
+ ["Harmonised vessel and waterway classifications proposed for Lao PDR, Thailand, Cambodia and Vietnam.","Đề xuất phân cấp phương tiện và đường thủy hài hòa cho Lào, Thái Lan, Campuchia và Việt Nam.","ສະເໜີການຈັດປະເພດເຮືອ ແລະ ທາງນ້ຳ ທີ່ສອດຄ່ອງກັນ ສຳລັບ ສປປ ລາວ, ໄທ, ກຳປູເຈຍ ແລະ ຫວຽດນາມ.","ការស្នើការចាត់ថ្នាក់នាវា និងផ្លូវទឹកដែលសុខដុមរមនា សម្រាប់ឡាវ ថៃ កម្ពុជា និងវៀតណាម។"],
+ ["Safety Booklet · Ports","Sổ tay an toàn · Cảng","ປຶ້ມຄູ່ມືຄວາມປອດໄພ · ທ່າເຮືອ","សៀវភៅសុវត្ថិភាព · កំពង់ផែ"],
+ ["Safety Booklet for Port Staff: handling and storage of dangerous goods","Sổ tay an toàn cho nhân viên cảng: xếp dỡ và lưu kho hàng nguy hiểm","ປຶ້ມຄູ່ມືຄວາມປອດໄພສຳລັບພະນັກງານທ່າເຮືອ: ການຈັດການ ແລະ ການເກັບມ້ຽນສິນຄ້າອັນຕະລາຍ","សៀវភៅសុវត្ថិភាពសម្រាប់បុគ្គលិកកំពង់ផែ៖ ការគ្រប់គ្រង និងការស្តុកទំនិញគ្រោះថ្នាក់"],
+ ["Helps port staff ensure safe, efficient and environmentally responsible handling and storage of dangerous goods.","Giúp nhân viên cảng xếp dỡ và lưu kho hàng nguy hiểm an toàn, hiệu quả và có trách nhiệm với môi trường.","ຊ່ວຍພະນັກງານທ່າເຮືອຈັດການ ແລະ ເກັບມ້ຽນສິນຄ້າອັນຕະລາຍຢ່າງປອດໄພ, ມີປະສິດທິພາບ ແລະ ເປັນມິດຕໍ່ສິ່ງແວດລ້ອມ.","ជួយបុគ្គលិកកំពង់ផែគ្រប់គ្រង និងស្តុកទំនិញគ្រោះថ្នាក់ដោយសុវត្ថិភាព មានប្រសិទ្ធភាព និងទទួលខុសត្រូវចំពោះបរិស្ថាន។"],
+ ["Safety Booklet · Crew","Sổ tay an toàn · Thủy thủ đoàn","ປຶ້ມຄູ່ມືຄວາມປອດໄພ · ລູກເຮືອ","សៀវភៅសុវត្ថិភាព · នាវិក"],
+ ["Safety Booklet for Vessel Crew: carriage, handling and storage of dangerous goods","Sổ tay an toàn cho thủy thủ đoàn: vận chuyển, xếp dỡ và lưu kho hàng nguy hiểm","ປຶ້ມຄູ່ມືຄວາມປອດໄພສຳລັບລູກເຮືອ: ການຂົນສົ່ງ, ການຈັດການ ແລະ ການເກັບມ້ຽນສິນຄ້າອັນຕະລາຍ","សៀវភៅសុវត្ថិភាពសម្រាប់នាវិក៖ ការដឹកជញ្ជូន ការគ្រប់គ្រង និងការស្តុកទំនិញគ្រោះថ្នាក់"],
+ ["Guidance for vessel crew on safe carriage of dangerous goods along the Mekong.","Hướng dẫn thủy thủ đoàn vận chuyển hàng nguy hiểm an toàn dọc sông Mê Công.","ຄຳແນະນຳສຳລັບລູກເຮືອ ກ່ຽວກັບການຂົນສົ່ງສິນຄ້າອັນຕະລາຍຢ່າງປອດໄພຕາມແມ່ນ້ຳຂອງ.","ការណែនាំសម្រាប់នាវិកស្តីពីការដឹកជញ្ជូនទំនិញគ្រោះថ្នាក់ដោយសុវត្ថិភាពតាមទន្លេមេគង្គ។"],
+ ["No publications match your search.","Không có ấn phẩm nào phù hợp.","ບໍ່ພົບສິ່ງພິມທີ່ກົງກັບການຊອກຫາ.","រកមិនឃើញឯកសារដែលត្រូវនឹងការស្វែងរក។"],
+ ["Browse all publications →","Xem tất cả ấn phẩm →","ເບິ່ງສິ່ງພິມທັງໝົດ →","មើលឯកសារទាំងអស់ →"],
+ ["Media","Truyền thông","ສື່","ព័ត៌មានសម្រាប់ទស្សនា"],
+ ["Navigation videos, regional cooperation updates and waterway information resources.","Video giao thông thủy, cập nhật hợp tác khu vực và tài nguyên thông tin đường thủy.","ວິດີໂອການເດີນເຮືອ, ຂ່າວການຮ່ວມມືພາກພື້ນ ແລະ ແຫຼ່ງຂໍ້ມູນທາງນ້ຳ.","វីដេអូនាវាចរណ៍ ព័ត៌មានកិច្ចសហប្រតិបត្តិការតំបន់ និងធនធានព័ត៌មានផ្លូវទឹក។"],
+ ["14 July 2026","14 tháng 7, 2026","14 ກໍລະກົດ 2026","14 កក្កដា 2026"],
+ ["22 November 2019","22 tháng 11, 2019","22 ພະຈິກ 2019","22 វិច្ឆិកា 2019"],
+ ["17 July 2014","17 tháng 7, 2014","17 ກໍລະກົດ 2014","17 កក្កដា 2014"],
+ ["Harmonised Regulations for Safety of Navigation and Pollution Prevention","Quy định hài hòa về an toàn giao thông thủy và phòng ngừa ô nhiễm","ກົດລະບຽບທີ່ສອດຄ່ອງກັນ ວ່າດ້ວຍຄວາມປອດໄພການເດີນເຮືອ ແລະ ການປ້ອງກັນມົນລະພິດ","បទប្បញ្ញត្តិសុខដុមរមនា ស្តីពីសុវត្ថិភាពនាវាចរណ៍ និងការការពារការបំពុល"],
+ ["13 harmonised regulations on navigation safety, emergency response, pollution prevention, inspections, search and rescue, and dangerous goods.","13 quy định hài hòa về an toàn giao thông thủy, ứng phó khẩn cấp, phòng ngừa ô nhiễm, kiểm tra, tìm kiếm cứu nạn và hàng nguy hiểm.","13 ກົດລະບຽບທີ່ສອດຄ່ອງກັນ ກ່ຽວກັບຄວາມປອດໄພການເດີນເຮືອ, ການຕອບໂຕ້ສຸກເສີນ, ການປ້ອງກັນມົນລະພິດ, ການກວດກາ, ການຄົ້ນຫາ-ກູ້ໄພ ແລະ ສິນຄ້າອັນຕະລາຍ.","បទប្បញ្ញត្តិសុខដុមរមនា ១៣ ស្តីពីសុវត្ថិភាពនាវាចរណ៍ ការឆ្លើយតបបន្ទាន់ ការការពារការបំពុល ការត្រួតពិនិត្យ ការស្វែងរក និងជួយសង្គ្រោះ និងទំនិញគ្រោះថ្នាក់។"],
+ ["Mekong Navigation Overview","Tổng quan giao thông thủy Mê Công","ພາບລວມການເດີນເຮືອແມ່ນ້ຳຂອງ","ទិដ្ឋភាពទូទៅនាវាចរណ៍មេគង្គ"],
+ ["Navigation cooperation, river transport and digital information services across the region.","Hợp tác giao thông thủy, vận tải sông và dịch vụ thông tin số trong khu vực.","ການຮ່ວມມືດ້ານການເດີນເຮືອ, ການຂົນສົ່ງທາງແມ່ນ້ຳ ແລະ ບໍລິການຂໍ້ມູນດິຈິຕອນໃນພາກພື້ນ.","កិច្ចសហប្រតិបត្តិការនាវាចរណ៍ ការដឹកជញ្ជូនតាមទន្លេ និងសេវាព័ត៌មានឌីជីថលក្នុងតំបន់។"],
+ ["Navigation Safety and River Transport","An toàn giao thông thủy và vận tải sông","ຄວາມປອດໄພການເດີນເຮືອ ແລະ ການຂົນສົ່ງທາງແມ່ນ້ຳ","សុវត្ថិភាពនាវាចរណ៍ និងការដឹកជញ្ជូនតាមទន្លេ"],
+ ["Key safety practices and information tools for safer navigation on the Mekong.","Các thực hành an toàn chính và công cụ thông tin giúp đi lại an toàn hơn trên sông Mê Công.","ແນວປະຕິບັດຄວາມປອດໄພຫຼັກ ແລະ ເຄື່ອງມືຂໍ້ມູນ ເພື່ອການເດີນເຮືອທີ່ປອດໄພຂຶ້ນໃນແມ່ນ້ຳຂອງ.","ការអនុវត្តសុវត្ថិភាពសំខាន់ៗ និងឧបករណ៍ព័ត៌មាន សម្រាប់នាវាចរណ៍កាន់តែមានសុវត្ថិភាពលើទន្លេមេគង្គ។"],
+ ["Latest updates","Cập nhật mới nhất","ຂ່າວຄາວຫຼ້າສຸດ","ព័ត៌មានថ្មីៗ"],
+ ["News and Events","Tin tức và sự kiện","ຂ່າວ ແລະ ກິດຈະກຳ","ព័ត៌មាន និងព្រឹត្តិការណ៍"],
+ ["Regional navigation news, events, capacity-building activities and announcements.","Tin tức giao thông thủy khu vực, sự kiện, hoạt động nâng cao năng lực và thông báo.","ຂ່າວການເດີນເຮືອພາກພື້ນ, ກິດຈະກຳ, ການສ້າງຄວາມອາດສາມາດ ແລະ ແຈ້ງການ.","ព័ត៌មាននាវាចរណ៍ក្នុងតំបន់ ព្រឹត្តិការណ៍ សកម្មភាពកសាងសមត្ថភាព និងសេចក្តីប្រកាស។"],
+ ["View all news and events →","Xem tất cả tin tức và sự kiện →","ເບິ່ງຂ່າວ ແລະ ກິດຈະກຳທັງໝົດ →","មើលព័ត៌មាន និងព្រឹត្តិការណ៍ទាំងអស់ →"],
+ ["Centralized access portal for regional navigation data, navigation safety, notices to skippers and waterway information across the Mekong member countries.","Cổng truy cập tập trung dữ liệu giao thông thủy khu vực, an toàn giao thông thủy, thông báo cho thuyền trưởng và thông tin đường thủy của các nước thành viên Mê Công.","ປະຕູເຂົ້າເຖິງຂໍ້ມູນການເດີນເຮືອພາກພື້ນ, ຄວາມປອດໄພ, ແຈ້ງການເຖິງນາຍເຮືອ ແລະ ຂໍ້ມູນທາງນ້ຳ ຂອງບັນດາປະເທດສະມາຊິກແມ່ນ້ຳຂອງ.","វិបផតថលចូលប្រើទិន្នន័យនាវាចរណ៍ក្នុងតំបន់ សុវត្ថិភាព សេចក្តីជូនដំណឹងដល់ប្រធានទូក និងព័ត៌មានផ្លូវទឹក នៃប្រទេសសមាជិកមេគង្គ។"],
+ ["Portals","Cổng thông tin","ປະຕູຂໍ້ມູນ","វិបផតថល"],
+ ["Resources","Tài nguyên","ແຫຼ່ງຂໍ້ມູນ","ធនធាន"],
+ ["MRC Atlas map","Bản đồ Atlas MRC","ແຜນທີ່ອາດລາດ MRC","ផែនទីអាត្លាស MRC"],
+ ["Water levels","Mực nước","ລະດັບນ້ຳ","កម្រិតទឹក"],
+ ["Unofficial redesign concept based on navigation.mrcmekong.org. Not an official MRC product.","Bản thiết kế lại phi chính thức dựa trên navigation.mrcmekong.org. Không phải sản phẩm chính thức của MRC.","ແນວຄິດອອກແບບໃໝ່ທີ່ບໍ່ເປັນທາງການ ອີງຕາມ navigation.mrcmekong.org. ບໍ່ແມ່ນຜະລິດຕະພັນທາງການຂອງ MRC.","គំនិតរចនាឡើងវិញមិនផ្លូវការ ផ្អែកលើ navigation.mrcmekong.org។ មិនមែនជាផលិតផលផ្លូវការរបស់ MRC ទេ។"]
+ ];
+ var P=["Search publications…","Tìm ấn phẩm…","ຊອກຫາສິ່ງພິມ…","ស្វែងរកឯកសារ…"],L=['en','vi','lo','km','th','my','zh'],map={},nodes=[],sel=document.getElementById('lang'),tw=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),nd;
+ /* extra languages: rows follow T order; [English prefix check, Thai, Myanmar, Chinese] */
+ var X=[
+["Mekong Ri","คณะกรรมาธิการแม่น้ำโขง","မဲခါင်မြစ်ကော်မရှင်","湄公河委员会"],
+["Mekong Na","การเดินเรือแม่น้ำโขง","မဲခါင်ရေကြောင်းသွားလာရေး","湄公河航运"],
+["Countr","ประเทศ","နိုင်ငံများ","国家"],
+["Map","แผนที่","မြေပုံ","地图"],
+["Water ","ระดับน้ำ","ရေမျက်နှာပြင်အမြင့်","水位"],
+["Public","สิ่งพิมพ์","ထုတ်ဝေမှုများ","出版物"],
+["Videos","วิดีโอ","ဗီဒီယိုများ","视频"],
+["News","ข่าว","သတင်း","新闻"],
+["Region","พอร์ทัลการเดินเรือระดับภูมิภาค","ဒေသတွင်း ရေကြောင်းသွားလာရေး ပေါ်တယ်","区域航运门户"],
+["Mekong N","บริการข้อมูลการเดินเรือแม่น้ำโขง","မဲခါင်ရေကြောင်းသွားလာရေး သတင်းအချက်အလက်ဝန်ဆောင်မှုများ","湄公河航运信息服务"],
+["Centra","เข้าถึงข้อมูลการเดินเรือ ข้อมูลความปลอดภัย ประกาศถึงผู้ควบคุมเรือ ข้อมูลอุทกวิทยา และบริการทางน้ำในประเทศสมาชิกแม่น้ำโขงได้ในที่เดียว","မဲခါင်အဖွဲ့ဝင်နိုင်ငံများ၏ ရေကြောင်းဒေတာ၊ ဘေးကင်းလုံခြုံရေးသတင်း၊ သင်္ဘောမှူးများသို့ အသိပေးချက်များ၊ ဇလဗေဒသတင်းနှင့် ရေကြောင်းဝန်ဆောင်မှုများကို တစ်နေရာတည်းတွင် ရယူပါ။","一站式获取湄公河成员国的航运数据、安全信息、船长通告、水文动态和水道服务。"],
+["Explor","สำรวจระบบ →","စနစ်များကို လေ့လာပါ →","探索系统 →"],
+["Today","ระดับน้ำวันนี้","ယနေ့ ရေမျက်နှာပြင်အမြင့်","今日水位"],
+["Countr","ระบบการเดินเรือของแต่ละประเทศ","နိုင်ငံအလိုက် ရေကြောင်းစနစ်များ","各国航运系统"],
+["Naviga","การเข้าถึงข้อมูลการเดินเรือ","ရေကြောင်းသတင်းအချက်အလက် ရယူမှု","航运信息获取"],
+["Centra","แพลตฟอร์มศูนย์กลางที่ปลอดภัย","လုံခြုံသော ဗဟိုပလက်ဖောင်း","集中、安全的平台"],
+["Nation","พอร์ทัลระดับประเทศ","အမျိုးသားပေါ်တယ်များ","国家门户"],
+["Countr","ระบบการเดินเรือของแต่ละประเทศ","နိုင်ငံအလိုက် ရေကြောင်းစနစ်များ","各国航运系统"],
+["Open t","เปิดระบบข้อมูลการเดินเรือของแต่ละประเทศสมาชิก — ประกาศถึงผู้ควบคุมเรือ สภาพแม่น้ำ และบริการดิจิทัล","အဖွဲ့ဝင်နိုင်ငံတစ်ခုစီ၏ ရေကြောင်းသတင်းစနစ်ကို ဖွင့်ကြည့်ပါ — သင်္ဘောမှူးများသို့ အသိပေးချက်၊ မြစ်အခြေအနေနှင့် ဒစ်ဂျစ်တယ်ဝန်ဆောင်မှုများ။","打开各成员国航运信息系统——船长通告、河流状况和数字化服务。"],
+["Cambod","กัมพูชา","ကမ္ဘောဒီးယား","柬埔寨"],
+["Notice","ประกาศถึงผู้ควบคุมเรือ สภาพแม่น้ำ ข้อมูลความปลอดภัยในการเดินเรือ และบริการดิจิทัล","သင်္ဘောမှူးများသို့ အသိပေးချက်၊ မြစ်အခြေအနေ၊ ရေကြောင်းဘေးကင်းလုံခြုံရေးသတင်းနှင့် ဒစ်ဂျစ်တယ်ဝန်ဆောင်မှုများ။","船长通告、河流状况、航运安全信息和数字化航运服务。"],
+["Visit C","เข้าสู่พอร์ทัลกัมพูชา →","ကမ္ဘောဒီးယားပေါ်တယ်သို့ သွားရန် →","访问柬埔寨门户 →"],
+["Laos","ลาว","လာအို","老挝"],
+["Naviga","ข้อมูลการเดินเรือ ระบบสารสนเทศ การติดตามแม่น้ำ และการบริหารจัดการการเดินเรือแม่น้ำโขงแบบบูรณาการ","ရေကြောင်းဒေတာ၊ သတင်းအချက်အလက်စနစ်များ၊ မြစ်စောင့်ကြည့်ရေးနှင့် ပေါင်းစပ်စီမံခန့်ခွဲမှု။","航运数据、信息系统、河流监测和湄公河航运综合管理。"],
+["Visit L","เข้าสู่พอร์ทัลลาว →","လာအိုပေါ်တယ်သို့ သွားရန် →","访问老挝门户 →"],
+["Thaila","ไทย","ထိုင်း","泰国"],
+["Mekong ","การเดินเรือแม่น้ำโขง ข้อมูลทางน้ำ ความปลอดภัยในการเดินเรือ และบริการข้อมูลระดับภูมิภาค","မဲခါင်ရေကြောင်းသွားလာရေး၊ ရေလမ်းကြောင်းသတင်း၊ ဘေးကင်းလုံခြုံရေးနှင့် ဒေသတွင်းဒေတာဝန်ဆောင်မှုများ။","湄公河航运、水道信息、航运安全和区域数据服务。"],
+["Visit T","เข้าสู่พอร์ทัลไทย →","ထိုင်းပေါ်တယ်သို့ သွားရန် →","访问泰国门户 →"],
+["Vietna","เวียดนาม","ဗီယက်နမ်","越南"],
+["Naviga","การบริหารจัดการข้อมูลการเดินเรือ ประกาศถึงผู้ควบคุมเรือ และการบริหารความปลอดภัยในการเดินเรือ","ရေကြောင်းသတင်းစီမံခန့်ခွဲမှု၊ သင်္ဘောမှူးများသို့ အသိပေးချက်နှင့် ဘေးကင်းလုံခြုံရေးစီမံခန့်ခွဲမှု။","航运信息管理、船长通告和航运安全管理。"],
+["Visit V","เข้าสู่พอร์ทัลเวียดนาม →","ဗီယက်နမ်ပေါ်တယ်သို့ သွားရန် →","访问越南门户 →"],
+["Geospa","ภูมิสารสนเทศ","ပထဝီဒေတာ","地理空间"],
+["Region","แผนที่การเดินเรือระดับภูมิภาค","ဒေသတွင်း ရေကြောင်းမြေပုံ","区域航运地图"],
+["Explor","สำรวจท่าเรือ สะพาน ขนาดเรือ แก่ง แอ่งน้ำลึก และสถานีอุทกวิทยาบนแผนที่ลุ่มน้ำโขงตอนล่างของ MRC","MRC မဲခါင်မြစ်အောက်ပိုင်းဒေသ အက်တလပ်စ်တွင် ဆိပ်ကမ်း၊ တံတား၊ သင်္ဘောအရွယ်အစား၊ ရေတံခွန်နှင့် ရေနက်ကန်များကို လေ့လာပါ။","在 MRC 湄公河下游流域地图集中查看港口、桥梁、船型等级、急流、深潭和水文气象站。"],
+["","⚓ ท่าเรือภายในประเทศหลัก","⚓ အဓိက ကုန်းတွင်းဆိပ်ကမ်းများ","⚓ 主要内河港口"],
+["","\ud83c\udf09 สะพาน","\ud83c\udf09 တံတားများ","\ud83c\udf09 桥梁"],
+["","\ud83d\udea2 ขนาดเรือ","\ud83d\udea2 သင်္ဘောအရွယ်အစား","\ud83d\udea2 船型"],
+["","\ud83c\udf0a แก่งและแอ่งน้ำลึก","\ud83c\udf0a ရေတံခွန်နှင့် ရေနက်ကန်များ","\ud83c\udf0a 急流与深潭"],
+["Open i","เปิดแผนที่แบบโต้ตอบ ↗","ကြားဆက်သွယ်နိုင်သော မြေပုံဖွင့်ရန် ↗","打开交互地图 ↗"],
+["Hydrol","ข้อมูลอุทกวิทยา","ဇလဗေဒသတင်းအချက်အလက်","水文信息"],
+["Daily ","ระดับน้ำรายวัน","နေ့စဉ် ရေမျက်နှာပြင်အမြင့်","每日水位"],
+["Daily ","รายงานระดับน้ำโขงรายวัน การติดตามอุทกวิทยา และข้อมูลสภาพแม่น้ำ เพื่อความปลอดภัยในการเดินเรือ","နေ့စဉ်မဲခါင်ရေမျက်နှာပြင်အစီရင်ခံစာ၊ ဇလဗေဒစောင့်ကြည့်မှုနှင့် မြစ်အခြေအနေသတင်းများ — ရေကြောင်းဘေးကင်းလုံခြုံရေးအတွက်။","每日湄公河水位公报、水文监测动态和河流状况信息，保障航运安全。"],
+["Browse","ดูระดับน้ำรายวัน →","နေ့စဉ်ရေမျက်နှာပြင်အမြင့်ကို ကြည့်ရန် →","查看每日水位 →"],
+["Illust","ภาพประกอบ — รายงานสดอยู่ที่เว็บไซต์พยากรณ์น้ำท่วมของ MRC","ပုံဥပမာ — တိုက်ရိုက်အစီရင်ခံစာကို MRC ရေကြီးမှုကြိုတင်ခန့်မှန်းရေးဝက်ဘ်ဆိုက်တွင် ကြည့်ပါ။","示意图——实时公报见 MRC 洪水预报网站。"],
+["Knowle","องค์ความรู้","ဗဟုသုတထုတ်ကုန်များ","知识成果"],
+["Key MR","รายงานสำคัญ เอกสารทางเทคนิค และคู่มือความปลอดภัยของ MRC","MRC ၏ အဓိကအစီရင်ခံစာများ၊ နည်းပညာစာတမ်းများနှင့် ဘေးကင်းလုံခြုံရေးလက်စွဲများ။","MRC 主要报告、技术文件和安全手册。"],
+["All","ทั้งหมด","အားလုံး","全部"],
+["Master","แผนแม่บท","မဟာစီမံကိန်း","总体规划"],
+["Danger","สินค้าอันตราย","အန္တရာယ်ရှိကုန်စည်","危险货物"],
+["Standa","มาตรฐาน","စံနှုန်းများ","标准"],
+["Master","แผนแม่บท · เล่ม 1","မဟာစီမံကိန်း · အတွဲ ၁","总体规划 · 第1卷"],
+["Master","แผนแม่บท · เล่ม 2","မဟာစီမံကိန်း · အတွဲ ၂","总体规划 · 第2卷"],
+["Master","แผนแม่บทการขนส่งทางน้ำระดับภูมิภาคในลุ่มน้ำโขง (เล่ม 1)","မဲခါင်မြစ်ဝှမ်းဒေသတွင်း ရေကြောင်းပို့ဆောင်ရေး မဟာစီမံကိန်း (အတွဲ ၁)","湄公河流域区域水运总体规划（第1卷）"],
+["Short-","แผนระยะสั้นและระยะยาวเพื่อฟื้นฟูเครือข่ายการขนส่ง ครอบคลุมสถานการณ์ปัจจุบัน ข้อมูลพื้นฐาน การคาดการณ์ สถานการณ์จำลอง และแผนปฏิบัติการ","ပို့ဆောင်ရေးကွန်ရက်ကို ပြန်လည်ထူထောင်ရန် တိုတောင်းသော နှင့် ရှည်လျားသောကာလ အစီအစဉ်။ လက်ရှိအခြေအနေ၊ အခြေခံ၊ ခန့်မှန်းချက်၊ အခြေအနေပုံစံများနှင့် လုပ်ငန်းစဉ်ပါဝင်သည်။","修复运输网络的中短期与长期方案，涵盖现状、基线、预测、情景和行动计划。"],
+["Downlo","ดาวน์โหลด PDF →","PDF ဒေါင်းလုဒ်လုပ်ရန် →","下载 PDF →"],
+["Master","แผนแม่บทการขนส่งทางน้ำระดับภูมิภาคในลุ่มน้ำโขง (เล่ม 2)","မဲခါင်မြစ်ဝှမ်းဒေသတွင်း ရေကြောင်းပို့ဆောင်ရေး မဟာစီမံကိန်း (အတွဲ ၂)","湄公河流域区域水运总体规划（第2卷）"],
+["A full ","ชุดแฟ้มปฏิบัติการฉบับสมบูรณ์","အသေးစိတ် လုပ်ငန်းဖိုင်များ အပြည့်အစုံ။","完整的详细行动文件集。"],
+["Action","แผนปฏิบัติการ","လုပ်ငန်းအစီအစဉ်","行动计划"],
+["Region","แผนปฏิบัติการระดับภูมิภาคเพื่อการขนส่งสินค้าอันตรายอย่างยั่งยืนตามแม่น้ำโขง","မဲခါင်မြစ်တစ်လျှောက် အန္တရာယ်ရှိကုန်စည် ရေရှည်တည်တံ့ပို့ဆောင်ရေး ဒေသတွင်းလုပ်ငန်းစဉ်","湄公河危险货物可持续运输区域行动计划"],
+["Nation","โครงการระดับชาติและข้ามพรมแดนเพื่อลดอุบัติเหตุ การรั่วไหล และมลพิษ พร้อมยุทธศาสตร์การดำเนินงาน","မတော်တဆမှု၊ ယိုဖိတ်မှုနှင့် ညစ်ညမ်းမှုလျှော့ချရန် နိုင်ငံတွင်းနှင့် နယ်စပ်ဖြတ်ကျော် စီမံကိန်းများ၊ အကောင်အထည်ဖော်ရေးမဟာဗျူဟာပါဝင်သည်။","旨在减少事故、泄漏和污染的国家及跨境项目，并附实施战略。"],
+["Standa","การกำหนดมาตรฐาน","စံသတ်မှတ်ခြင်း","标准化"],
+["Standa","การกำหนดมาตรฐานการจำแนกเรือและทางน้ำในลุ่มน้ำโขง","မဲခါင်မြစ်ဝှမ်းရှိ သင်္ဘောနှင့် ရေလမ်းကြောင်းအမျိုးအစားခွဲခြားမှု စံသတ်မှတ်ခြင်း","湄公河流域船舶与水道分级标准化"],
+["Harmon","ข้อเสนอการจำแนกเรือและทางน้ำที่สอดคล้องกันสำหรับ สปป.ลาว ไทย กัมพูชา และเวียดนาม","လာအို၊ ထိုင်း၊ ကမ္ဘောဒီးယားနှင့် ဗီယက်နမ်အတွက် ညှိနှိုင်းထားသော သင်္ဘောနှင့်ရေလမ်းကြောင်းအမျိုးအစားခွဲခြားမှု အဆိုပြုချက်။","为老挝、泰国、柬埔寨和越南提出的统一船舶与水道分级方案。"],
+["Safety","คู่มือความปลอดภัย · ท่าเรือ","ဘေးကင်းလုံခြုံရေးလက်စွဲ · ဆိပ်ကမ်း","安全手册 · 港口"],
+["Safety","คู่มือความปลอดภัยสำหรับเจ้าหน้าที่ท่าเรือ: การจัดการและจัดเก็บสินค้าอันตราย","ဆိပ်ကမ်းဝန်ထမ်းများအတွက် ဘေးကင်းလုံခြုံရေးလက်စွဲ — အန္တရာယ်ရှိကုန်စည် ကိုင်တွယ်သိမ်းဆည်းခြင်း","港口人员安全手册：危险货物的装卸与储存"],
+["Helps ","ช่วยให้เจ้าหน้าที่ท่าเรือจัดการและจัดเก็บสินค้าอันตรายได้อย่างปลอดภัย มีประสิทธิภาพ และรับผิดชอบต่อสิ่งแวดล้อม","ဆိပ်ကမ်းဝန်ထမ်းများ အန္တရာယ်ရှိကုန်စည်ကို ဘေးကင်းစွာ၊ ထိရောက်စွာ၊ ပတ်ဝန်းကျင်ကို တာဝန်ယူစွာ ကိုင်တွယ်သိမ်းဆည်းနိုင်ရန် ကူညီသည်။","帮助港口人员安全、高效且对环境负责地装卸和储存危险货物。"],
+["Safety","คู่มือความปลอดภัย · ลูกเรือ","ဘေးကင်းလုံခြုံရေးလက်စွဲ · သင်္ဘောအမှုထမ်း","安全手册 · 船员"],
+["Safety","คู่มือความปลอดภัยสำหรับลูกเรือ: การขนส่ง การจัดการ และการจัดเก็บสินค้าอันตราย","သင်္ဘောအမှုထမ်းများအတွက် ဘေးကင်းလုံခြုံရေးလက်စွဲ — အန္တရာယ်ရှိကုန်စည် သယ်ယူကိုင်တွယ်သိမ်းဆည်းခြင်း","船员安全手册：危险货物的运输、装卸与储存"],
+["Guidan","แนวทางสำหรับลูกเรือในการขนส่งสินค้าอันตรายอย่างปลอดภัยตามแม่น้ำโขง","မဲခါင်မြစ်တစ်လျှောက် အန္တရာယ်ရှိကုန်စည်ကို ဘေးကင်းစွာသယ်ယူရန် သင်္ဘောအမှုထမ်းများအတွက် လမ်းညွှန်။","指导船员沿湄公河安全运输危险货物。"],
+["No pub","ไม่พบสิ่งพิมพ์ที่ตรงกับการค้นหา","ရှာဖွေမှုနှင့် ကိုက်ညီသော ထုတ်ဝေမှု မတွေ့ပါ။","没有符合搜索条件的出版物。"],
+["Browse","ดูสิ่งพิมพ์ทั้งหมด →","ထုတ်ဝေမှုအားလုံးကြည့်ရန် →","浏览全部出版物 →"],
+["Media","สื่อ","မီဒီယာ","媒体"],
+["Naviga","วิดีโอการเดินเรือ ความเคลื่อนไหวความร่วมมือระดับภูมิภาค และแหล่งข้อมูลทางน้ำ","ရေကြောင်းဗီဒီယိုများ၊ ဒေသတွင်းပူးပေါင်းဆောင်ရွက်မှုသတင်းများနှင့် ရေလမ်းကြောင်းအချက်အလက်ရင်းမြစ်များ။","航运视频、区域合作动态和水道信息资源。"],
+["14 Jul","14 กรกฎาคม 2026","၂၀၂၆ ခုနှစ် ဇူလိုင်လ ၁၄ ရက်","2026年7月14日"],
+["22 Nov","22 พฤศจิกายน 2019","၂၀၁၉ ခုနှစ် နိုဝင်ဘာလ ၂၂ ရက်","2019年11月22日"],
+["17 Jul","17 กรกฎาคม 2014","၂၀၁၄ ခုနှစ် ဇူလိုင်လ ၁၇ ရက်","2014年7月17日"],
+["Harmon","กฎระเบียบที่สอดคล้องกันเพื่อความปลอดภัยในการเดินเรือและการป้องกันมลพิษ","ရေကြောင်းဘေးကင်းလုံခြုံရေးနှင့် ညစ်ညမ်းမှုကာကွယ်ရေးအတွက် ညှိနှိုင်းထားသော စည်းမျဉ်းများ","航运安全与污染防治统一法规"],
+["13 har","กฎระเบียบที่สอดคล้องกัน 13 ฉบับ ครอบคลุมความปลอดภัยในการเดินเรือ การรับมือเหตุฉุกเฉิน การป้องกันมลพิษ การตรวจเรือ การค้นหาและกู้ภัย และสินค้าอันตราย","ရေကြောင်းဘေးကင်းလုံခြုံရေး၊ အရေးပေါ်တုံ့ပြန်မှု၊ ညစ်ညမ်းမှုကာကွယ်ရေး၊ စစ်ဆေးမှု၊ ရှာဖွေကယ်ဆယ်ရေးနှင့် အန္တရာယ်ရှိကုန်စည်ဆိုင်ရာ ညှိနှိုင်းထားသော စည်းမျဉ်း ၁၃ ခု။","涵盖航运安全、应急响应、污染防治、检验、搜救和危险货物的13项统一法规。"],
+["Mekong","ภาพรวมการเดินเรือแม่น้ำโขง","မဲခါင်ရေကြောင်းသွားလာရေး အနှစ်ချုပ်","湄公河航运概览"],
+["Naviga","ความร่วมมือด้านการเดินเรือ การขนส่งทางน้ำ และบริการข้อมูลดิจิทัลทั่วภูมิภาค","ဒေသတစ်ဝန်း ရေကြောင်းပူးပေါင်းဆောင်ရွက်မှု၊ မြစ်ကြောင်းပို့ဆောင်ရေးနှင့် ဒစ်ဂျစ်တယ်သတင်းဝန်ဆောင်မှုများ။","区域内的航运合作、河运和数字信息服务。"],
+["Naviga","ความปลอดภัยในการเดินเรือและการขนส่งทางแม่น้ำ","ရေကြောင်းဘေးကင်းလုံခြုံရေးနှင့် မြစ်ကြောင်းပို့ဆောင်ရေး","航运安全与河运"],
+["Key sa","แนวปฏิบัติด้านความปลอดภัยและเครื่องมือข้อมูลเพื่อการเดินเรือที่ปลอดภัยยิ่งขึ้นในแม่น้ำโขง","မဲခါင်မြစ်တွင် ပိုမိုဘေးကင်းစွာသွားလာနိုင်ရန် အဓိကဘေးကင်းလုံခြုံရေးလုပ်ထုံးလုပ်နည်းများနှင့် သတင်းကိရိယာများ။","保障湄公河航行更安全的主要安全实践和信息工具。"],
+["Latest","อัปเดตล่าสุด","နောက်ဆုံးသတင်းများ","最新动态"],
+["News a","ข่าวและกิจกรรม","သတင်းနှင့် ပွဲလမ်းသဘင်များ","新闻与活动"],
+["Region","ข่าวการเดินเรือระดับภูมิภาค กิจกรรม การเสริมสร้างขีดความสามารถ และประกาศต่าง ๆ","ဒေသတွင်းရေကြောင်းသတင်းများ၊ ပွဲလမ်းသဘင်များ၊ စွမ်းဆောင်ရည်မြှင့်တင်ရေးလုပ်ငန်းများနှင့် ကြေညာချက်များ။","区域航运新闻、活动、能力建设和公告。"],
+["View a","ดูข่าวและกิจกรรมทั้งหมด →","သတင်းနှင့်ပွဲလမ်းသဘင်အားလုံးကြည့်ရန် →","查看全部新闻与活动 →"],
+["Centra","พอร์ทัลศูนย์กลางข้อมูลการเดินเรือระดับภูมิภาค ความปลอดภัย ประกาศถึงผู้ควบคุมเรือ และข้อมูลทางน้ำของประเทศสมาชิกแม่น้ำโขง","မဲခါင်အဖွဲ့ဝင်နိုင်ငံများ၏ ဒေသတွင်းရေကြောင်းဒေတာ၊ ဘေးကင်းလုံခြုံရေး၊ သင်္ဘောမှူးများသို့ အသိပေးချက်နှင့် ရေလမ်းကြောင်းသတင်းများ ဗဟိုပေါ်တယ်။","湄公河成员国区域航运数据、航运安全、船长通告和水道信息集中门户。"],
+["Portal","พอร์ทัล","ပေါ်တယ်များ","门户"],
+["Resour","แหล่งข้อมูล","အရင်းအမြစ်များ","资源"],
+["MRC At","แผนที่ MRC Atlas","MRC အက်တလပ်စ်မြေပုံ","MRC 地图集"],
+["Water ","ระดับน้ำ","ရေမျက်နှာပြင်အမြင့်","水位"],
+["Unoffi","แนวคิดการออกแบบใหม่ที่ไม่เป็นทางการ อ้างอิงจาก navigation.mrcmekong.org ไม่ใช่ผลิตภัณฑ์ทางการของ MRC","navigation.mrcmekong.org ကို အခြေခံသော တရားဝင်မဟုတ်သည့် ဒီဇိုင်းအသစ်ဖြစ်ပြီး MRC ၏ တရားဝင်ထုတ်ကုန်မဟုတ်ပါ။","基于 navigation.mrcmekong.org 的非官方重新设计概念，并非 MRC 官方产品。"]
+ ];
+ X.forEach(function(r,i){if(!T[i])return;if(T[i][0].indexOf(r[0])===0)T[i].push(r[1],r[2],r[3]);else T[i].push(T[i][0],T[i][0],T[i][0])});
+ P.push("ค้นหาสิ่งพิมพ์…","ထုတ်ဝေမှုများရှာရန်…","搜索出版物…");
+ T.forEach(function(r){map[r[0]]=r});
+ while((nd=tw.nextNode())){var pn=nd.parentNode.nodeName,k=nd.nodeValue.trim();if(pn!=='SCRIPT'&&pn!=='STYLE'&&pn!=='OPTION'&&map[k])nodes.push([nd,nd.nodeValue,k])}
+ var title0=document.title;
+ function setLang(l){var i=L.indexOf(l);if(i<0)i=0;
+  nodes.forEach(function(x){var m=x[1].match(/^(\s*)[\s\S]*?(\s*)$/);x[0].nodeValue=m[1]+(map[x[2]][i]||map[x[2]][0])+m[2]});
+  q.placeholder=P[i];root.lang=L[i];sel.value=L[i];document.title=map[title0]?map[title0][i]:title0;
+  try{localStorage.setItem('mk-lang',L[i])}catch(e){}}
+ sel.onchange=function(){setLang(sel.value)};
+ var saved='en';try{saved=localStorage.getItem('mk-lang')||'en'}catch(e){}
+ if(saved!=='en')setLang(saved);
+ var A='https://navigation.mrcmekong.org/assets/img/';
+ function pre(u,ok){var im=new Image();im.onload=function(){ok(u)};im.src=u}
+ document.querySelectorAll('#pubs .cover').forEach(function(c,i){var u=A+'publications/publication-'+(i+1)+'.png';pre(u,function(){var im=document.createElement('img');im.src=u;im.alt='';c.appendChild(im);c.classList.add('has')})});
+ pre(A+'daily-water-levels/bulletin.png',function(u){var b=document.getElementById('bulletin');b.src=u;b.hidden=false;document.getElementById('gsvg').style.display='none'});
+ var tu=[A+'video_thumb/vdo_thumb3.png','https://img.youtube.com/vi/lVQWfxSEvYE/hqdefault.jpg',A+'video_thumb/vdo_thumb2.png'];
+ document.querySelectorAll('#videos .thumb').forEach(function(t,i){pre(tu[i],function(u){t.style.backgroundImage='url('+u+')'})});
+ (function(){var l=document.getElementById('logo'),C=['https://www.mrcmekong.org/mrcmekong/images/mrc/MRC-logo.svg','mrc-logo.png'];function t(i){if(i>=C.length)return;pre(C[i],function(u){l.src=u;l.hidden=false;document.getElementById('logosvg').style.display='none'});var im=new Image();im.onerror=function(){t(i+1)};im.src=C[i]}t(0)})();
+ /* MRC Atlas (TerriaJS) with the same layers as the original portal */
+ var M={};function g(id,p,o){M[id]={isOpen:o,knownContainerUniqueIds:[p],type:'group'}}function w(id,p,x){M[id]=Object.assign({knownContainerUniqueIds:[p],type:'wms'},x||{})}
+ var R='Root Group/Lower Mekong Basin Atlas',BD='Mekong Basin Atlas/Baseline Data',NT=BD+'/Navigation & Transport',ED='Mekong Basin Atlas/Environmental Dimension',DP=ED+'/Deep Pools & Rapids',CR=ED+'/Core River Monitoring Network',EC='Mekong Basin Atlas/Economic Dimension';
+ g(R,'/',true);g(BD,R,true);g(NT,BD,true);w(NT+'/Major Inland Ports',NT);w(NT+'/Vassel Size',NT,{styles:'vessel size1'});w(NT+'/Road',NT);w(NT+'/Bridge',NT);w(BD+'/Mekong River',BD);w(BD+'/Maintributary',BD);
+ g(ED,R,true);g(CR,ED,false);w(CR+'/HydroMet Station',CR,{isOpenInWorkbench:true});g(DP,ED,false);w(DP+'/deeppools',DP,{show:true,opacity:1});w(DP+'/Deep Pools LEK',DP,{opacity:1});w(DP+'/Rapids',DP,{show:true,styles:'rapids'});g(EC,R,true);w(EC+'/Hydropower',EC);
+ var wb=[NT+'/Major Inland Ports',NT+'/Bridge',NT+'/Vassel Size',DP+'/deeppools',DP+'/Deep Pools LEK',DP+'/Rapids',EC+'/Hydropower',BD+'/Mekong River',BD+'/Maintributary',NT+'/Road'];
+ var geo='https://geo.mrcmekong.org/#start='+encodeURIComponent(JSON.stringify({version:'8.0.0',initSources:[{stratum:'user',models:M,workbench:wb,initialCamera:{west:94.526,south:7.885,east:118.718,north:21.8},homeCamera:{west:100,south:10,east:105,north:22},viewerMode:'2d',settings:{baseMapId:'basemap-bing-roads'},stories:[]}]}));
+ document.getElementById('geo').src=geo;document.getElementById('geolink').href=geo;
+})();
+</script>
+</body>
+</html>
