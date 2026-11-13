@@ -87,6 +87,7 @@ footer h4{color:#fff;margin:0 0 10px}footer a{display:block;padding:3px 0}footer
 .copy{border-top:1px solid rgba(255,255,255,.14);margin-top:24px;padding-top:16px;font-size:12.5px}
 .langsel{background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:8px;height:38px;padding:0 8px;font:inherit;font-size:14px;cursor:pointer}.langsel option{color:#12263a}
 html[lang=th] body{line-height:1.8}html[lang=my] body{line-height:2.05}html[lang=th] h1,html[lang=th] h2{line-height:1.45}html[lang=my] h1,html[lang=my] h2{line-height:1.75}html[lang=my] .btn,html[lang=my] .chip{line-height:1.9}html[lang=lo] body{line-height:1.8}html[lang=km] body{line-height:1.95}html[lang=lo] h1,html[lang=lo] h2{line-height:1.5}html[lang=km] h1,html[lang=km] h2{line-height:1.7}html[lang=km] .btn,html[lang=km] .chip{line-height:1.8}
+.card .flag{width:64px;height:42px;border-radius:8px;background:none;box-shadow:0 0 0 1px var(--line),0 4px 10px rgba(0,0,0,.14);overflow:hidden;display:block}.card .flag svg{width:100%;height:100%;display:block}
 .langbox{position:relative}#langbtn{display:inline-flex;align-items:center;gap:8px;padding:0 10px;font-weight:600}#langbtn::after{content:"▾";font-size:12px;opacity:.8}#langbtn svg,#langlist svg{width:24px;height:16px;border-radius:3px;box-shadow:0 0 0 1px rgba(0,0,0,.25);flex:none}
 #langlist{position:absolute;right:0;top:46px;margin:0;padding:6px;list-style:none;min-width:190px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 34px rgba(7,41,77,.28);z-index:70}
 #langlist li{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:14px}#langlist li:hover,#langlist li[aria-selected=true]{background:var(--bg)}
@@ -323,7 +324,7 @@ html[lang=th] body{line-height:1.8}html[lang=my] body{line-height:2.05}html[lang
  ["Water levels","Mực nước","ລະດັບນ້ຳ","កម្រិតទឹក"],
  ["Unofficial redesign concept based on navigation.mrcmekong.org. Not an official MRC product.","Bản thiết kế lại phi chính thức dựa trên navigation.mrcmekong.org. Không phải sản phẩm chính thức của MRC.","ແນວຄິດອອກແບບໃໝ່ທີ່ບໍ່ເປັນທາງການ ອີງຕາມ navigation.mrcmekong.org. ບໍ່ແມ່ນຜະລິດຕະພັນທາງການຂອງ MRC.","គំនិតរចនាឡើងវិញមិនផ្លូវការ ផ្អែកលើ navigation.mrcmekong.org។ មិនមែនជាផលិតផលផ្លូវការរបស់ MRC ទេ។"]
  ];
- var P=["Search publications…","Tìm ấn phẩm…","ຊອກຫາສິ່ງພິມ…","ស្វែងរកឯកសារ…"],L=['en','vi','lo','km','th','my','zh'],map={},nodes=[],sel=document.getElementById('lang'),tw=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),nd;
+ var P=["Search publications…","Tìm ấn phẩm…","ຊອກຫາສິ່ງພິມ…","ស្វែងរកឯកសារ…"],L=['en','vi','lo','km','th','my','zh','fr','de','es','pt'],map={},nodes=[],sel=document.getElementById('lang'),tw=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),nd;
  /* extra languages: rows follow T order; [English prefix check, Thai, Myanmar, Chinese] */
  var X=[
 ["Mekong Ri","คณะกรรมาธิการแม่น้ำโขง","မဲခါင်မြစ်ကော်မရှင်","湄公河委员会"],
@@ -421,6 +422,103 @@ html[lang=th] body{line-height:1.8}html[lang=my] body{line-height:2.05}html[lang
  ];
  X.forEach(function(r,i){if(!T[i])return;if(T[i][0].indexOf(r[0])===0)T[i].push(r[1],r[2],r[3]);else T[i].push(T[i][0],T[i][0],T[i][0])});
  P.push("ค้นหาสิ่งพิมพ์…","ထုတ်ဝေမှုများရှာရန်…","搜索出版物…");
+ /* fr, de, es, pt rows follow T order */
+ var X2=[
+["Commission du Mékong","Mekong-Kommission","Comisión del Río Mekong","Comissão do Rio Mekong"],
+["Navigation sur le Mékong","Mekong-Schifffahrt","Navegación en el Mekong","Navegação no Mekong"],
+["Pays","Länder","Países","Países"],
+["Carte","Karte","Mapa","Mapa"],
+["Niveaux d’eau","Wasserstände","Niveles de agua","Níveis da água"],
+["Publications","Publikationen","Publicaciones","Publicações"],
+["Vidéos","Videos","Vídeos","Vídeos"],
+["Actualités","Nachrichten","Noticias","Notícias"],
+["Portail régional de la navigation","Regionales Schifffahrtsportal","Portal regional de navegación","Portal regional de navegação"],
+["Services d’information sur la navigation du Mékong","Informationsdienste zur Mekong-Schifffahrt","Servicios de información sobre la navegación en el Mekong","Serviços de informação sobre a navegação no Mekong"],
+["Accès centralisé aux données de navigation, aux informations de sécurité, aux avis aux navigants, aux mises à jour hydrologiques et aux services de voies navigables dans les pays membres du Mékong.","Zentraler Zugang zu Schifffahrtsdaten, Sicherheitsinformationen, Nachrichten für Schiffsführer, hydrologischen Updates und Wasserstraßendiensten in den Mekong-Mitgliedstaaten.","Acceso centralizado a datos de navegación, información de seguridad, avisos a los navegantes, actualizaciones hidrológicas y servicios de vías navegables en los países miembros del Mekong.","Acesso centralizado a dados de navegação, informações de segurança, avisos aos navegantes, atualizações hidrológicas e serviços de vias navegáveis nos países-membros do Mekong."],
+["Découvrir les systèmes →","Systeme entdecken →","Explorar sistemas →","Explorar sistemas →"],
+["Niveaux d’eau du jour","Wasserstände heute","Niveles de agua de hoy","Níveis da água de hoje"],
+["Systèmes de navigation par pays","Schifffahrtssysteme der Länder","Sistemas de navegación por país","Sistemas de navegação por país"],
+["Accès à l’information de navigation","Zugang zu Schifffahrtsinformationen","Acceso a información de navegación","Acesso a informações de navegação"],
+["Plateforme centralisée et sécurisée","Zentrale, sichere Plattform","Plataforma centralizada y segura","Plataforma centralizada e segura"],
+["Portails nationaux","Nationale Portale","Portales nacionales","Portais nacionais"],
+["Systèmes de navigation par pays","Schifffahrtssysteme der Länder","Sistemas de navegación por país","Sistemas de navegação por país"],
+["Ouvrez le système d’information de navigation de chaque pays membre — avis aux navigants, état des cours d’eau et services numériques.","Öffnen Sie das Schifffahrtsinformationssystem jedes Mitgliedstaats — Nachrichten für Schiffsführer, Flusszustand und digitale Dienste.","Abra el sistema de información de navegación de cada país miembro: avisos a los navegantes, estado del río y servicios digitales.","Abra o sistema de informação de navegação de cada país-membro: avisos aos navegantes, condições do rio e serviços digitais."],
+["Cambodge","Kambodscha","Camboya","Camboja"],
+["Avis aux navigants, état du fleuve, informations de sécurité de la navigation et services numériques.","Nachrichten für Schiffsführer, Flusszustand, Sicherheitsinformationen und digitale Schifffahrtsdienste.","Avisos a los navegantes, estado del río, información de seguridad y servicios digitales de navegación.","Avisos aos navegantes, condições do rio, informações de segurança e serviços digitais de navegação."],
+["Accéder au portail du Cambodge →","Zum Portal Kambodschas →","Visitar el portal de Camboya →","Visitar o portal do Camboja →"],
+["Laos","Laos","Laos","Laos"],
+["Données de navigation, systèmes d’information, suivi du fleuve et gestion intégrée de la navigation sur le Mékong.","Schifffahrtsdaten, Informationssysteme, Flüssuberwachung und integriertes Management der Mekong-Schifffahrt.","Datos de navegación, sistemas de información, monitoreo del río y gestión integrada de la navegación en el Mekong.","Dados de navegação, sistemas de informação, monitoramento do rio e gestão integrada da navegação no Mekong."],
+["Accéder au portail du Laos →","Zum Portal von Laos →","Visitar el portal de Laos →","Visitar o portal do Laos →"],
+["Thaïlande","Thailand","Tailandia","Tailândia"],
+["Navigation sur le Mékong, informations sur les voies navigables, sécurité de la navigation et services de données régionaux.","Mekong-Schifffahrt, Wasserstraßeninformationen, Schifffahrtssicherheit und regionale Datendienste.","Navegación en el Mekong, información de vías navegables, seguridad de la navegación y servicios de datos regionales.","Navegação no Mekong, informações sobre vias navegáveis, segurança da navegação e serviços de dados regionais."],
+["Accéder au portail de la Thaïlande →","Zum Portal Thailands →","Visitar el portal de Tailandia →","Visitar o portal da Tailândia →"],
+["Viêt Nam","Vietnam","Vietnam","Vietnã"],
+["Gestion de l’information de navigation, avis aux navigants et gestion de la sécurité de la navigation.","Management von Schifffahrtsinformationen, Nachrichten für Schiffsführer und Schifffahrtssicherheit.","Gestión de la información de navegación, avisos a los navegantes y gestión de la seguridad de la navegación.","Gestão de informações de navegação, avisos aos navegantes e gestão da segurança da navegação."],
+["Accéder au portail du Viêt Nam →","Zum Portal Vietnams →","Visitar el portal de Vietnam →","Visitar o portal do Vietnã →"],
+["Géospatial","Geodaten","Geoespacial","Geoespacial"],
+["Carte régionale de la navigation","Regionale Schifffahrtskarte","Mapa regional de navegación","Mapa regional de navegação"],
+["Explorez les ports, ponts, classes de bateaux, rapides, fosses profondes et stations hydrométéorologiques de l’Atlas du bas Mékong de la MRC.","Entdecken Sie Häfen, Brücken, Schiffsklassen, Stromschnellen, Kolke und hydrometeorologische Stationen im MRC-Atlas des Unteren Mekong-Beckens.","Explore puertos, puentes, clases de embarcaciones, rápidos, pozas profundas y estaciones hidrometeorológicas en el Atlas de la Cuenca Baja del Mekong de la MRC.","Explore portos, pontes, classes de embarcações, corredeiras, poços profundos e estações hidrometeorológicas no Atlas da Bacia Inferior do Mekong da MRC."],
+["⚓ Principaux ports intérieurs","⚓ Wichtige Binnenhäfen","⚓ Principales puertos fluviales","⚓ Principais portos fluviais"],
+["\ud83c\udf09 Ponts","\ud83c\udf09 Brücken","\ud83c\udf09 Puentes","\ud83c\udf09 Pontes"],
+["\ud83d\udea2 Taille des bateaux","\ud83d\udea2 Schiffsgröße","\ud83d\udea2 Tamaño de embarcaciones","\ud83d\udea2 Tamanho das embarcações"],
+["\ud83c\udf0a Rapides et fosses profondes","\ud83c\udf0a Stromschnellen und Kolke","\ud83c\udf0a Rápidos y pozas profundas","\ud83c\udf0a Corredeiras e poços profundos"],
+["Ouvrir la carte interactive ↗","Interaktive Karte öffnen ↗","Abrir mapa interactivo ↗","Abrir mapa interativo ↗"],
+["Informations hydrologiques","Hydrologische Informationen","Información hidrológica","Informações hidrológicas"],
+["Niveaux d’eau quotidiens","Tägliche Wasserstände","Niveles de agua diarios","Níveis diários da água"],
+["Bulletins quotidiens des niveaux d’eau du Mékong, suivi hydrologique et état du fleuve pour la sécurité de la navigation.","Tägliche Wasserstandsberichte des Mekong, hydrologische Überwachung und Informationen zum Flusszustand für die Schifffahrtssicherheit.","Boletines diarios del nivel del agua del Mekong, monitoreo hidrológico e información sobre el estado del río para la seguridad de la navegación.","Boletins diários do nível da água do Mekong, monitoramento hidrológico e informações sobre as condições do rio para a segurança da navegação."],
+["Consulter les niveaux d’eau quotidiens →","Tägliche Wasserstände ansehen →","Ver niveles de agua diarios →","Ver níveis diários da água →"],
+["Illustration — le bulletin en direct est sur le site de prévision des crues de la MRC.","Illustration — das aktuelle Bulletin finden Sie auf der Hochwasservorhersage-Seite der MRC.","Gráfico ilustrativo: el boletín en vivo está en el sitio de pronóstico de crecidas de la MRC.","Gráfico ilustrativo: o boletim ao vivo está no site de previsão de cheias da MRC."],
+["Produits de connaissance","Wissensprodukte","Productos de conocimiento","Produtos de conhecimento"],
+["Principaux rapports de la MRC, documents techniques et guides de sécurité.","Wichtige MRC-Berichte, Fachpapiere und Sicherheitsbroschüren.","Informes clave de la MRC, documentos técnicos y manuales de seguridad.","Principais relatórios da MRC, documentos técnicos e manuais de segurança."],
+["Tout","Alle","Todos","Todos"],
+["Plan directeur","Masterplan","Plan maestro","Plano diretor"],
+["Marchandises dangereuses","Gefahrgut","Mercancías peligrosas","Mercadorias perigosas"],
+["Normes","Standards","Normas","Normas"],
+["Plan directeur · Vol. 1","Masterplan · Bd. 1","Plan maestro · Vol. 1","Plano diretor · Vol. 1"],
+["Plan directeur · Vol. 2","Masterplan · Bd. 2","Plan maestro · Vol. 2","Plano diretor · Vol. 2"],
+["Plan directeur du transport fluvial régional dans le bassin du Mékong (volume 1)","Masterplan für den regionalen Wassertransport im Mekong-Becken (Band 1)","Plan maestro para el transporte fluvial regional en la cuenca del Mekong (volumen 1)","Plano diretor para o transporte aquaviário regional na bacia do Mekong (volume 1)"],
+["Programme à court et long terme pour réhabiliter le réseau de transport. Couvre la situation actuelle, la référence, les prévisions, les scénarios et le plan d’action.","Kurz- und langfristiges Programm zur Sanierung des Transportnetzes. Behandelt Ist-Zustand, Ausgangslage, Prognosen, Szenarien und Aktionsplan.","Programa a corto y largo plazo para rehabilitar la red de transporte. Incluye situación actual, línea de base, previsiones, escenarios y plan de acción.","Programa de curto e longo prazo para reabilitar a rede de transporte. Abrange situação atual, linha de base, previsões, cenários e plano de ação."],
+["Télécharger le PDF →","PDF herunterladen →","Descargar PDF →","Baixar PDF →"],
+["Plan directeur du transport fluvial régional dans le bassin du Mékong (volume 2)","Masterplan für den regionalen Wassertransport im Mekong-Becken (Band 2)","Plan maestro para el transporte fluvial regional en la cuenca del Mekong (volumen 2)","Plano diretor para o transporte aquaviário regional na bacia do Mekong (volume 2)"],
+["Un portefeuille complet des fiches d’action détaillées.","Eine vollständige Sammlung der ausgearbeiteten Aktionsdokumente.","Una cartera completa de las fichas de acción elaboradas.","Uma carteira completa das fichas de ação elaboradas."],
+["Plan d’action","Aktionsplan","Plan de acción","Plano de ação"],
+["Plan d’action régional pour le transport durable de marchandises dangereuses le long du Mékong","Regionaler Aktionsplan für den nachhaltigen Gefahrguttransport entlang des Mekong","Plan de acción regional para el transporte sostenible de mercancías peligrosas a lo largo del Mekong","Plano de ação regional para o transporte sustentável de mercadorias perigosas ao longo do Mekong"],
+["Projets nationaux et transfrontaliers visant à réduire les accidents, déversements et pollutions, avec une stratégie de mise en œuvre.","Nationale und grenzüberschreitende Projekte zur Verringerung von Unfällen, Leckagen und Verschmutzung, mit Umsetzungsstrategie.","Proyectos nacionales y transfronterizos para reducir accidentes, derrames y contaminación, con una estrategia de implementación.","Projetos nacionais e transfronteiriços para reduzir acidentes, vazamentos e poluição, com estratégia de implementação."],
+["Normalisation","Standardisierung","Estandarización","Padronização"],
+["Normalisation de la classification des bateaux et des voies navigables dans le bassin du Mékong","Standardisierung der Schiffs- und Wasserstraßenklassifizierung im Mekong-Becken","Estandarización de la clasificación de embarcaciones y vías navegables en la cuenca del Mekong","Padronização da classificação de embarcações e vias navegáveis na bacia do Mekong"],
+["Classifications harmonisées des bateaux et voies navigables proposées pour le Laos, la Thaïlande, le Cambodge et le Viêt Nam.","Harmonisierte Klassifizierungen für Schiffe und Wasserstraßen, vorgeschlagen für Laos, Thailand, Kambodscha und Vietnam.","Clasificaciones armonizadas de embarcaciones y vías navegables propuestas para Laos, Tailandia, Camboya y Vietnam.","Classificações harmonizadas de embarcações e vias navegáveis propostas para Laos, Tailândia, Camboja e Vietnã."],
+["Guide de sécurité · Ports","Sicherheitsbroschüre · Häfen","Manual de seguridad · Puertos","Manual de segurança · Portos"],
+["Guide de sécurité pour le personnel portuaire : manutention et stockage des marchandises dangereuses","Sicherheitsbroschüre für Hafenpersonal: Umschlag und Lagerung von Gefahrgut","Manual de seguridad para el personal portuario: manipulación y almacenamiento de mercancías peligrosas","Manual de segurança para o pessoal portuário: manuseio e armazenamento de mercadorias perigosas"],
+["Aide le personnel portuaire à manipuler et stocker les marchandises dangereuses de manière sûre, efficace et respectueuse de l’environnement.","Hilft Hafenpersonal, Gefahrgut sicher, effizient und umweltverantwortlich umzuschlagen und zu lagern.","Ayuda al personal portuario a manipular y almacenar mercancías peligrosas de forma segura, eficiente y ambientalmente responsable.","Ajuda o pessoal portuário a manusear e armazenar mercadorias perigosas de forma segura, eficiente e ambientalmente responsável."],
+["Guide de sécurité · Équipage","Sicherheitsbroschüre · Besatzung","Manual de seguridad · Tripulación","Manual de segurança · Tripulação"],
+["Guide de sécurité pour les équipages : transport, manutention et stockage des marchandises dangereuses","Sicherheitsbroschüre für Schiffsbesatzungen: Beförderung, Umschlag und Lagerung von Gefahrgut","Manual de seguridad para tripulaciones: transporte, manipulación y almacenamiento de mercancías peligrosas","Manual de segurança para tripulações: transporte, manuseio e armazenamento de mercadorias perigosas"],
+["Conseils aux équipages pour le transport sûr des marchandises dangereuses le long du Mékong.","Hinweise für Besatzungen zur sicheren Beförderung von Gefahrgut entlang des Mekong.","Orientaciones para tripulaciones sobre el transporte seguro de mercancías peligrosas a lo largo del Mekong.","Orientações para tripulações sobre o transporte seguro de mercadorias perigosas ao longo do Mekong."],
+["Aucune publication ne correspond à votre recherche.","Keine Publikationen entsprechen Ihrer Suche.","Ninguna publicación coincide con su búsqueda.","Nenhuma publicação corresponde à sua busca."],
+["Voir toutes les publications →","Alle Publikationen ansehen →","Ver todas las publicaciones →","Ver todas as publicações →"],
+["Médias","Medien","Medios","Mídia"],
+["Vidéos sur la navigation, actualités de la coopération régionale et ressources d’information sur les voies navigables.","Schifffahrtsvideos, Neuigkeiten zur regionalen Zusammenarbeit und Informationsressourcen zu Wasserstraßen.","Videos de navegación, novedades de la cooperación regional y recursos de información sobre vías navegables.","Vídeos de navegação, novidades da cooperação regional e recursos de informação sobre vias navegáveis."],
+["14 juillet 2026","14. Juli 2026","14 de julio de 2026","14 de julho de 2026"],
+["22 novembre 2019","22. November 2019","22 de noviembre de 2019","22 de novembro de 2019"],
+["17 juillet 2014","17. Juli 2014","17 de julio de 2014","17 de julho de 2014"],
+["Réglementations harmonisées pour la sécurité de la navigation et la prévention de la pollution","Harmonisierte Vorschriften für Schifffahrtssicherheit und Verschmutzungsverhütung","Reglamentos armonizados para la seguridad de la navegación y la prevención de la contaminación","Regulamentos harmonizados para a segurança da navegação e a prevenção da poluição"],
+["13 réglementations harmonisées sur la sécurité de la navigation, l’intervention d’urgence, la prévention de la pollution, les inspections, la recherche et le sauvetage et les marchandises dangereuses.","13 harmonisierte Vorschriften zu Schifffahrtssicherheit, Notfallreaktion, Verschmutzungsverhütung, Inspektionen, Suche und Rettung sowie Gefahrgut.","13 reglamentos armonizados sobre seguridad de la navegación, respuesta a emergencias, prevención de la contaminación, inspecciones, búsqueda y rescate y mercancías peligrosas.","13 regulamentos harmonizados sobre segurança da navegação, resposta a emergências, prevenção da poluição, inspeções, busca e salvamento e mercadorias perigosas."],
+["Aperçu de la navigation sur le Mékong","Überblick über die Mekong-Schifffahrt","Panorama de la navegación en el Mekong","Panorama da navegação no Mekong"],
+["Coopération en matière de navigation, transport fluvial et services d’information numériques dans la région.","Schifffahrtskooperation, Flusstransport und digitale Informationsdienste in der Region.","Cooperación en navegación, transporte fluvial y servicios de información digital en toda la región.","Cooperação em navegação, transporte fluvial e serviços digitais de informação em toda a região."],
+["Sécurité de la navigation et transport fluvial","Schifffahrtssicherheit und Flusstransport","Seguridad de la navegación y transporte fluvial","Segurança da navegação e transporte fluvial"],
+["Principales pratiques de sécurité et outils d’information pour une navigation plus sûre sur le Mékong.","Wichtige Sicherheitspraktiken und Informationswerkzeuge für sicherere Schifffahrt auf dem Mekong.","Prácticas de seguridad clave y herramientas de información para una navegación más segura en el Mekong.","Principais práticas de segurança e ferramentas de informação para uma navegação mais segura no Mekong."],
+["Dernières actualités","Neueste Meldungen","Últimas novedades","Últimas atualizações"],
+["Actualités et événements","Nachrichten und Veranstaltungen","Noticias y eventos","Notícias e eventos"],
+["Actualités régionales de la navigation, événements, activités de renforcement des capacités et annonces.","Regionale Schifffahrtsnachrichten, Veranstaltungen, Kapazitätsaufbau und Ankündigungen.","Noticias regionales de navegación, eventos, actividades de fortalecimiento de capacidades y anuncios.","Notícias regionais de navegação, eventos, atividades de capacitação e anúncios."],
+["Voir toutes les actualités et événements →","Alle Nachrichten und Veranstaltungen ansehen →","Ver todas las noticias y eventos →","Ver todas as notícias e eventos →"],
+["Portail d’accès centralisé aux données régionales de navigation, à la sécurité de la navigation, aux avis aux navigants et aux informations sur les voies navigables des pays membres du Mékong.","Zentrales Zugangsportal für regionale Schifffahrtsdaten, Schifffahrtssicherheit, Nachrichten für Schiffsführer und Wasserstraßeninformationen der Mekong-Mitgliedstaaten.","Portal de acceso centralizado a datos regionales de navegación, seguridad de la navegación, avisos a los navegantes e información de vías navegables de los países miembros del Mekong.","Portal de acesso centralizado a dados regionais de navegação, segurança da navegação, avisos aos navegantes e informações sobre vias navegáveis dos países-membros do Mekong."],
+["Portails","Portale","Portales","Portais"],
+["Ressources","Ressourcen","Recursos","Recursos"],
+["Carte de l’Atlas MRC","MRC-Atlaskarte","Mapa del Atlas MRC","Mapa do Atlas MRC"],
+["Niveaux d’eau","Wasserstände","Niveles de agua","Níveis da água"],
+["Concept de refonte non officiel basé sur navigation.mrcmekong.org. Ne constitue pas un produit officiel de la MRC.","Inoffizielles Redesign-Konzept auf Basis von navigation.mrcmekong.org. Kein offizielles MRC-Produkt.","Concepto de rediseño no oficial basado en navigation.mrcmekong.org. No es un producto oficial de la MRC.","Conceito de redesign não oficial baseado em navigation.mrcmekong.org. Não é um produto oficial da MRC."]
+ ];
+ X2.forEach(function(r,i){if(T[i])T[i].push.apply(T[i],T[i].length===7?r:[T[i][0],T[i][0],T[i][0],T[i][0]])});
+ P.push("Rechercher des publications…","Publikationen suchen…","Buscar publicaciones…","Buscar publicações…");
  T.forEach(function(r){map[r[0]]=r});
  while((nd=tw.nextNode())){var pn=nd.parentNode.nodeName,k=nd.nodeValue.trim();if(pn!=='SCRIPT'&&pn!=='STYLE'&&pn!=='OPTION'&&map[k])nodes.push([nd,nd.nodeValue,k])}
  /* language dropdown with flags */
@@ -434,6 +532,12 @@ my:'<svg viewBox="0 0 30 20"><rect width="30" height="6.7" fill="#fecb00"/><rect
 zh:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#de2910"/><path d="M5 2.5l1.1 3.4h3.6l-2.9 2.1 1.1 3.4L5 9.3l-2.9 2.1 1.1-3.4L.3 5.9h3.6z" fill="#ffde00"/></svg>'},
  NM={en:'English',vi:'Tiếng Việt',lo:'ລາວ',km:'ខ្មែរ',th:'ไทย',my:'မြန်မာ',zh:'中文'},
  lb=document.getElementById('langbtn'),ll=document.getElementById('langlist');
+ Object.assign(FL,{
+fr:'<svg viewBox="0 0 30 20"><rect width="10" height="20" fill="#0055a4"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#ef4135"/></svg>',
+de:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#ffce00"/><rect width="30" height="13.4" fill="#dd0000"/><rect width="30" height="6.7" fill="#000"/></svg>',
+es:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#aa151b"/><rect y="5" width="30" height="10" fill="#f1bf00"/></svg>',
+pt:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#f00"/><rect width="12" height="20" fill="#060"/><circle cx="12" cy="10" r="4" fill="#ff0"/><circle cx="12" cy="10" r="2.4" fill="#fff" stroke="#f00" stroke-width="1"/></svg>'});
+ Object.assign(NM,{fr:'Français',de:'Deutsch',es:'Español',pt:'Português'});
  L.forEach(function(c){var li=document.createElement('li');li.setAttribute('role','option');li.dataset.l=c;li.innerHTML=FL[c]+'<span>'+NM[c]+'</span>';ll.appendChild(li)});
  function syncLang(c){lb.innerHTML=FL[c]+'<span>'+c.toUpperCase()+'</span>';[].forEach.call(ll.children,function(li){li.setAttribute('aria-selected',li.dataset.l===c)})}
  lb.onclick=function(e){e.stopPropagation();var o=ll.hidden;ll.hidden=!o;lb.setAttribute('aria-expanded',o)};
@@ -441,6 +545,7 @@ zh:'<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#de2910"/><path 
  document.addEventListener('click',function(){ll.hidden=true});
  document.addEventListener('keydown',function(e){if(e.key==='Escape')ll.hidden=true});
  syncLang('en');
+ document.querySelectorAll('.flag').forEach(function(f){var m={KH:'km',LA:'lo',TH:'th',VN:'vi'}[f.textContent.trim()];if(m)f.innerHTML=FL[m]});
  var title0=document.title;
  function setLang(l){var i=L.indexOf(l);if(i<0)i=0;
   nodes.forEach(function(x){var m=x[1].match(/^(\s*)[\s\S]*?(\s*)$/);x[0].nodeValue=m[1]+(map[x[2]][i]||map[x[2]][0])+m[2]});
