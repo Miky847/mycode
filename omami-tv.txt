@@ -1,0 +1,9 @@
+#EXTM3U
+# Danh sách mặc định - sửa/thêm kênh tại đây (M3U hoặc JSON kiểu Monplayer đều được).
+# Có thể thêm cả link YouTube làm kênh.
+#EXTINF:-1 group-title="Tin tức" tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/AlJazeera.png",Al Jazeera
+https://live-hls-apps-aje-fa.getaj.net/AJE/index.m3u8
+#EXTINF:-1 group-title="Tin tức" tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/DW.png",DW
+https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/stream05/streamPlaylist.m3u8
+#EXTINF:-1 group-title="Việt Nam" tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/VTV2.png",VTV2
+https://live-a.fptplay53.net/live/media/VTV2HD/live_hls_avc/index.m3u8
