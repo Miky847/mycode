@@ -1,9 +1,31 @@
 #EXTM3U
-# Danh sách mặc định - sửa/thêm kênh tại đây (M3U hoặc JSON kiểu Monplayer đều được).
-# Có thể thêm cả link YouTube làm kênh.
-#EXTINF:-1 group-title="Tin tức" tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/AlJazeera.png",Al Jazeera
+# Danh sách mặc định của OmniTV: M3U hoặc JSON kiểu Monplayer. Thêm/sửa kênh trực tiếp tại đây.
+# Kênh nhiều link: lặp lại cùng tên kênh + cùng group-title, app sẽ gộp thành các link dự phòng.
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/AlJazeera.png" group-title="Quốc tế",Aljazeera Logo
 https://live-hls-apps-aje-fa.getaj.net/AJE/index.m3u8
-#EXTINF:-1 group-title="Tin tức" tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/DW.png",DW
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/BBC.png" group-title="Quốc tế",BBC Logo
+https://vs-hls-push-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_news_channel_hd/mobile_wifi_main_sd_abr_v2.m3u8
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/DW.png" group-title="Quốc tế",DW Logo
 https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/stream05/streamPlaylist.m3u8
-#EXTINF:-1 group-title="Việt Nam" tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/VTV2.png",VTV2
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/NHK.png" group-title="Quốc tế",NHK Logo
+https://media-tyo.hls.nhkworld.jp/hls/w/live/master.m3u8
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/CNA.png" group-title="Quốc tế",CNA
+https://d2e1asnsl7br7b.cloudfront.net/7782e205e72f43aeb4a48ec97f66ebbe/index_5.m3u8
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/france-24.png" group-title="Quốc tế",FRANCE 24
+https://live.france24.com/hls/live/2037218/F24_EN_HI_HLS/master_5000.m3u8
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/france-24.png" group-title="Quốc tế",FRANCE 24
+https://live.alilicloud.com/live/02b7a7abd183ba4d9ce4bf38e02917df/playlist.m3u8
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/VTV1.png" group-title="Việt Nam",VTV1 HD
+https://freem3u.xyz/api/live/play.m3u8?vid=2
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/VTV2.png" group-title="Việt Nam",VTV2
 https://live-a.fptplay53.net/live/media/VTV2HD/live_hls_avc/index.m3u8
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/VTV3.png" group-title="Việt Nam",VTV3
+https://live-a.fptplay53.net/live/media/VTV3HD/live_hls_avc/index.m3u8
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/VTV4.png" group-title="Việt Nam",VTV4 HD
+https://live-a.fptplay53.net/live/media/VTV4HD/live_hls_avc/index.m3u8
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/VTV5.png" group-title="Việt Nam",VTV5 HD
+https://live-a.fptplay53.net/live/media/VTV5HD/live_hls_avc/index.m3u8
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/Miky847/Logo/refs/heads/main/VTVCantho.png" group-title="Việt Nam",VTV Can Tho
+https://live.fptplay53.net/live/media/VTV_can_tho/live_hls_avc/index.m3u8
+#EXTINF:-1 group-title="Nhạc YouTube",Autumn Leaves - solo guitar - Yenne Lee in Central Park, NYC
+https://youtu.be/ej95s3triFs
