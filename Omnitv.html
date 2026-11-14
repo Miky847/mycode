@@ -63,8 +63,12 @@ dialog h3{margin-top:.7rem}
 body.tv{padding:1.2vh 1.5vw}
 body.tv button:focus,body.tv select:focus,body.tv input:focus{outline-width:.3rem;box-shadow:0 0 1.2rem var(--a)}
 @supports not (aspect-ratio:1/1){#pw{height:0;padding-top:56.25%}#v,#yt{position:absolute;top:0;left:0}body.full #pw{height:auto;padding-top:0}.ch i{position:relative;height:0;padding-top:75%}.ch i img{position:absolute;top:0;left:0}header>*,.bt>*,#tabs>*,.row>*{margin-right:.5rem}.ch>*,#stage>*{margin-bottom:.5rem}}
+.hn{color:var(--m);font-size:.8rem;margin:.2rem 0}
+dialog ul{padding-left:1.2rem}dialog li{margin:.3rem 0}
+#pw{touch-action:manipulation}
+body.full.nc,body.full.nc *{cursor:none!important}
 </style></head><body>
-<header><h1>OmniTV</h1><input id="q" type="search" placeholder="Tìm kênh, đài, bóng đá…"><button id="rf" title="Tải lại">↻</button><button id="cf" title="Nguồn phát">⚙</button></header>
+<header><h1>OmniTV</h1><input id="q" type="search" placeholder="Tìm kênh, đài, bóng đá…"><button id="rf" title="Tải lại">↻</button><button id="hb" title="Hướng dẫn">?</button><button id="cf" title="Nguồn phát">⚙</button></header>
 <div id="main">
 <section id="stage">
 <div id="pw"><video id="v" playsinline webkit-playsinline autoplay></video><div id="yt"></div><div id="cov"><img id="cl" alt=""><span id="cn"></span></div><div id="msg"></div></div>
@@ -73,13 +77,20 @@ body.tv button:focus,body.tv select:focus,body.tv input:focus{outline-width:.3re
 </section>
 <aside id="side"><div id="tabs"></div><p id="st"></p><div id="grid"></div></aside>
 </div>
-<dialog id="dlg"><h3>YouTube</h3><div class="row"><input id="yu" placeholder="Dán link video / playlist YouTube"><button id="yp">▶ Phát</button></div><h3>Nguồn phát (M3U / JSON)</h3><div id="sl"></div>
+<dialog id="dlg"><h3>YouTube</h3><p class="hn">Dán link video hoặc playlist rồi bấm Phát. Link được lưu vào nhóm “YouTube” để mở lại sau.</p><div class="row"><input id="yu" placeholder="Dán link video / playlist YouTube"><button id="yp">▶ Phát</button></div><h3>Nguồn phát (M3U / JSON)</h3><p class="hn">Nguồn là địa chỉ một danh sách kênh (M3U/M3U8 hoặc JSON kiểu Monplayer). Kênh của mọi nguồn được gộp lại; kênh trùng tên được gộp thành các link dự phòng. File omami-tv.txt cùng thư mục luôn được nạp trước.</p><div id="sl"></div>
 <input id="sn" placeholder="Tên nguồn (tuỳ chọn)"><input id="su" placeholder="URL JSON kiểu Monplayer hoặc M3U / M3U8">
 <div class="row"><button id="sa">＋ Thêm nguồn</button><button id="sfb">📂 Nhập M3U vào danh sách cá nhân</button><input id="sf" type="file" accept=".m3u,.m3u8,.json,.txt" hidden></div>
-<h3>Danh sách cá nhân</h3><div id="ml"></div><input id="mn" placeholder="Tên kênh"><input id="mg" placeholder="Nhóm (vd: Bóng đá)"><input id="mu2" placeholder="URL luồng (m3u8, mp3, YouTube…)"><div class="row"><button id="ma">＋ Thêm kênh</button><button id="mx">⬇ Xuất M3U</button></div>
-<h3>Thiết bị</h3><select id="dm"><option value="">Tự động</option><option value="tv">TV / TV box</option><option value="mob">Điện thoại / tablet</option><option value="pc">Máy tính</option></select>
-<div class="row"><label><input type="checkbox" id="px"> Tải danh sách qua CORS proxy</label></div><input id="pu" placeholder="https://corsproxy.io/?url=">
+<h3>Danh sách cá nhân</h3><p class="hn">Kênh do bạn tự thêm, lưu ngay trong trình duyệt này. “Xuất M3U” để sao lưu hoặc dùng ở máy khác; “Nhập M3U” để thêm hàng loạt.</p><div id="ml"></div><input id="mn" placeholder="Tên kênh"><input id="mg" placeholder="Nhóm (vd: Bóng đá)"><input id="mu2" placeholder="URL luồng (m3u8, mp3, YouTube…)"><div class="row"><button id="ma">＋ Thêm kênh</button><button id="mx">⬇ Xuất M3U</button></div>
+<h3>Thiết bị</h3><p class="hn">Chọn thủ công nếu app nhận sai thiết bị. Ảnh hưởng tới điều khiển bằng remote và việc tự xoay ngang màn hình.</p><select id="dm"><option value="">Tự động</option><option value="tv">TV / TV box</option><option value="mob">Điện thoại / tablet</option><option value="pc">Máy tính</option></select>
+<div class="row"><label><input type="checkbox" id="px"> Tải danh sách qua CORS proxy</label></div><input id="pu" placeholder="https://corsproxy.io/?url="><p class="hn">CORS proxy chỉ dùng khi nguồn danh sách bị trình duyệt chặn; chỉ áp dụng khi tải danh sách, không áp dụng cho luồng phát.</p>
 <div class="row"><button id="sx">Lưu &amp; tải lại</button></div></dialog>
+<dialog id="hp"><h3>Hướng dẫn nhanh</h3><ul>
+<li>↻ tải lại danh sách · ⚙ cài đặt: nguồn phát, YouTube, danh sách cá nhân, thiết bị.</li>
+<li>Bấm nhanh 2 lần vào khung phát (hoặc nút ⛶) để bật/tắt toàn màn hình. Bấm lại kênh đang phát cũng vào toàn màn hình.</li>
+<li>Remote, khi toàn màn hình: ↑↓ đổi kênh · ←→ âm lượng · OK phát/dừng · phím số nhảy kênh · đỏ yêu thích · xanh lá đổi link · vàng đổi khung hình · xanh dương toàn màn hình · Back thoát.</li>
+<li>Bàn phím: F yêu thích · M tắt tiếng · PgUp/PgDn đổi kênh.</li>
+<li>Kênh cuối, âm lượng, khung hình, nhóm đang xem được nhớ tự động.</li></ul>
+<div class="row"><button id="hc">Đóng</button></div></dialog>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.17/hls.min.js"></script>
 <script>
 const $=s=>document.querySelector(s),LS=localStorage;
@@ -91,7 +102,7 @@ let srcs=J('o_srcs',[{n:'MI BOX TV 7',u:DEF}]),favs=J('o_fav',[]),rec=J('o_rec',
 let chans=[],vis=[],group='all',cur=null,li=0,hls=null,full=0,T,lim=200,lastN=0;
 const v=$('#v'),dlg=$('#dlg');
 let st=Object.assign({vol:1,mute:0,fit:'contain',group:'all',dev:''},J('o_set',{})),my=J('o_my',[]),ytH=J('o_yt',[]);
-let raw=[],ytp=null,ytm=0,ytl=0,vT,num='',numT,pushed=0,isTV=0,isMob=0;
+let raw=[],ytp=null,ytm=0,ytl=0,vT,T2,num='',numT,pushed=0,isTV=0,isMob=0;
 const sv=()=>S('o_set',st),UA=navigator.userAgent,TCH=navigator.maxTouchPoints>0;
 function dev(){const d=st.dev;
 isTV=d?d=='tv':(/SMART-?TV|Tizen|BRAVIA|AFT[A-Z]|HbbTV|Web0S|CrKey|MIBOX|X96|H96|Philips|AndroidTV|\bTV\b/i.test(UA)||(/Android/.test(UA)&&!TCH));
@@ -103,7 +114,7 @@ function parseMon(d){const o=[];((d&&d.groups)||[]).forEach(g=>(g.channels||[]).
 if(!links.length)return;links.sort((a,b)=>(b.d?1:0)-(a.d?1:0));
 o.push({n:c.name||c.id,g:g.name||'Khác',logo:c.image&&c.image.url,bg:c.image&&c.image.background_color,links})}));return o}
 function parseM3U(t){const o=[];let m=null;t.split(/\r?\n/).forEach(l=>{l=l.trim();
-if(l.indexOf('#EXTINF')==0){const a=k=>(l.match(new RegExp(k+'="([^"]*)"'))||[])[1];m={n:l.slice(l.lastIndexOf(',')+1).trim()||a('tvg-name')||'?',g:a('group-title')||'Khác',logo:a('tvg-logo')}}
+if(l.indexOf('#EXTINF')==0){const a=k=>(l.match(new RegExp(k+'="([^"]*)"'))||[])[1];m={n:((l.match(/^#EXTINF:(?:[^,"]|"[^"]*")*,(.*)$/)||[])[1]||'').trim()||a('tvg-name')||'?',g:a('group-title')||'Khác',logo:a('tvg-logo')}}
 else if(l&&l[0]!='#'&&m){o.push({n:m.n,g:m.g,logo:m.logo,links:[{n:'Link 1',u:l}]});m=null}});return o}
 function parse(t){try{return parseMon(JSON.parse(t))}catch(e){return parseM3U(t)}}
 //#E
@@ -180,8 +191,8 @@ if(on){if(!pushed){try{history.pushState({f:1},'');pushed=1}catch(e){}}
 try{const f=d.requestFullscreen||d.webkitRequestFullscreen,p=f&&f.call(d);p&&p.then?p.then(lock,()=>{}):lock()}catch(e){}}
 else{try{if(document.fullscreenElement)document.exitFullscreen();screen.orientation.unlock()}catch(e){}
 if(pushed){pushed=0;if(!pop)try{history.back()}catch(e){}}}}
-function poke(){document.body.classList.remove('hide');clearTimeout(T);if(full)T=setTimeout(()=>document.body.classList.add('hide'),4000)}
-function nav(dir){const sc=dlg.open?dlg:document;
+function poke(){const b=document.body.classList;b.remove('hide','nc');clearTimeout(T);clearTimeout(T2);if(full){T=setTimeout(()=>b.add('hide'),4000);if(isTV)T2=setTimeout(()=>b.add('nc'),1000)}}
+function nav(dir){const sc=document.querySelector('dialog[open]')||document;
 const els=[...sc.querySelectorAll('button,input,select')].filter(x=>x.offsetParent&&!x.disabled&&x.type!='hidden'&&!x.hidden);
 const a=document.activeElement;if(!els.includes(a)){els[0]&&els[0].focus();return}
 const r=a.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let best=null,bd=1e9;
@@ -201,12 +212,13 @@ $('#lk').onclick=()=>cur&&play(cur,(li+1)%cur.links.length);
 $('#ql').onchange=e=>{if(hls)hls.currentLevel=+e.target.value};
 $('#mu').onclick=()=>{v.muted=!v.muted;if(ytm&&ytp&&ytp.mute)v.muted?ytp.mute():ytp.unMute()};
 $('#fs').onclick=()=>setFull(!full);
-$('#pw').onclick=()=>{if(!full)setFull(1);else document.body.classList.toggle('hide')};
+let lc=0;$('#pw').onclick=()=>{const t=Date.now();if(t-lc<350){lc=0;setFull(!full);return}lc=t;if(full)setTimeout(()=>{if(lc)document.body.classList.toggle('hide')},360)};
 v.addEventListener('waiting',()=>msg('⏳ Đang đệm…'));
 ['playing','loadedmetadata'].forEach(n=>v.addEventListener(n,()=>{if(n=='playing')msg('');$('#pw').classList.toggle('aud',!v.videoWidth)}));
 v.addEventListener('error',nextLink);
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&full)setFull(0)});
-addEventListener('pointermove',poke);
+addEventListener('pointermove',poke);addEventListener('pointerdown',poke);
+$('#hb').onclick=()=>$('#hp').showModal?$('#hp').showModal():$('#hp').setAttribute('open','');$('#hc').onclick=()=>$('#hp').close();
 addEventListener('popstate',()=>{if(full)setFull(0,1)});
 v.addEventListener('volumechange',()=>{st.vol=v.volume;st.mute=v.muted?1:0;sv();$('#mu').textContent=v.muted||!v.volume?'🔇':'🔊'});
 $('#ft').onclick=()=>{const f=['contain','cover','fill'];st.fit=f[(f.indexOf(st.fit)+1)%3];v.style.objectFit=st.fit;sv();msg('Khung hình: '+({contain:'Vừa khung',cover:'Phủ đầy',fill:'Kéo giãn'})[st.fit]);setTimeout(()=>msg(''),1200)};
@@ -214,7 +226,7 @@ $('#dm').onchange=e=>{st.dev=e.target.value;sv();dev()};
 addEventListener('keydown',e=>{const k=e.key,c=e.keyCode,tg=e.target.tagName,typing=tg=='INPUT'||tg=='TEXTAREA',x=()=>e.preventDefault();poke();
 if(k=='PageUp'||c==427||k=='ChannelUp'){x();ch(-1);return}
 if(k=='PageDown'||c==428||k=='ChannelDown'){x();ch(1);return}
-if(k=='Escape'||c==10009||c==461||k=='BrowserBack'){if(dlg.open)dlg.close();else if(full)setFull(0);else return;x();return}
+if(k=='Escape'||c==10009||c==461||k=='BrowserBack'){const o=document.querySelector('dialog[open]');if(o)o.close();else if(full)setFull(0);else return;x();return}
 if(c==403){x();toggleFav();return}if(c==404){x();$('#lk').click();return}if(c==405){x();$('#ft').click();return}if(c==406){x();setFull(!full);return}
 if(c==415||c==19||c==10252||k=='MediaPlayPause'){x();tp();return}
 if(!typing&&!dlg.open&&/^\d$/.test(k)){num+=k;msg('CH '+num);clearTimeout(numT);numT=setTimeout(()=>{const t=vis[+num-1];num='';msg('');if(t)play(t)},1500);return}
