@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>OmniTV</title>
+<style>
+*{box-sizing:border-box;margin:0}
+:root{--a:#1cb57a;--bg:#0d1117;--c:#161b22;--t:#e6edf3;--m:#8b949e;--b:#30363d}
+html{font-size:clamp(14px,1.05vw,34px)}
+body{background:var(--bg);color:var(--t);font-family:system-ui,Roboto,sans-serif;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+header{display:flex;gap:.6rem;padding:.6rem .8rem;align-items:center;background:var(--c)}
+h1{font-size:1.2rem;color:var(--a)}
+input,select,button{font:inherit;color:inherit}
+input,select{background:var(--bg);border:1px solid var(--b);border-radius:.5rem;padding:.5rem .7rem}
+button{background:#21262d;border:1px solid var(--b);border-radius:.5rem;padding:.5rem .8rem;cursor:pointer}
+button:focus,input:focus,select:focus{outline:3px solid var(--a);outline-offset:1px}
+#q{flex:1;min-width:0}
+#main{flex:1;display:flex;min-height:0}
+#stage{flex:1.4;display:flex;flex-direction:column;padding:.8rem;gap:.6rem;min-width:0}
+#pw{position:relative;aspect-ratio:16/9;background:#000;border-radius:.7rem;overflow:hidden;cursor:pointer}
+#v{width:100%;height:100%;background:#000}
+#cov{position:absolute;inset:0;display:none;place-items:center;align-content:center;gap:.8rem;background:linear-gradient(135deg,#0f2a22,#10141c);pointer-events:none;text-align:center}
+.aud #cov{display:grid}
+#cl{max-width:40%;max-height:45%;object-fit:contain;border-radius:.6rem;background:#ececec;padding:.4rem}
+#cl:not([src]){display:none}
+#msg{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;text-shadow:0 1px 4px #000;text-align:center;padding:1rem}
+#nm{font-size:1.15rem;font-weight:600;margin-bottom:.5rem}
+#nm small{color:var(--m);font-weight:400;margin-left:.5rem}
+.bt{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+#side{flex:1;display:flex;flex-direction:column;min-width:0;border-left:1px solid var(--b)}
+#tabs{display:flex;gap:.4rem;overflow-x:auto;padding:.6rem;scrollbar-width:none}
+#tabs button{white-space:nowrap;flex:none}
+#tabs .on{background:var(--a);color:#000;font-weight:600}
+#st{color:var(--m);font-size:.8rem;padding:0 .8rem}
+#grid{flex:1;overflow-y:auto;padding:.6rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(9rem,1fr));gap:.6rem;align-content:start}
+.ch{display:flex;flex-direction:column;gap:.4rem;align-items:center;position:relative;padding:.5rem;min-width:0}
+.ch i{width:100%;aspect-ratio:4/3;border-radius:.4rem;display:grid;place-items:center;font-size:2rem;font-style:normal;overflow:hidden;background:#222}
+.ch img{width:100%;height:100%;object-fit:contain}
+.ch b{font-size:.85rem;font-weight:500;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:100%}
+.ch.on{border-color:var(--a);background:#12302a}
+.ch u{position:absolute;top:.3rem;right:.4rem;color:#f5c518;text-decoration:none}
+.ch:focus{transform:scale(1.05);z-index:1}
+.more{grid-column:1/-1}
+dialog{background:var(--c);color:var(--t);border:1px solid var(--b);border-radius:.8rem;padding:1rem;width:min(40rem,92vw);margin:auto}
+dialog::backdrop{background:#000a}
+dialog input[type=text],dialog input:not([type]){width:100%;margin:.3rem 0}
+dialog h3{margin-bottom:.5rem}
+.sr{display:flex;justify-content:space-between;gap:.5rem;align-items:center;margin:.3rem 0}
+.sr small{display:block;color:var(--m);word-break:break-all;font-size:.7rem}
+.row{display:flex;gap:.5rem;margin-top:.6rem;flex-wrap:wrap;align-items:center}
+body.full header,body.full #side{display:none}
+body.full #stage{padding:0}
+body.full #pw{position:fixed;inset:0;z-index:9;border-radius:0;aspect-ratio:auto}
+body.full #ctl{position:fixed;left:0;right:0;bottom:0;z-index:10;background:linear-gradient(transparent,#000d);padding:1.2rem;transition:opacity .3s}
+body.full.hide #ctl{opacity:0;pointer-events:none}
+body.full.hide{cursor:none}
+@media(max-width:800px){#main{flex-direction:column}#stage{flex:none;padding:.5rem}#side{border:0;flex:1;min-height:0}#grid{grid-template-columns:repeat(auto-fill,minmax(6.5rem,1fr))}}
+</style></head><body>
+<header><h1>OmniTV</h1><input id="q" type="search" placeholder="Tìm kênh, đài, bóng đá…"><button id="rf" title="Tải lại">↻</button><button id="cf" title="Nguồn phát">⚙</button></header>
+<div id="main">
+<section id="stage">
+<div id="pw"><video id="v" playsinline autoplay></video><div id="cov"><img id="cl" alt=""><span id="cn"></span></div><div id="msg"></div></div>
+<div id="ctl"><div id="nm">Chọn một kênh để phát</div>
+<div class="bt"><button id="pv" title="Kênh trước">⏮</button><button id="nx" title="Kênh sau">⏭</button><button id="fv" title="Yêu thích (F)">☆</button><button id="lk" hidden>Link 1/1</button><select id="ql" hidden></select><button id="mu" title="Tắt tiếng (M)">🔊</button><button id="fs" title="Toàn màn hình">⛶</button></div></div>
+</section>
+<aside id="side"><div id="tabs"></div><p id="st"></p><div id="grid"></div></aside>
+</div>
+<dialog id="dlg"><h3>Nguồn phát</h3><div id="sl"></div>
+<input id="sn" placeholder="Tên nguồn (tuỳ chọn)"><input id="su" placeholder="URL JSON kiểu Monplayer hoặc M3U / M3U8">
+<div class="row"><button id="sa">＋ Thêm nguồn</button><button id="sfb">📂 Mở file</button><input id="sf" type="file" accept=".m3u,.m3u8,.json,.txt" hidden></div>
+<div class="row"><label><input type="checkbox" id="px"> Tải danh sách qua CORS proxy</label></div><input id="pu" placeholder="https://corsproxy.io/?url=">
+<div class="row"><button id="sx">Lưu &amp; tải lại</button></div></dialog>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.17/hls.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),LS=localStorage;
+const J=(k,d)=>{try{return JSON.parse(LS.getItem(k))||d}catch(e){return d}};
+const S=(k,v)=>{try{LS.setItem(k,JSON.stringify(v))}catch(e){}};
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const DEF='https://raw.githubusercontent.com/Miky847/my-iptv/refs/heads/main/TVMibox7.json';
+let srcs=J('o_srcs',[{n:'MI BOX TV 7',u:DEF}]),favs=J('o_fav',[]),rec=J('o_rec',[]),opt=J('o_opt',{px:0,pu:'https://corsproxy.io/?url='});
+let chans=[],vis=[],group='all',cur=null,li=0,hls=null,full=0,T,lim=200,extra=[],lastN=0;
+const v=$('#v'),dlg=$('#dlg');
+//#P
+function parseMon(d){const o=[];((d&&d.groups)||[]).forEach(g=>(g.channels||[]).forEach(c=>{const links=[];
+(c.sources||[]).forEach(s=>(s.contents||[]).forEach(ct=>(ct.streams||[]).forEach(st=>(st.stream_links||[]).forEach(l=>{if(l.url)links.push({n:l.name||st.name||'Link',u:l.url,t:l.type,d:l.default})}))));
+if(!links.length)return;links.sort((a,b)=>(b.d?1:0)-(a.d?1:0));
+o.push({n:c.name||c.id,g:g.name||'Khác',logo:c.image&&c.image.url,bg:c.image&&c.image.background_color,links})}));return o}
+function parseM3U(t){const o=[];let m=null;t.split(/\r?\n/).forEach(l=>{l=l.trim();
+if(l.indexOf('#EXTINF')==0){const a=k=>(l.match(new RegExp(k+'="([^"]*)"'))||[])[1];m={n:l.slice(l.lastIndexOf(',')+1).trim()||a('tvg-name')||'?',g:a('group-title')||'Khác',logo:a('tvg-logo')}}
+else if(l&&l[0]!='#'&&m){o.push({n:m.n,g:m.g,logo:m.logo,links:[{n:'Link 1',u:l}]});m=null}});return o}
+function parse(t){try{return parseMon(JSON.parse(t))}catch(e){return parseM3U(t)}}
+//#E
+async function load(){
+$('#st').textContent='Đang tải nguồn…';
+const r=await Promise.allSettled(srcs.map(async s=>{const u=opt.px?opt.pu+encodeURIComponent(s.u):s.u;const x=await fetch(u);if(!x.ok)throw 0;const c=parse(await x.text());c.forEach(z=>z.s=s.n);return c}));
+let all=[],bad=0,cached=0;r.forEach(x=>x.status=='fulfilled'?all.push(...x.value):bad++);
+if(!all.length){all=J('o_cache',[]);cached=all.length}
+all.push(...extra);
+const m=new Map();all.forEach(c=>{const k=c.g+'|'+c.n.toLowerCase(),o=m.get(k);if(o)c.links.forEach(l=>{if(!o.links.some(x=>x.u==l.u))o.links.push(l)});else m.set(k,c)});
+chans=[...m.values()];chans.forEach((c,i)=>{c.i=i;c.id=c.g+'|'+c.n});
+if(!cached&&chans.length)S('o_cache',chans);
+$('#st').textContent=chans.length+' kênh'+(bad?' · '+bad+' nguồn lỗi (CORS/URL?)':'')+(cached?' · dữ liệu đã lưu':'');
+if(group!='all'&&group!='fav'&&group!='rec'&&!chans.some(c=>c.g==group))group='all';
+drawTabs();drawGrid();
+if(!cur){const l=chans.find(c=>c.id==J('o_last',''));if(l)play(l)}}
+function drawTabs(){const gs=[...new Set(chans.map(c=>c.g))];
+$('#tabs').innerHTML=[['all','Tất cả'],['fav','★ Yêu thích'],['rec','🕘 Gần đây']].concat(gs.map(g=>[g,g])).map(a=>`<button data-g="${esc(a[0])}"${a[0]==group?' class="on"':''}>${esc(a[1])}</button>`).join('')}
+function drawGrid(){const q=$('#q').value.toLowerCase().trim();let l=chans;
+if(group=='fav')l=chans.filter(c=>favs.includes(c.id));
+else if(group=='rec')l=rec.map(i=>chans.find(c=>c.id==i)).filter(Boolean);
+else if(group!='all')l=chans.filter(c=>c.g==group);
+if(q)l=l.filter(c=>(c.n+' '+c.g).toLowerCase().includes(q));
+vis=l;
+$('#grid').innerHTML=l.slice(0,lim).map(c=>`<button class="ch${cur&&cur.id==c.id?' on':''}" data-i="${c.i}"><i${c.bg?` style="background:${esc(c.bg)}"`:''}>${c.logo?`<img loading="lazy" src="${esc(c.logo)}" alt="${esc(c.n[0])}">`:esc(c.n[0])}</i><b>${esc(c.n)}</b>${favs.includes(c.id)?'<u>★</u>':''}</button>`).join('')
++(l.length>lim?'<button class="more" data-m="1">Xem thêm…</button>':'')||'<p style="grid-column:1/-1;color:var(--m)">Không có kênh nào.</p>'}
+function msg(t){$('#msg').textContent=t}
+function kill(){if(hls){hls.destroy();hls=null}v.removeAttribute('src');v.load();$('#ql').hidden=true}
+function go(){const p=v.play();if(p&&p.catch)p.catch(()=>{v.muted=true;v.play().catch(()=>{})})}
+function nextLink(){if(!cur||Date.now()-lastN<1500)return;lastN=Date.now();
+if(li+1<cur.links.length)play(cur,li+1);else msg('Không phát được kênh này. Thử kênh khác (⏭).')}
+function attach(u){kill();msg('⏳ Đang tải…');let n=0;
+const nat=()=>{v.src=u;go()};
+if(/\.(mp4|mp3|aac|ogg|webm|m4a)(\?|$)/i.test(u)||!window.Hls||!Hls.isSupported()){nat();return}
+hls=new Hls({maxBufferLength:30});hls.loadSource(u);hls.attachMedia(v);
+hls.on(Hls.Events.MANIFEST_PARSED,(e,d)=>{go();quals(d.levels)});
+hls.on(Hls.Events.ERROR,(e,d)=>{if(!d.fatal)return;
+if(d.type==Hls.ErrorTypes.MEDIA_ERROR&&!n++){hls.recoverMediaError();return}
+if(!n++){kill();nat();return}
+nextLink()})}
+function quals(L){const s=$('#ql');if(L.length<2)return;
+s.innerHTML='<option value="-1">Auto</option>'+L.map((x,i)=>`<option value="${i}">${x.height?x.height+'p':Math.round(x.bitrate/1e3)+'k'}</option>`).join('');s.hidden=false}
+function play(c,k){k=k||0;cur=c;li=k;
+if(!k){rec=[c.id].concat(rec.filter(x=>x!=c.id)).slice(0,40);S('o_rec',rec);S('o_last',c.id)}
+$('#nm').innerHTML=esc(c.n)+' <small>'+esc(c.g)+'</small>';
+$('#lk').textContent='Link '+(k+1)+'/'+c.links.length;$('#lk').hidden=c.links.length<2;
+const cl=$('#cl');c.logo?cl.src=c.logo:cl.removeAttribute('src');$('#cn').textContent=c.n;
+document.querySelectorAll('.ch.on').forEach(x=>x.classList.remove('on'));
+const b=$('.ch[data-i="'+c.i+'"]');if(b)b.classList.add('on');
+favBtn();attach(c.links[k].u);
+try{navigator.mediaSession.metadata=new MediaMetadata({title:c.n,artist:c.g,artwork:c.logo?[{src:c.logo}]:[]});
+navigator.mediaSession.setActionHandler('previoustrack',()=>ch(-1));navigator.mediaSession.setActionHandler('nexttrack',()=>ch(1))}catch(e){}
+try{navigator.wakeLock.request('screen').catch(()=>{})}catch(e){}}
+function ch(d){if(!vis.length)return;let i=vis.findIndex(c=>cur&&c.id==cur.id);i=(i+d+vis.length)%vis.length;play(vis[i])}
+function favBtn(){$('#fv').textContent=cur&&favs.includes(cur.id)?'★':'☆'}
+function toggleFav(){if(!cur)return;favs=favs.includes(cur.id)?favs.filter(x=>x!=cur.id):favs.concat(cur.id);S('o_fav',favs);favBtn();drawGrid()}
+function setFull(on){full=on?1:0;document.body.classList.toggle('full',!!full);poke();
+if(on){try{const p=document.documentElement.requestFullscreen();p&&p.catch&&p.catch(()=>{})}catch(e){}}
+else if(document.fullscreenElement)document.exitFullscreen()}
+function poke(){document.body.classList.remove('hide');clearTimeout(T);if(full)T=setTimeout(()=>document.body.classList.add('hide'),4000)}
+function nav(dir){const sc=dlg.open?dlg:document;
+const els=[...sc.querySelectorAll('button,input,select')].filter(x=>x.offsetParent&&!x.disabled&&x.type!='hidden'&&!x.hidden);
+const a=document.activeElement;if(!els.includes(a)){els[0]&&els[0].focus();return}
+const r=a.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let best=null,bd=1e9;
+els.forEach(x=>{if(x==a)return;const q=x.getBoundingClientRect(),dx=q.left+q.width/2-cx,dy=q.top+q.height/2-cy;
+const p={R:dx,L:-dx,D:dy,U:-dy}[dir],s=(dir=='R'||dir=='L')?dy:dx;if(p<4)return;const d=p+2.5*Math.abs(s);if(d<bd){bd=d;best=x}});
+if(best){best.focus();best.scrollIntoView({block:'nearest',inline:'nearest'})}}
+/* events */
+$('#grid').addEventListener('error',e=>{if(e.target.tagName=='IMG')e.target.parentNode.textContent=e.target.alt},true);
+$('#grid').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+if(b.dataset.m){lim+=300;drawGrid();return}
+const c=chans[+b.dataset.i];if(!c)return;if(cur&&cur.id==c.id)setFull(1);else play(c)};
+$('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;group=b.dataset.g;lim=200;
+[...$('#tabs').children].forEach(x=>x.classList.toggle('on',x==b));drawGrid()};
+$('#q').oninput=()=>{lim=200;drawGrid()};
+$('#pv').onclick=()=>ch(-1);$('#nx').onclick=()=>ch(1);$('#fv').onclick=toggleFav;
+$('#lk').onclick=()=>cur&&play(cur,(li+1)%cur.links.length);
+$('#ql').onchange=e=>{if(hls)hls.currentLevel=+e.target.value};
+$('#mu').onclick=()=>{v.muted=!v.muted;$('#mu').textContent=v.muted?'🔇':'🔊'};
+$('#fs').onclick=()=>setFull(!full);
+$('#pw').onclick=()=>{if(!full)setFull(1);else document.body.classList.toggle('hide')};
+v.addEventListener('waiting',()=>msg('⏳ Đang đệm…'));
+['playing','loadedmetadata'].forEach(n=>v.addEventListener(n,()=>{if(n=='playing')msg('');$('#pw').classList.toggle('aud',!v.videoWidth)}));
+v.addEventListener('error',nextLink);
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&full)setFull(0)});
+addEventListener('pointermove',poke);
+addEventListener('keydown',e=>{const k=e.key,c=e.keyCode,tg=e.target.tagName;poke();
+if(k=='PageUp'||c==427||k=='ChannelUp'){ch(-1);e.preventDefault();return}
+if(k=='PageDown'||c==428||k=='ChannelDown'){ch(1);e.preventDefault();return}
+if(k=='Escape'||c==10009||c==461||k=='BrowserBack'){if(dlg.open)dlg.close();else if(full)setFull(0);else return;e.preventDefault();return}
+const d={ArrowRight:'R',ArrowLeft:'L',ArrowDown:'D',ArrowUp:'U'}[k];
+if(full&&!dlg.open&&d){e.preventDefault();
+if(d=='U')ch(-1);else if(d=='D')ch(1);else v.volume=Math.min(1,Math.max(0,v.volume+(d=='R'?.1:-.1)));return}
+if(d){if((tg=='INPUT'&&(d=='L'||d=='R'))||(tg=='SELECT'&&(d=='U'||d=='D')))return;e.preventDefault();nav(d);return}
+if(tg=='INPUT')return;
+if(k=='f'||k=='F')toggleFav();else if(k=='m'||k=='M')$('#mu').click();else if(k=='Enter'&&full&&!dlg.open&&tg!='BUTTON'&&tg!='SELECT')document.body.classList.toggle('hide')});
+/* nguồn phát */
+function rs(){$('#sl').innerHTML=srcs.map((s,i)=>`<div class="sr"><span>${esc(s.n)}<small>${esc(s.u)}</small></span><button data-d="${i}">✕</button></div>`).join('')}
+$('#cf').onclick=()=>{rs();$('#px').checked=!!opt.px;$('#pu').value=opt.pu;dlg.showModal?dlg.showModal():dlg.setAttribute('open','')};
+$('#sa').onclick=()=>{const u=$('#su').value.trim();if(!u)return;srcs.push({n:$('#sn').value.trim()||u.split('/').pop().slice(0,30),u});S('o_srcs',srcs);$('#su').value=$('#sn').value='';rs()};
+$('#sl').onclick=e=>{const b=e.target.closest('[data-d]');if(b){srcs.splice(+b.dataset.d,1);S('o_srcs',srcs);rs()}};
+$('#sfb').onclick=()=>$('#sf').click();
+$('#sf').onchange=async e=>{const f=e.target.files[0];if(!f)return;const c=parse(await f.text());c.forEach(z=>z.s=f.name);extra=extra.concat(c);dlg.close();load()};
+$('#sx').onclick=()=>{opt={px:$('#px').checked?1:0,pu:$('#pu').value.trim()||opt.pu};S('o_opt',opt);dlg.close();load()};
+$('#rf').onclick=load;
+load();
+</script></body></html>
