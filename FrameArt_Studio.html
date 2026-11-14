@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#090d16">
+    <title>FrameArt Studio – Art Creator for The Frame TV</title>
+    <script>
+        window.addEventListener('error', function (e) {
+            if (!e.message || e.message === 'Script error.') return;
+            var d = document.getElementById('bootError');
+            if (!d) {
+                d = document.createElement('div'); d.id = 'bootError';
+                d.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#7f1d1d;color:#fff;font:12px/1.4 monospace;padding:8px 10px;white-space:pre-wrap';
+                d.onclick = function () { d.remove(); };
+                (document.body || document.documentElement).appendChild(d);
+            }
+            d.textContent += e.message + ' (line ' + (e.lineno || '?') + ')\n';
+        });
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@400;600&family=Noto+Sans+Lao:wght@400;600&family=Noto+Sans+SC:wght@400;600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'Noto Sans Thai', 'Noto Sans Lao', 'Noto Sans SC', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#fefce8', 400: '#facc15', 500: '#eab308', 600: '#ca8a04' },
+                        dark: { 950: '#090d16', 900: '#0f172a', 800: '#1e293b', 700: '#334155' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .frame-bezel-teak {
+            border: 18px solid #b47b48;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 20px 40px rgba(0,0,0,0.8);
+            border-image: linear-gradient(135deg, #c88e5a 0%, #8c5828 50%, #b47b48 100%) 1;
+        }
+        .frame-bezel-walnut {
+            border: 18px solid #3d2314;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.9), 0 20px 40px rgba(0,0,0,0.8);
+            border-image: linear-gradient(135deg, #4a2d1b 0%, #24130a 50%, #3d2314 100%) 1;
+        }
+        .frame-bezel-white {
+            border: 18px solid #f8fafc;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.3), 0 20px 40px rgba(0,0,0,0.8);
+        }
+        .frame-bezel-black {
+            border: 18px solid #111827;
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.1), 0 20px 40px rgba(0,0,0,0.9);
+        }
+        .frame-bezel-none {
+            border: 2px solid #334155;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+        }
+        .gallery-wall {
+            background-color: #0b0f17;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        /* ===== Mobile / touch ===== */
+        input[type=range] { -webkit-appearance: none; appearance: none; height: 6px; background: #1e293b; border-radius: 9999px; touch-action: pan-y; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #eab308; border: 2px solid #0f172a; }
+        input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: #eab308; border: 2px solid #0f172a; }
+        .canvas-draw { touch-action: none; -webkit-user-select: none; user-select: none; }
+        @media (max-width: 1023px) { select, input[type=number] { font-size: 16px !important; } }
+        @media (max-width: 640px) {
+            .frame-bezel-teak, .frame-bezel-walnut, .frame-bezel-white, .frame-bezel-black { border-width: 8px; }
+        }
+    </style>
+</head>
+<body class="bg-dark-950 text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-slate-950">
+
+    <header class="border-b border-slate-800/80 bg-dark-900/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-16 py-2 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-300 flex items-center justify-center text-slate-950 font-bold shadow-lg shadow-brand-500/20">
+                    <i class="fa-solid fa-palette text-lg"></i>
+                </div>
+                <div class="min-w-0">
+                    <h1 class="font-bold text-base sm:text-lg leading-tight tracking-tight text-white whitespace-nowrap">
+                        FrameArt <span class="bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-brand-400 to-amber-500">Studio</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 mt-1 truncate">Art Creator for The Frame TV</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <div class="relative" id="langWrap">
+                    <button id="btnLang" type="button" aria-haspopup="true" aria-label="Language" class="flex items-center justify-center w-9 h-9 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 transition"><span id="langCurrent" class="flex"><svg viewBox="0 0 30 20" width="30" height="20" style="display:block;width:30px;height:20px;border-radius:3px"><rect width="30" height="20" fill="#012169"/><path d="M0 0L30 20M30 0L0 20" stroke="#fff" stroke-width="4"/><path d="M0 0L30 20M30 0L0 20" stroke="#C8102E" stroke-width="1.6"/><path d="M15 0V20M0 10H30" stroke="#fff" stroke-width="6"/><path d="M15 0V20M0 10H30" stroke="#C8102E" stroke-width="3.2"/></svg></span></button>
+                    <div id="langMenu" style="display:none;position:absolute;right:0;top:100%;margin-top:8px;padding:8px;grid-template-columns:repeat(3,44px);gap:6px;background:#0f172a;border:1px solid #334155;border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,.6);z-index:70"></div>
+                </div>
+                <button id="btnGuide" type="button" aria-label="Help" class="flex items-center justify-center w-9 h-9 rounded-lg border border-slate-700 text-brand-400 hover:bg-slate-800 transition"><i class="fa-solid fa-circle-question"></i></button>
+                <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Xử lý ngay trên thiết bị
+                </span>
+                <button id="btnResetAll" aria-label="Reset" class="text-xs px-3 h-9 justify-center rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate-left text-slate-400"></i> <span class="hidden sm:inline">Mặc định</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-slate-800 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-3">
+            <div id="toastIcon" class="text-emerald-400"><i class="fa-solid fa-circle-check"></i></div>
+            <p id="toastMessage" class="text-sm font-medium"></p>
+        </div>
+    </div>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+        <section id="controlsTop" class="lg:col-span-5 space-y-6">
+
+            <div class="bg-dark-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                <h2 class="text-sm font-semibold text-slate-200 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up text-brand-400"></i> 1. Đưa tranh vào cọ
+                </h2>
+
+                <div id="dropZone" class="relative group border-2 border-dashed border-slate-700 hover:border-brand-500/70 bg-slate-900/50 hover:bg-slate-900 transition-all duration-300 rounded-xl p-6 text-center cursor-pointer overflow-hidden">
+                    <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" class="hidden">
+                    <img id="dropThumb" alt="" class="hidden absolute inset-0 w-full h-full object-cover opacity-30 pointer-events-none">
+                    <div class="space-y-3 relative z-10">
+                        <div class="w-14 h-14 mx-auto rounded-full bg-slate-800 group-hover:bg-brand-500/10 group-hover:text-brand-400 text-slate-400 flex items-center justify-center transition-all duration-300">
+                            <i class="fa-solid fa-file-image text-2xl"></i>
+                        </div>
+                        <div>
+                            <p id="dropTitle" class="text-sm font-medium text-slate-200">
+                                <span class="text-brand-400 font-semibold underline decoration-brand-500/30 underline-offset-4">Nhấn để chọn ảnh</span> hoặc kéo thả vào đây
+                            </p>
+                            <p id="dropHint" class="text-xs text-slate-400 mt-1">Hỗ trợ JPG, PNG, WEBP (Khuyên dùng độ phân giải gốc cao)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3 flex items-center justify-between text-xs text-slate-400">
+                    <span>Chưa có ảnh?</span>
+                    <button id="btnLoadDemo" class="text-brand-400 hover:underline font-medium flex items-center gap-1">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Dùng tranh mẫu
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-dark-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+                <h2 class="text-sm font-semibold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-paintbrush text-brand-400"></i> Biến ảnh thật thành tranh
+                </h2>
+                <select id="selectStyleMode" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-500">
+                    <option value="none">Giữ nguyên ảnh gốc</option>
+                    <option value="cartoon">Hoạt hình (Cartoon)</option>
+                    <option value="sketch">Phác thảo bút chì (Pencil Sketch)</option>
+                    <option value="oil">Tranh sơn dầu (Oil Painting)</option>
+                    <option value="watercolor">Tranh màu nước (Watercolor)</option>
+                    <option value="artist">Nghệ thuật theo họa sĩ...</option>
+                </select>
+                <div id="artistWrap" class="hidden space-y-1.5">
+                    <label for="selectArtist" class="text-xs text-slate-300 font-medium block">Chọn họa sĩ</label>
+                    <select id="selectArtist" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-500">
+                        <optgroup label="Ấn tượng & Hậu ấn tượng">
+                            <option value="vangogh">Vincent van Gogh</option>
+                            <option value="monet">Claude Monet</option>
+                            <option value="renoir">Pierre-Auguste Renoir</option>
+                            <option value="seurat">Georges Seurat</option>
+                            <option value="cezanne">Paul Cézanne</option>
+                            <option value="gauguin">Paul Gauguin</option>
+                            <option value="turner">J.M.W. Turner</option>
+                        </optgroup>
+                        <optgroup label="Biểu hiện, Tân nghệ thuật & Cổ điển">
+                            <option value="munch">Edvard Munch</option>
+                            <option value="klimt">Gustav Klimt</option>
+                            <option value="vermeer">Johannes Vermeer</option>
+                        </optgroup>
+                        <optgroup label="Hiện đại & Đại chúng">
+                            <option value="picasso">Picasso</option>
+                            <option value="warhol">Andy Warhol</option>
+                            <option value="lichtenstein">Roy Lichtenstein</option>
+                            <option value="hokusai">Hokusai</option>
+                        </optgroup>
+                    </select>
+                    <button id="btnReroll" type="button" class="w-full mt-1 py-2 rounded-lg text-xs font-semibold border border-brand-500/50 bg-brand-500/10 text-brand-300 hover:bg-brand-500/20 transition"><i class="fa-solid fa-dice"></i> Vẽ lại (ra một bức khác)</button>
+                </div>
+                <div id="styleIntensityWrap" class="hidden space-y-1.5">
+                    <div class="flex justify-between items-center text-xs">
+                        <label for="sliderStyleIntensity" class="text-slate-300 font-medium">Cường độ hiệu ứng</label>
+                        <span id="valStyleIntensity" class="font-mono text-brand-400 font-semibold">100%</span>
+                    </div>
+                    <input type="range" id="sliderStyleIntensity" min="0" max="100" value="100" class="w-full accent-brand-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div id="scopeWrap" class="hidden space-y-1.5">
+                    <label for="selectStyleScope" class="text-xs text-slate-300 font-medium block">Phạm vi áp dụng</label>
+                    <select id="selectStyleScope" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-500">
+                        <option value="all">Toàn bộ bức tranh</option>
+                        <option value="region">Các vùng khoanh thủ công (mỗi vùng một phong cách)</option>
+                    </select>
+                </div>
+                <div id="regionPanel" class="hidden space-y-2 p-3 bg-slate-900/50 rounded-lg border border-slate-800/50">
+                    <p class="text-[11px] text-slate-400 leading-relaxed">Chọn một chế độ ở trên (Hoạt hình, Phác thảo, Sơn dầu, Màu nước hoặc một họa sĩ), khoanh một vùng trên ảnh Tivi rồi bấm "Hoàn thành vùng". Lặp lại với chế độ khác cho vùng khác. "Vẽ lại" (khi chọn họa sĩ) sẽ vẽ lại vùng cuối cùng.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="btnRegionDone" type="button" class="px-3 py-2 rounded-lg text-xs font-semibold border border-emerald-500/50 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 transition">Hoàn thành vùng (áp dụng)</button>
+                        <button id="btnRegionUndo" type="button" class="px-3 py-2 rounded-lg text-xs font-medium border border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 transition">Hoàn tác nét khoanh</button>
+                        <button id="btnRegionDraw" type="button" class="px-3 py-2 rounded-lg text-xs font-medium border border-cyan-500/50 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 transition">Khoanh vùng: BẬT</button>
+                    </div>
+                    <ul id="regionList" class="space-y-1 text-xs"></ul>
+                    <button id="btnRegionClear" type="button" class="px-3 py-2 rounded-lg text-xs font-medium border border-rose-500/50 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 transition">Xóa tất cả vùng</button>
+                </div>
+                <p class="text-[11px] text-slate-400 leading-relaxed">Hiệu ứng được vẽ bằng thuật toán ngay trong trình duyệt (mô phỏng cách vẽ của từng họa sĩ, không phải AI). "Vẽ lại" cho ra bức khác. Ảnh lớn có thể mất vài giây để xử lý.</p>
+            </div>
+
+            <div class="bg-dark-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-5">
+                <h2 class="text-sm font-semibold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-brand-400"></i> 2. Thông số khung & Vignette
+                </h2>
+
+                <div class="space-y-2">
+                    <label class="text-xs text-slate-400 font-medium flex justify-between">
+                        <span>Tỷ lệ Khung Canvas target (16:9)</span>
+                        <span id="targetResolutionLabel" class="text-brand-400 font-semibold">4200 x 2362 px</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" data-width="4200" class="btn-preset active px-3 py-2 rounded-lg text-xs font-medium border border-brand-500/50 bg-brand-500/10 text-brand-300 hover:bg-brand-500/20 transition text-left flex flex-col">
+                            <span class="font-semibold">4200 x 2362</span>
+                            <span class="text-[10px] text-slate-400">Chuẩn Samsung 16:9</span>
+                        </button>
+                        <button type="button" data-width="3840" class="btn-preset px-3 py-2 rounded-lg text-xs font-medium border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 transition text-left flex flex-col">
+                            <span class="font-semibold">3840 x 2160</span>
+                            <span class="text-[10px] text-slate-400">Chuẩn 4K UHD</span>
+                        </button>
+                        <button type="button" data-width="7111" class="btn-preset px-3 py-2 rounded-lg text-xs font-medium border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 transition text-left flex flex-col">
+                            <span class="font-semibold">7111 x 4000</span>
+                            <span class="text-[10px] text-slate-400">Super Ultra-HD (75")</span>
+                        </button>
+                        <button type="button" id="btnCustomRes" class="btn-preset px-3 py-2 rounded-lg text-xs font-medium border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 transition text-left flex flex-col">
+                            <span class="font-semibold">Tùy chỉnh Width</span>
+                            <span class="text-[10px] text-slate-400">Nhập độ phân giải riêng</span>
+                        </button>
+                    </div>
+
+                    <div id="customWidthWrapper" class="hidden mt-2">
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="inputCustomWidth" value="4200" min="1000" max="10000" step="100" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-500">
+                            <span class="text-xs text-slate-400 font-mono">x <span id="customHeightCalc">2362</span>px</span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-slate-800">
+
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center text-xs">
+                        <label for="sliderGradientWidth" class="text-slate-300 font-medium">Chiều rộng mờ góc Vignette</label>
+                        <span id="valGradientWidth" class="font-mono text-brand-400 font-semibold">150 px</span>
+                    </div>
+                    <input type="range" id="sliderGradientWidth" min="0" max="500" value="150" step="5" class="w-full accent-brand-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer">
+                    <p class="text-[11px] text-slate-400">Điều chỉnh độ rộng vùng mờ ở rìa tranh.</p>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center text-xs">
+                        <label for="sliderBlurRadius" class="text-slate-300 font-medium">Độ mịn màng (GaussianBlur Mask)</label>
+                        <span id="valBlurRadius" class="font-mono text-brand-400 font-semibold">5 px</span>
+                    </div>
+                    <input type="range" id="sliderBlurRadius" min="0" max="30" value="5" step="1" class="w-full accent-brand-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer">
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs text-slate-300 font-medium block">Màu phông nền Canvas (Art Border Color)</label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="bgColorPicker" value="#000000" class="w-9 h-9 rounded-lg border border-slate-700 bg-transparent cursor-pointer">
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" data-color="#000000" class="btn-color-swatch w-7 h-7 rounded-md bg-black border border-slate-700 hover:scale-110 transition" title="Pitch Black (#000000)"></button>
+                            <button type="button" data-color="#0f172a" class="btn-color-swatch w-7 h-7 rounded-md bg-slate-900 border border-slate-700 hover:scale-110 transition" title="Dark Slate"></button>
+                            <button type="button" data-color="#18181b" class="btn-color-swatch w-7 h-7 rounded-md bg-zinc-900 border border-slate-700 hover:scale-110 transition" title="Charcoal"></button>
+                            <button type="button" data-color="#e2e8f0" class="btn-color-swatch w-7 h-7 rounded-md bg-slate-200 border border-slate-700 hover:scale-110 transition" title="Gallery Mat White"></button>
+                        </div>
+                        <span id="bgColorCode" class="text-xs font-mono text-slate-400 ml-auto">#000000</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="selectFitMode" class="text-xs text-slate-300 font-medium block">Chế độ khớp tranh</label>
+                    <select id="selectFitMode" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-500">
+                        <option value="fit-height">Cố định chiều cao (Khuyên dùng - Thêm Vignette 2 bên)</option>
+                        <option value="fit-width">Cố định chiều ngang (Thêm Vignette trên/dưới)</option>
+                        <option value="fill-crop">Cắt cúp vừa vặn 16:9 (Phủ kín không cần phông đen)</option>
+                    </select>
+                </div>
+                <div id="panWrap" class="hidden space-y-3 p-3 bg-slate-900/50 rounded-lg border border-slate-800/50">
+                    <p class="text-[11px] text-slate-400 leading-relaxed">Kéo ảnh trên Tivi, dùng thanh trượt hoặc thu phóng để chọn phần ảnh được hiển thị.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="btnPanToggle" type="button" class="px-3 py-2 rounded-lg text-xs font-medium border border-cyan-500/50 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 transition">Kéo để di chuyển ảnh: BẬT</button>
+                        <button id="btnPanReset" type="button" class="px-3 py-2 rounded-lg text-xs font-medium border border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 transition">Đặt lại vị trí</button>
+                    </div>
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between text-xs"><label for="sliderPanX" class="text-slate-300 font-medium">Vị trí ngang</label><span id="valPanX" class="font-mono text-brand-400 font-semibold">0%</span></div>
+                        <input type="range" id="sliderPanX" min="-100" max="100" value="0" class="w-full accent-brand-500">
+                    </div>
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between text-xs"><label for="sliderPanY" class="text-slate-300 font-medium">Vị trí dọc</label><span id="valPanY" class="font-mono text-brand-400 font-semibold">0%</span></div>
+                        <input type="range" id="sliderPanY" min="-100" max="100" value="0" class="w-full accent-brand-500">
+                    </div>
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between text-xs"><label for="sliderZoom" class="text-slate-300 font-medium">Thu phóng</label><span id="valZoom" class="font-mono text-brand-400 font-semibold">100%</span></div>
+                        <input type="range" id="sliderZoom" min="100" max="300" step="5" value="100" class="w-full accent-brand-500">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="selectMaskShape" class="text-xs text-slate-300 font-medium block">Hình dạng mặt nạ (Mask Shape)</label>
+                    <select id="selectMaskShape" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-500">
+                        <option value="edge">Làm mờ cạnh thẳng (Linear Edge Fade)</option>
+                        <option value="oval">Hình Oval mờ (Classic Soft Oval)</option>
+                        <option value="circle">Hình Tròn mờ (Soft Circle)</option>
+                        <option value="rect">Hình Chữ nhật mờ (Soft Rectangle)</option>
+                        <option value="square">Hình Vuông mờ (Soft Square)</option>
+                        <option value="custom">Tự xóa viền thủ công (Custom Eraser Brush)</option>
+                    </select>
+                </div>
+
+
+            </div>
+
+        </section>
+
+        <section class="lg:col-span-7 space-y-4">
+
+            <!-- Tải ảnh -->
+            <div class="bg-dark-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-2">
+                <button id="btnDownload" disabled class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-brand-500 via-amber-400 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-slate-950 font-bold text-sm shadow-lg shadow-brand-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Tải ảnh chuẩn Art Mode (4200x2362)</span>
+                </button>
+                <div id="imageMetaInfo" class="text-center text-[11px] text-slate-400 font-mono hidden">
+                    Kích thước xuất: <span id="metaRes" class="text-slate-300 font-semibold">4200 x 2362</span> | Định dạng: JPEG 100% Quality | Dung lượng ước tính: <span id="metaSize" class="text-brand-400 font-semibold">--</span>
+                </div>
+            </div>
+
+
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-dark-900 border border-slate-800 rounded-2xl p-4">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-tv text-brand-400"></i>
+                    <h3 class="text-sm font-semibold text-white">Xem trước trên Tivi</h3>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
+                    <span class="text-slate-400 px-2 font-medium text-[11px]">Khung tivi:</span>
+                    <button type="button" data-bezel="teak" class="btn-bezel px-2.5 py-1 rounded bg-brand-500/20 text-brand-300 font-medium transition">Gỗ sồi (Teak)</button>
+                    <button type="button" data-bezel="walnut" class="btn-bezel px-2.5 py-1 rounded hover:bg-slate-800 text-slate-400 transition">Gỗ óc chó</button>
+                    <button type="button" data-bezel="white" class="btn-bezel px-2.5 py-1 rounded hover:bg-slate-800 text-slate-400 transition">Trắng Modern</button>
+                    <button type="button" data-bezel="black" class="btn-bezel px-2.5 py-1 rounded hover:bg-slate-800 text-slate-400 transition">Đen Vỏ thép</button>
+                    <button type="button" data-bezel="none" class="btn-bezel px-2.5 py-1 rounded hover:bg-slate-800 text-slate-400 transition">Không khung</button>
+                </div>
+            </div>
+
+            <!-- Thanh công cụ Tự xóa viền thủ công (nằm trên ảnh đang thao tác) -->
+            <div id="customBrushControls" class="hidden bg-dark-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label for="selectCustomTool" class="text-xs text-slate-300 font-medium block">Công cụ</label>
+                        <select id="selectCustomTool" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-500">
+                            <option value="lasso">Khoanh vùng GIỮ LẠI (phần ngoài tự mờ về nền)</option>
+                            <option value="brush">Cọ xóa trực tiếp</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center text-xs">
+                            <label for="sliderBrushSize" class="text-slate-300 font-medium">Kích thước cọ xóa (Brush Size)</label>
+                            <span id="valBrushSize" class="font-mono text-brand-400 font-semibold">50%</span>
+                        </div>
+                        <input type="range" id="sliderBrushSize" min="1" max="100" value="50" class="w-full accent-brand-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <div id="lassoActions" class="flex flex-wrap gap-2">
+                        <button id="btnLassoDone" type="button" class="px-3 py-2 rounded-lg text-xs font-semibold border border-emerald-500/50 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 transition"><i class="fa-solid fa-check"></i> Hoàn thành vẽ mask</button>
+                        <button id="btnLassoUndo" type="button" class="px-3 py-2 rounded-lg text-xs font-medium border border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 transition"><i class="fa-solid fa-rotate-left"></i> Hoàn tác nét khoanh</button>
+                    </div>
+                    <button id="btnResetMask" type="button" class="px-3 py-2 rounded-lg text-xs font-medium border border-rose-500/50 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 transition"><i class="fa-solid fa-rotate-left"></i> Khôi phục lại viền gốc</button>
+                </div>
+                <p class="text-[10.5px] text-slate-400 leading-relaxed">Khoanh: kéo quanh vùng muốn giữ (nét đứt vàng được giữ lại) rồi bấm "Hoàn thành vẽ mask". Cọ xóa: bôi lên ảnh để xóa phần thừa, viền tự mờ khi thả tay.</p>
+            </div>
+
+
+            <div id="previewAnchor" class="gallery-wall rounded-2xl border border-slate-800/80 p-3 sm:p-10 flex flex-col items-center justify-center min-h-[240px] sm:min-h-[460px] relative overflow-hidden shadow-2xl">
+
+                <div id="ambientGlow" class="absolute inset-10 bg-brand-500/5 blur-3xl rounded-full pointer-events-none transition-all duration-500"></div>
+
+                <div id="previewPlaceholder" class="text-center py-12 px-4 space-y-4 max-w-sm my-auto">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500">
+                        <i class="fa-solid fa-image text-3xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-slate-200">Chưa có hình ảnh được chọn</h4>
+                        <p class="text-xs text-slate-400 mt-1">Tải ảnh tác phẩm hội họa của bạn lên hoặc trải nghiệm bằng bức tranh mẫu để xem trước ngay.</p>
+                    </div>
+                </div>
+
+                <div id="tvFrameWrapper" class="hidden relative max-w-full w-full transition-all duration-300 frame-bezel-teak rounded-sm">
+                    <div class="w-full aspect-video bg-black relative overflow-hidden flex items-center justify-center">
+                        <canvas id="previewCanvas" class="w-full h-full object-contain"></canvas>
+                    </div>
+                </div>
+
+                <div id="previewStatus" class="hidden mt-6 flex items-center gap-4 text-xs text-slate-400 font-mono bg-slate-900/80 backdrop-blur px-4 py-2 rounded-full border border-slate-800">
+                    <span class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-expand text-brand-400"></i>
+                        Ảnh gốc: <span id="originalDim" class="text-slate-200 font-semibold">0x0</span>
+                    </span>
+                    <span class="text-slate-700">|</span>
+                    <span class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-sliders text-brand-400"></i>
+                        Vignette: <span id="vignetteStatus" class="text-slate-200 font-semibold">150px</span>
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="bg-dark-900 border border-slate-800 rounded-2xl p-5 text-xs text-slate-400 space-y-3">
+                <h4 class="font-semibold text-slate-200 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb text-brand-400"></i> Tại sao cần hiệu ứng Vignette Gradient chuẩn?
+                </h4>
+                <p class="leading-relaxed">Tranh cổ điển thường có khổ dọc hoặc vuông. Khi đưa lên TV 16:9, cắt bớt thì mất chi tiết, còn để dải đen thì tạo đường biên sắc cứng. Mặt nạ mờ dần giúp rìa tranh hòa vào màu nền, như một bức tranh thật treo trên tường.</p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <div id="guideModal" class="hidden fixed inset-0 z-[60] items-start sm:items-center justify-center p-4 bg-black/70 overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="bg-dark-900 border border-slate-700 rounded-2xl p-5 shadow-2xl max-w-lg w-full my-auto">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold text-slate-100 flex items-center gap-2"><i class="fa-solid fa-circle-info text-brand-400"></i><span>Giới thiệu &amp; Hướng dẫn nhanh</span></h3>
+                <button id="btnGuideClose" type="button" aria-label="Close" class="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-800 transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="text-xs sm:text-[13px] text-slate-300 space-y-3 leading-relaxed">
+                <p>FrameArt Studio giúp bạn chuẩn bị tranh cho TV The Frame: đưa ảnh về đúng tỉ lệ 16:9, làm mờ rìa để hòa vào màu nền và biến ảnh thật thành tranh nghệ thuật. Mọi xử lý diễn ra ngay trên thiết bị của bạn, ảnh không được tải lên máy chủ nào.</p>
+                <ol class="list-decimal pl-5 space-y-1.5">
+                    <li>Chọn hoặc kéo thả ảnh của bạn (hoặc dùng tranh mẫu).</li>
+                    <li>Tùy chọn: chọn phong cách (Hoạt hình, Sơn dầu, hoặc họa sĩ như Van Gogh, Monet, Klimt...) và bấm "Vẽ lại" để ra bức khác.</li>
+                    <li>Chọn độ phân giải, chế độ khớp tranh và màu nền.</li>
+                    <li>Chọn hình dạng mặt nạ và chỉnh độ mờ. Với "Tự xóa viền thủ công", hãy khoanh vùng muốn giữ rồi bấm "Hoàn thành vẽ mask".</li>
+                    <li>Xem trước trên khung Tivi và đổi kiểu khung nếu muốn.</li>
+                    <li>Bấm "Tải ảnh chuẩn Art Mode", rồi chép file JPEG vào TV (qua USB hoặc ứng dụng SmartThings).</li>
+                </ol>
+                <p class="text-brand-300">Mẹo: trên điện thoại, dùng nút nổi ở góc dưới bên trái để chuyển nhanh giữa ảnh xem trước và phần chỉnh.</p>
+            </div>
+        </div>
+    </div>
+
+    <button id="btnJump" type="button" class="lg:hidden fixed bottom-5 left-4 z-40 px-4 py-2.5 rounded-full bg-brand-500 text-slate-950 text-xs font-bold shadow-xl shadow-black/50"><i class="fa-solid fa-sliders"></i> Settings</button>
+    <canvas id="offscreenCanvas" class="hidden"></canvas>
+
+    <footer class="border-t border-slate-800/80 bg-dark-900 py-4 text-center text-xs text-slate-400">
+        <p>© 2026 FrameArt Studio • Art Creator for The Frame TV</p>
+    </footer>
+
+    <script>
+        // ===== Đa ngôn ngữ (i18n) =====
+        // Khóa = câu tiếng Việt gốc; giá trị = [en, lo, th, es, zh]
+        const I18N = {"Xử lý ngay trên thiết bị": ["Processed on your device", "ປະມວນຜົນໃນອຸປະກອນຂອງທ່ານ", "ประมวลผลบนอุปกรณ์ของคุณ", "Se procesa en tu dispositivo", "在您的设备上本地处理"], "Mặc định": ["Reset", "ຣີເຊັດ", "รีเซ็ต", "Restablecer", "重置"], "1. Đưa tranh vào cọ": ["1. Add your artwork", "1. ເພີ່ມຮູບຂອງທ່ານ", "1. เพิ่มภาพของคุณ", "1. Añade tu obra", "1. 添加您的作品"], "Nhấn để chọn ảnh": ["Click to choose an image", "ກົດເພື່ອເລືອກຮູບ", "แตะเพื่อเลือกรูปภาพ", "Haz clic para elegir una imagen", "点击选择图片"], "hoặc kéo thả vào đây": ["or drag and drop it here", "ຫຼື ລາກແລ້ວວາງທີ່ນີ້", "หรือลากมาวางที่นี่", "o arrástrala aquí", "或拖放到此处"], "Hỗ trợ JPG, PNG, WEBP (Khuyên dùng độ phân giải gốc cao)": ["Supports JPG, PNG, WEBP (high original resolution recommended)", "ຮອງຮັບ JPG, PNG, WEBP (ແນະນຳຄວາມລະອຽດຕົ້ນສະບັບສູງ)", "รองรับ JPG, PNG, WEBP (แนะนำให้ใช้ความละเอียดต้นฉบับสูง)", "Admite JPG, PNG, WEBP (se recomienda alta resolución original)", "支持 JPG、PNG、WEBP（建议使用高分辨率原图）"], "Chưa có ảnh?": ["No image yet?", "ຍັງບໍ່ມີຮູບບໍ?", "ยังไม่มีรูปภาพ?", "¿Aún no tienes una imagen?", "还没有图片？"], "Dùng tranh mẫu": ["Use a sample painting", "ໃຊ້ຮູບແຕ້ມຕົວຢ່າງ", "ใช้ภาพวาดตัวอย่าง", "Usar una pintura de muestra", "使用示例画作"], "Biến ảnh thật thành tranh": ["Turn photos into artwork", "ປ່ຽນຮູບຖ່າຍເປັນຮູບສິລະປະ", "เปลี่ยนภาพถ่ายเป็นงานศิลปะ", "Convierte fotos en arte", "将照片变成艺术作品"], "Giữ nguyên ảnh gốc": ["Keep original photo", "ຮັກສາຮູບຕົ້ນສະບັບ", "ใช้ภาพต้นฉบับ", "Mantener la foto original", "保持原图"], "Hoạt hình (Cartoon)": ["Cartoon", "ກາຕູນ", "การ์ตูน", "Dibujo animado", "卡通"], "Phác thảo bút chì (Pencil Sketch)": ["Pencil sketch", "ຮ່າງດ້ວຍສໍ", "ภาพสเก็ตช์ดินสอ", "Boceto a lápiz", "铅笔素描"], "Tranh sơn dầu (Oil Painting)": ["Oil painting", "ຮູບແຕ້ມສີນ້ຳມັນ", "ภาพสีน้ำมัน", "Óleo", "油画"], "Tranh màu nước (Watercolor)": ["Watercolor", "ສີນ້ຳ", "สีน้ำ", "Acuarela", "水彩画"], "Nghệ thuật theo họa sĩ...": ["In the style of an artist…", "ແບບສິລະປິນ…", "สไตล์ศิลปิน…", "Al estilo de un artista…", "按画家风格…"], "Chọn họa sĩ": ["Choose an artist", "ເລືອກສິລະປິນ", "เลือกศิลปิน", "Elige un artista", "选择画家"], "Ấn tượng & Hậu ấn tượng": ["Impressionism & Post-Impressionism", "ອິມເພຣສຊັນນິສ ແລະ ຫຼັງອິມເພຣສຊັນນິສ", "อิมเพรสชันนิสม์และโพสต์อิมเพรสชันนิสม์", "Impresionismo y Postimpresionismo", "印象派与后印象派"], "Biểu hiện, Tân nghệ thuật & Cổ điển": ["Expressionism, Art Nouveau & Classic", "ເອັກສະເປຣສຊັນນິສ, ອາຣ໌ນູໂວ ແລະ ຄລາສສິກ", "เอกซ์เพรสชันนิสม์ อาร์ตนูโว และคลาสสิก", "Expresionismo, Art Nouveau y clásico", "表现主义、新艺术与古典"], "Hiện đại & Đại chúng": ["Modern & Pop", "ທັນສະໄໝ ແລະ ປ໊ອບ", "โมเดิร์นและป๊อป", "Moderno y Pop", "现代与波普"], "Vẽ lại (ra một bức khác)": ["Repaint (get a different result)", "ແຕ້ມໃໝ່ (ໄດ້ຜົນລັບຕ່າງອອກໄປ)", "วาดใหม่ (ได้ผลลัพธ์ที่ต่างออกไป)", "Repintar (otro resultado)", "重绘（得到不同效果）"], "Cường độ hiệu ứng": ["Effect strength", "ຄວາມແຮງຂອງເອັຟເຟັກ", "ความเข้มของเอฟเฟกต์", "Intensidad del efecto", "效果强度"], "Hiệu ứng được vẽ bằng thuật toán ngay trong trình duyệt (mô phỏng cách vẽ của từng họa sĩ, không phải AI). \"Vẽ lại\" cho ra bức khác. Ảnh lớn có thể mất vài giây để xử lý.": ["Effects are drawn by algorithms right in your browser (an imitation of each artist's technique, not AI). \"Repaint\" gives a different result. Large images may take a few seconds.", "ເອັຟເຟັກຖືກແຕ້ມດ້ວຍອັລກໍຣິທຶມໃນບຣາວເຊີຂອງທ່ານ (ຈຳລອງວິທີແຕ້ມຂອງສິລະປິນ, ບໍ່ແມ່ນ AI). \"ແຕ້ມໃໝ່\" ຈະໄດ້ຜົນລັບຕ່າງອອກໄປ. ຮູບໃຫຍ່ອາດໃຊ້ເວລາສອງສາມວິນາທີ.", "เอฟเฟกต์วาดด้วยอัลกอริทึมในเบราว์เซอร์ของคุณ (เลียนแบบเทคนิคของศิลปิน ไม่ใช่ AI) กด \"วาดใหม่\" เพื่อให้ได้ผลลัพธ์ที่ต่างออกไป ภาพขนาดใหญ่อาจใช้เวลาไม่กี่วินาที", "Los efectos se dibujan con algoritmos en tu navegador (imitan la técnica de cada artista, no es IA). «Repintar» da otro resultado. Las imágenes grandes pueden tardar unos segundos.", 
+"效果由浏览器内的算法绘制（模仿画家的画法，并非 AI）。点击“重绘”可得到不同效果。大图可能需要几秒钟。"], "2. Thông số khung & Vignette": ["2. Frame & fade settings", "2. ການຕັ້ງຄ່າກອບ ແລະ ຂອບເລືອນ", "2. ตั้งค่ากรอบและขอบจาง", "2. Marco y desvanecido", "2. 画框与渐隐设置"], "Tỷ lệ Khung Canvas target (16:9)": ["Target canvas size (16:9)", "ຂະໜາດຜ້າໃບເປົ້າໝາຍ (16:9)", "ขนาดผืนผ้าใบเป้าหมาย (16:9)", "Tamaño del lienzo (16:9)", "目标画布尺寸（16:9）"], "Chuẩn Samsung 16:9": ["Samsung 16:9 standard", "ມາດຕະຖານ Samsung 16:9", "มาตรฐาน Samsung 16:9", "Estándar Samsung 16:9", "三星 16:9 标准"], "Chuẩn 4K UHD": ["4K UHD standard", "ມາດຕະຖານ 4K UHD", "มาตรฐาน 4K UHD", "Estándar 4K UHD", "4K UHD 标准"], "Tùy chỉnh Width": ["Custom width", "ກຳນົດຄວາມກວ້າງເອງ", "กำหนดความกว้างเอง", "Ancho personalizado", "自定义宽度"], "Nhập độ phân giải riêng": ["Enter your own resolution", "ປ້ອນຄວາມລະອຽດເອງ", "ระบุความละเอียดเอง", "Introduce tu resolución", "输入自定义分辨率"], "Chiều rộng mờ góc Vignette": ["Edge fade width", "ຄວາມກວ້າງຂອງຂອບເລືອນ", "ความกว้างของขอบจาง", "Ancho del desvanecido", "边缘渐隐宽度"], "Điều chỉnh độ rộng vùng mờ ở rìa tranh.": ["Sets how wide the faded border of the artwork is.", "ກຳນົດຄວາມກວ້າງຂອງຂອບທີ່ເລືອນຈາງຂອງຮູບ.", "กำหนดความกว้างของขอบที่จางลงของภาพ", "Define el ancho del borde desvanecido de la obra.", "设置作品边缘渐隐区域的宽度。"], "Độ mịn màng (GaussianBlur Mask)": ["Mask smoothness (Gaussian blur)", "ຄວາມລຽບຂອງມາສກ໌ (Gaussian blur)", "ความนุ่มนวลของมาสก์ (Gaussian blur)", "Suavidad de la máscara (desenfoque gaussiano)", "蒙版平滑度（高斯模糊）"], "Màu phông nền Canvas (Art Border Color)": ["Canvas background color", "ສີພື້ນຫຼັງຜ້າໃບ", "สีพื้นหลังผืนผ้าใบ", "Color de fondo del lienzo", "画布背景色"], "Chế độ khớp tranh": ["Fit mode", "ໂໝດປັບຮູບ", "โหมดปรับภาพ", "Modo de ajuste", "适配模式"], "Cố định chiều cao (Khuyên dùng - Thêm Vignette 2 bên)": ["Fit height (recommended, fades left & right)", "ປັບຕາມຄວາມສູງ (ແນະນຳ, ຈາງຊ້າຍ-ຂວາ)", "ปรับตามความสูง (แนะนำ ขอบซ้าย-ขวาจาง)", "Ajustar a la altura (recomendado, desvanece a los lados)", "适应高度（推荐，左右渐隐）"], "Cố định chiều ngang (Thêm Vignette trên/dưới)": ["Fit width (fades top & bottom)", "ປັບຕາມຄວາມກວ້າງ (ຈາງເທິງ-ລຸ່ມ)", "ปรับตามความกว้าง (ขอบบน-ล่างจาง)", "Ajustar al ancho (desvanece arriba y abajo)", "适应宽度（上下渐隐）"], "Cắt cúp vừa vặn 16:9 (Phủ kín không cần phông đen)": ["Crop to fill 16:9 (no background bars)", "ຕັດໃຫ້ເຕັມ 16:9 (ບໍ່ມີແຖບພື້ນຫຼັງ)", "ครอปให้เต็ม 16:9 (ไม่มีแถบพื้นหลัง)", "Recortar para llenar 16:9 (sin barras)", "裁剪填满 16:9（无背景边）"], "Hình dạng mặt nạ (Mask Shape)": ["Mask shape", "ຮູບຮ່າງມາສກ໌", "รูปทรงมาสก์", "Forma de la máscara", "蒙版形状"], "Làm mờ cạnh thẳng (Linear Edge Fade)": ["Straight edge fade", "ຈາງຂອບຊື່", "ขอบตรงจางลง", "Desvanecido de bordes rectos", "直边渐隐"], "Hình Oval mờ (Classic Soft Oval)": ["Soft oval", "ຮູບໄຂ່ເລືອນ", "วงรีนุ่ม", "Óvalo suave", "柔边椭圆"], "Hình Tròn mờ (Soft Circle)": ["Soft circle", "ວົງມົນເລືອນ", "วงกลมนุ่ม", "Círculo suave", "柔边圆形"], "Hình Chữ nhật mờ (Soft Rectangle)": ["Soft rectangle", "ສີ່ຫຼ່ຽມຜືນຜ້າເລືອນ", "สี่เหลี่ยมผืนผ้านุ่ม", "Rectángulo suave", "柔边矩形"], "Hình Vuông mờ (Soft Square)": ["Soft square", "ສີ່ຫຼ່ຽມຈັດຕຸລັດເລືອນ", "สี่เหลี่ยมจัตุรัสนุ่ม", "Cuadrado suave", "柔边正方形"], "Tự xóa viền thủ công (Custom Eraser Brush)": ["Manual erase (custom brush)", "ລົບຂອບດ້ວຍມື (ແປງກຳນົດເອງ)", "ลบขอบด้วยตนเอง (แปรงกำหนดเอง)", "Borrado manual (pincel)", "手动擦除边缘（自定义画笔）"], "Tải ảnh chuẩn Art Mode": ["Download Art Mode image", "ດາວໂຫຼດຮູບສຳລັບ Art Mode", "ดาวน์โหลดภาพสำหรับ Art Mode", "Descargar imagen para Art Mode", "下载 Art Mode 图片"], "Kích thước xuất:": ["Export size:", "ຂະໜາດສົ່ງອອກ:", "ขนาดไฟล์ที่ส่งออก:", "Tamaño de exportación:", "导出尺寸："], "| Định dạng: JPEG 100% Quality | Dung lượng ước tính:": ["| Format: JPEG 100% quality | Estimated size:", "| ຮູບແບບ: JPEG ຄຸນນະພາບ 100% | ຂະໜາດໄຟລ໌ໂດຍປະມານ:", "| รูปแบบ: JPEG คุณภาพ 100% | 
+ขนาดไฟล์โดยประมาณ:", "| Formato: JPEG calidad 100% | Tamaño estimado:", "| 格式：JPEG 100% 质量 | 预计大小："], "Xem trước trên Tivi": ["TV preview", "ຕົວຢ່າງໃນໂທລະພາບ", "ตัวอย่างบนทีวี", "Vista previa en el TV", "电视预览"], "Khung tivi:": ["TV frame:", "ກອບທີວີ:", "กรอบทีวี:", "Marco:", "电视边框："], "Gỗ sồi (Teak)": ["Teak", "ໄມ້ສັກ", "ไม้สัก", "Teca", "柚木"], "Gỗ óc chó": ["Walnut", "ໄມ້ວອລນັດ", "ไม้วอลนัต", "Nogal", "胡桃木"], "Trắng Modern": ["Modern white", "ຂາວທັນສະໄໝ", "ขาวโมเดิร์น", "Blanco moderno", "现代白"], "Đen Vỏ thép": ["Black", "ດຳ", "ดำ", "Negro", "黑色"], "Không khung": ["No frame", "ບໍ່ມີກອບ", "ไม่มีกรอบ", "Sin marco", "无边框"], "Công cụ": ["Tool", "ເຄື່ອງມື", "เครื่องมือ", "Herramienta", "工具"], "Khoanh vùng GIỮ LẠI (phần ngoài tự mờ về nền)": ["Lasso: KEEP area (outside fades to background)", "ວົງບໍລິເວນ ເກັບໄວ້ (ສ່ວນນອກຈາງເຂົ້າພື້ນຫຼັງ)", "วงพื้นที่ที่จะเก็บไว้ (ส่วนนอกจางเป็นสีพื้นหลัง)", "Lazo: CONSERVAR zona (el exterior se desvanece)", "套索：保留区域（外部渐隐至背景）"], "Cọ xóa trực tiếp": ["Eraser brush", "ແປງລົບ", "แปรงลบ", "Pincel borrador", "橡皮擦画笔"], "Kích thước cọ xóa (Brush Size)": ["Brush size", "ຂະໜາດແປງ", "ขนาดแปรง", "Tamaño del pincel", "画笔大小"], "Hoàn thành vẽ mask": ["Finish mask", "ສຳເລັດມາສກ໌", "เสร็จสิ้นมาสก์", "Terminar máscara", "完成蒙版"], "Hoàn tác nét khoanh": ["Undo lasso stroke", "ຍົກເລີກເສັ້ນວົງ", "เลิกทำเส้นวง", "Deshacer trazo", "撤销套索笔画"], "Khôi phục lại viền gốc": ["Restore original edges", "ກູ້ຄືນຂອບເດີມ", "คืนค่าขอบเดิม", "Restaurar bordes originales", "恢复原始边缘"], "Khoanh: kéo quanh vùng muốn giữ (nét đứt vàng được giữ lại) rồi bấm \"Hoàn thành vẽ mask\". Cọ xóa: bôi lên ảnh để xóa phần thừa, viền tự mờ khi thả tay.": ["Lasso: drag around the area to keep (the yellow dashed line stays) then press \"Finish mask\". Eraser: paint over parts to remove; edges fade when you release.", "ວົງ: ລາກອ້ອມບໍລິເວນທີ່ຕ້ອງການເກັບໄວ້ (ເສັ້ນປະສີເຫຼືອງຍັງຢູ່) ແລ້ວກົດ \"ສຳເລັດມາສກ໌\". ແປງລົບ: ແຕ້ມທັບສ່ວນທີ່ຕ້ອງການລົບ, ຂອບຈະຈາງເມື່ອປ່ອຍມື.", "วงพื้นที่: ลากรอบส่วนที่ต้องการเก็บ (เส้นประสีเหลืองจะคงอยู่) แล้วกด \"เสร็จสิ้นมาสก์\" แปรงลบ: ระบายทับส่วนที่ต้องการลบ ขอบจะจางเมื่อปล่อยมือ", "Lazo: arrastra alrededor de la zona a conservar (la línea amarilla discontinua permanece) y pulsa «Terminar máscara». Borrador: pinta lo que quieras quitar; los bordes se suavizan al soltar.", "套索：围绕要保留的区域拖动（黄色虚线会保留），然后点击“完成蒙版”。橡皮擦：涂抹要去除的部分，松手后边缘自动渐隐。"], "Chưa có hình ảnh được chọn": ["No image selected", "ຍັງບໍ່ໄດ້ເລືອກຮູບ", "ยังไม่ได้เลือกรูปภาพ", "Ninguna imagen seleccionada", "尚未选择图片"], "Tải ảnh tác phẩm hội họa của bạn lên hoặc trải nghiệm bằng bức tranh mẫu để xem trước ngay.": ["Upload your artwork or try the sample painting to see a preview right away.", "ອັບໂຫຼດຮູບຜົນງານຂອງທ່ານ ຫຼື ລອງໃຊ້ຮູບແຕ້ມຕົວຢ່າງເພື່ອເບິ່ງຕົວຢ່າງທັນທີ.", "อัปโหลดภาพผลงานของคุณ หรือลองใช้ภาพวาดตัวอย่างเพื่อดูตัวอย่างทันที", "Sube tu obra o prueba la pintura de muestra para ver una vista previa al instante.", "上传您的作品，或使用示例画作立即预览。"], "Ảnh gốc:": ["Original:", "ຮູບຕົ້ນສະບັບ:", "ภาพต้นฉบับ:", "Original:", "原图："], "Tại sao cần hiệu ứng Vignette Gradient chuẩn?": ["Why use a soft fade?", "ເປັນຫຍັງຕ້ອງໃຊ້ຂອບເລືອນຈາງ?", "ทำไมต้องใช้ขอบจางนุ่ม?", "¿Por qué usar un desvanecido suave?", "为什么要使用柔和渐隐？"], "Tranh cổ điển thường có khổ dọc hoặc vuông. Khi đưa lên TV 16:9, cắt bớt thì mất chi tiết, còn để dải đen thì tạo đường biên sắc cứng. Mặt nạ mờ dần giúp rìa tranh hòa vào màu nền, như một bức tranh thật treo trên tường.": ["Classic paintings are often portrait or square. On a 16:9 TV, cropping loses detail while plain black bars leave a harsh edge. A soft fade blends the artwork into the background, like a real painting on the wall.", "ຮູບແຕ້ມຄລາສສິກສ່ວນຫຼາຍເປັນແນວຕັ້ງ ຫຼື ສີ່ຫຼ່ຽມຈັດຕຸລັດ. ເມື່ອສະແດງເທິງທີວີ 16:9 ການຕັດຈະເສຍລາຍລະອຽດ ແລະ ແຖບດຳຈະເຮັດໃຫ້ຂອບແຂງກະດ້າງ. 
+ການເລືອນຈາງຈະກົມກຽວຮູບເຂົ້າກັບພື້ນຫຼັງ ຄືຮູບແຕ້ມຈິງທີ່ແຂວນຢູ່ຝາ.", "ภาพวาดคลาสสิกมักเป็นแนวตั้งหรือสี่เหลี่ยมจัตุรัส เมื่อแสดงบนทีวี 16:9 การครอปจะเสียรายละเอียด ส่วนแถบดำทำให้ขอบดูแข็งกระด้าง ขอบจางนุ่มช่วยให้ภาพกลมกลืนกับพื้นหลัง เหมือนภาพวาดจริงบนผนัง", "Las pinturas clásicas suelen ser verticales o cuadradas. En un TV 16:9, recortar pierde detalle y las barras negras dejan un borde duro. Un desvanecido suave integra la obra en el fondo, como un cuadro real en la pared.", "经典画作多为竖幅或方形。放到 16:9 电视上，裁剪会丢失细节，黑边则显得生硬。柔和渐隐能让作品融入背景，就像墙上的真画。"], "Giới thiệu & Hướng dẫn nhanh": ["About & quick guide", "ແນະນຳ ແລະ ຄູ່ມືໃຊ້ງານຫຍໍ້", "แนะนำและคู่มือเริ่มต้นใช้งาน", "Acerca de y guía rápida", "简介与快速指南"], "FrameArt Studio giúp bạn chuẩn bị tranh cho TV The Frame: đưa ảnh về đúng tỉ lệ 16:9, làm mờ rìa để hòa vào màu nền và biến ảnh thật thành tranh nghệ thuật. Mọi xử lý diễn ra ngay trên thiết bị của bạn, ảnh không được tải lên máy chủ nào.": ["FrameArt Studio prepares artwork for The Frame TV: it fits your image to 16:9, fades the edges into the background and can turn photos into art. Everything is processed on your own device; your images are never uploaded to any server.", "FrameArt Studio ຊ່ວຍກຽມຮູບສຳລັບທີວີ The Frame: ປັບຮູບໃຫ້ເປັນສັດສ່ວນ 16:9, ເຮັດໃຫ້ຂອບຈາງເຂົ້າກັບສີພື້ນຫຼັງ ແລະ ປ່ຽນຮູບຖ່າຍເປັນຮູບສິລະປະ. ທຸກຢ່າງປະມວນຜົນໃນອຸປະກອນຂອງທ່ານ, ຮູບບໍ່ຖືກອັບໂຫຼດຂຶ້ນເຊີເວີໃດໆ.", "FrameArt Studio ช่วยเตรียมภาพสำหรับทีวี The Frame: ปรับภาพให้เป็นสัดส่วน 16:9 ทำให้ขอบจางกลืนไปกับสีพื้นหลัง และเปลี่ยนภาพถ่ายเป็นงานศิลปะ การประมวลผลทั้งหมดเกิดขึ้นบนอุปกรณ์ของคุณ ภาพไม่ถูกอัปโหลดไปยังเซิร์ฟเวอร์ใด ๆ", "FrameArt Studio prepara obras para el TV The Frame: ajusta la imagen a 16:9, desvanece los bordes en el fondo y puede convertir fotos en arte. Todo se procesa en tu dispositivo; tus imágenes nunca se suben a ningún servidor.", "FrameArt Studio 帮您为 The Frame 电视准备作品：将图片调整为 16:9，让边缘渐隐融入背景，还能把照片变成艺术作品。所有处理都在您的设备上完成，图片不会上传到任何服务器。"], "Chọn hoặc kéo thả ảnh của bạn (hoặc dùng tranh mẫu).": ["Choose or drag in your image (or use the sample painting).", "ເລືອກ ຫຼື ລາກຮູບຂອງທ່ານມາວາງ (ຫຼື ໃຊ້ຮູບແຕ້ມຕົວຢ່າງ).", "เลือกหรือลากภาพของคุณมาวาง (หรือใช้ภาพวาดตัวอย่าง)", "Elige o arrastra tu imagen (o usa la pintura de muestra).", "选择或拖入您的图片（也可使用示例画作）。"], "Tùy chọn: chọn phong cách (Hoạt hình, Sơn dầu, hoặc họa sĩ như Van Gogh, Monet, Klimt...) và bấm \"Vẽ lại\" để ra bức khác.": ["Optional: pick a style (Cartoon, Oil painting or an artist such as Van Gogh, Monet, Klimt…) and press \"Repaint\" for another result.", "ທາງເລືອກ: ເລືອກແບບ (ກາຕູນ, ສີນ້ຳມັນ ຫຼື ສິລະປິນເຊັ່ນ Van Gogh, Monet, Klimt…) ແລ້ວກົດ \"ແຕ້ມໃໝ່\" ເພື່ອໄດ້ຜົນອື່ນ.", "ตัวเลือก: เลือกสไตล์ (การ์ตูน สีน้ำมัน หรือศิลปินอย่าง Van Gogh, Monet, Klimt…) แล้วกด \"วาดใหม่\" เพื่อให้ได้ผลลัพธ์อื่น", "Opcional: elige un estilo (dibujo animado, óleo o un artista como Van Gogh, Monet, Klimt…) y pulsa «Repintar» para otro resultado.", "可选：选择风格（卡通、油画，或梵高、莫奈、克里姆特等画家），点击“重绘”可得到不同效果。"], "Chọn độ phân giải, chế độ khớp tranh và màu nền.": ["Choose the resolution, fit mode and background color.", "ເລືອກຄວາມລະອຽດ, ໂໝດປັບຮູບ ແລະ ສີພື້ນຫຼັງ.", "เลือกความละเอียด โหมดปรับภาพ และสีพื้นหลัง", "Elige la resolución, el modo de ajuste y el color de fondo.", "选择分辨率、适配模式和背景色。"], "Chọn hình dạng mặt nạ và chỉnh độ mờ. Với \"Tự xóa viền thủ công\", hãy khoanh vùng muốn giữ rồi bấm \"Hoàn thành vẽ mask\".": ["Pick a mask shape and adjust the fade. With \"Manual erase\", lasso the area you want to keep, then press \"Finish mask\".", "ເລືອກຮູບຮ່າງມາສກ໌ ແລະ ປັບຄວາມຈາງ. ຖ້າໃຊ້ \"ລົບຂອບດ້ວຍມື\" ໃຫ້ວົງບໍລິເວນທີ່ຕ້ອງການເກັບໄວ້ ແລ້ວກົດ \"ສຳເລັດມາສກ໌\".", "เลือกรูปทรงมาสก์และปรับความจาง หากใช้ \"ลบขอบด้วยตนเอง\" ให้วงพื้นที่ที่ต้องการเก็บ แล้วกด \"เสร็จสิ้นมาสก์\"", "Elige la forma de la máscara y ajusta el desvanecido. Con «Borrado manual», rodea la 
+zona que quieres conservar y pulsa «Terminar máscara».", "选择蒙版形状并调整渐隐程度。使用“手动擦除边缘”时，先圈出要保留的区域，再点击“完成蒙版”。"], "Xem trước trên khung Tivi và đổi kiểu khung nếu muốn.": ["Check the preview on the TV frame and change the frame style if you like.", "ເບິ່ງຕົວຢ່າງໃນກອບທີວີ ແລະ ປ່ຽນແບບກອບຕາມຕ້ອງການ.", "ดูตัวอย่างบนกรอบทีวี และเปลี่ยนรูปแบบกรอบได้ตามต้องการ", "Revisa la vista previa en el marco del TV y cambia el estilo si quieres.", "在电视边框中查看预览，可按需更换边框样式。"], "Bấm \"Tải ảnh chuẩn Art Mode\", rồi chép file JPEG vào TV (qua USB hoặc ứng dụng SmartThings).": ["Press \"Download Art Mode image\", then transfer the JPEG to your TV (via USB or the SmartThings app).", "ກົດ \"ດາວໂຫຼດຮູບສຳລັບ Art Mode\" ແລ້ວໂອນໄຟລ໌ JPEG ເຂົ້າທີວີ (ຜ່ານ USB ຫຼື ແອັບ SmartThings).", "กด \"ดาวน์โหลดภาพสำหรับ Art Mode\" แล้วโอนไฟล์ JPEG เข้าทีวี (ผ่าน USB หรือแอป SmartThings)", "Pulsa «Descargar imagen para Art Mode» y pasa el JPEG al TV (por USB o con la app SmartThings).", "点击“下载 Art Mode 图片”，再通过 USB 或 SmartThings 应用把 JPEG 传到电视。"], "Mẹo: trên điện thoại, dùng nút nổi ở góc dưới bên trái để chuyển nhanh giữa ảnh xem trước và phần chỉnh.": ["Tip: on a phone, use the floating button at the bottom left to jump between the preview and the settings.", "ເຄັດລັບ: ໃນໂທລະສັບ ໃຫ້ໃຊ້ປຸ່ມລອຍທີ່ມຸມລຸ່ມຊ້າຍ ເພື່ອສະຫຼັບລະຫວ່າງຕົວຢ່າງ ແລະ ການຕັ້ງຄ່າ.", "เคล็ดลับ: บนโทรศัพท์ ให้ใช้ปุ่มลอยที่มุมซ้ายล่างเพื่อสลับระหว่างตัวอย่างกับการตั้งค่า", "Consejo: en el móvil, usa el botón flotante de la esquina inferior izquierda para alternar entre la vista previa y los ajustes.", "提示：在手机上，可使用左下角的悬浮按钮在预览和设置之间快速切换。"], "Nhấn hoặc kéo thả ảnh khác vào đây để thay đổi": ["Click or drop another image here to change it", "ກົດ ຫຼື ລາກຮູບອື່ນມາວາງທີ່ນີ້ເພື່ອປ່ຽນ", "แตะหรือลากภาพอื่นมาวางที่นี่เพื่อเปลี่ยน", "Haz clic o suelta otra imagen aquí para cambiarla", "点击或拖入其他图片以更换"], "✔ Đã chọn:": ["✔ Selected:", "✔ ເລືອກແລ້ວ:", "✔ เลือกแล้ว:", "✔ Seleccionada:", "✔ 已选择："], "Vui lòng chọn file hình ảnh (JPG, PNG, WEBP)": ["Please choose an image file (JPG, PNG, WEBP)", "ກະລຸນາເລືອກໄຟລ໌ຮູບ (JPG, PNG, WEBP)", "กรุณาเลือกไฟล์ภาพ (JPG, PNG, WEBP)", "Elige un archivo de imagen (JPG, PNG, WEBP)", "请选择图片文件（JPG、PNG、WEBP）"], "Đã tải ảnh lên thành công!": ["Image loaded!", "ໂຫຼດຮູບສຳເລັດ!", "โหลดภาพสำเร็จ!", "¡Imagen cargada!", "图片已加载！"], "Đã nạp bức tranh nghệ thuật mẫu!": ["Sample painting loaded!", "ໂຫຼດຮູບແຕ້ມຕົວຢ່າງແລ້ວ!", "โหลดภาพวาดตัวอย่างแล้ว!", "¡Pintura de muestra cargada!", "示例画作已加载！"], "Đã khôi phục cài đặt mặc định": ["Settings reset to defaults", "ຣີເຊັດການຕັ້ງຄ່າເປັນຄ່າເລີ່ມຕົ້ນແລ້ວ", "รีเซ็ตการตั้งค่าเป็นค่าเริ่มต้นแล้ว", "Ajustes restablecidos", "已恢复默认设置"], "Hãy kéo chuột khoanh quanh vùng muốn giữ trước": ["First drag around the area you want to keep", "ກະລຸນາລາກວົງອ້ອມບໍລິເວນທີ່ຕ້ອງການເກັບໄວ້ກ່ອນ", "โปรดลากวงรอบพื้นที่ที่ต้องการเก็บก่อน", "Primero rodea la zona que quieres conservar", "请先围绕要保留的区域拖动鼠标"], "Đã hoàn thành mask: vùng ngoài mờ dần về màu nền": ["Mask done: the outside now fades to the background", "ມາສກ໌ສຳເລັດ: ສ່ວນນອກຈາງເຂົ້າສີພື້ນຫຼັງແລ້ວ", "มาสก์เสร็จแล้ว: ส่วนนอกจางไปเป็นสีพื้นหลัง", "Máscara lista: el exterior se desvanece al fondo", "蒙版完成：外部区域已渐隐至背景"], "đang tính...": ["calculating…", "ກຳລັງຄິດໄລ່…", "กำลังคำนวณ…", "calculando…", "计算中…"], "không xác định": ["unknown", "ບໍ່ຮູ້", "ไม่ทราบ", "desconocido", "未知"], "Đang xử lý phong cách, vui lòng đợi...": ["Applying style, please wait…", "ກຳລັງໃຊ້ແບບ, ກະລຸນາລໍຖ້າ…", "กำลังใช้สไตล์ โปรดรอสักครู่…", "Aplicando estilo, espera un momento…", "正在应用风格，请稍候…"], "Đã áp dụng phong cách!": ["Style applied!", "ໃຊ້ແບບສຳເລັດ!", "ใช้สไตล์แล้ว!", "¡Estilo aplicado!", "风格已应用！"], "Lỗi xử lý phong cách:": ["Style error:", "ຂໍ້ຜິດພາດຂອງແບບ:", "ข้อผิดพลาดของสไตล์:", "Error de estilo:", "风格处理出错："], "Đang đóng gói file 100% Quality...": ["Packing 100% quality 
+file…", "ກຳລັງສ້າງໄຟລ໌ຄຸນນະພາບ 100%…", "กำลังสร้างไฟล์คุณภาพ 100%…", "Generando archivo de calidad 100%…", "正在生成 100% 质量文件…"], "Không tạo được file (có thể thiếu bộ nhớ). Hãy thử độ phân giải thấp hơn.": ["Could not create the file (maybe out of memory). Try a lower resolution.", "ສ້າງໄຟລ໌ບໍ່ໄດ້ (ອາດຈະຫນ່ວຍຄວາມຈຳບໍ່ພໍ). ລອງຄວາມລະອຽດຕ່ຳລົງ.", "สร้างไฟล์ไม่ได้ (อาจหน่วยความจำไม่พอ) ลองใช้ความละเอียดต่ำลง", "No se pudo crear el archivo (quizá falta memoria). Prueba una resolución menor.", "无法生成文件（可能内存不足），请尝试较低分辨率。"], "Đã xuất file tranh Art Mode 16:9 thành công!": ["Art Mode 16:9 image exported!", "ສົ່ງອອກຮູບ Art Mode 16:9 ສຳເລັດ!", "ส่งออกภาพ Art Mode 16:9 สำเร็จ!", "¡Imagen Art Mode 16:9 exportada!", "Art Mode 16:9 图片已导出！"], "Lỗi khi tải file:": ["Download error:", "ຂໍ້ຜິດພາດໃນການດາວໂຫຼດ:", "ข้อผิดพลาดในการดาวน์โหลด:", "Error al descargar:", "下载出错："], "Thông số": ["Settings", "ຕັ້ງຄ່າ", "ตั้งค่า", "Ajustes", "设置"], "Xem tranh": ["Preview", "ເບິ່ງຮູບ", "ดูภาพ", "Vista previa", "预览"], "Phạm vi áp dụng": ["Apply to", "ໃຊ້ກັບ", "ใช้กับ", "Aplicar a", "应用范围"], "Toàn bộ bức tranh": ["The whole picture", "ທັງຮູບ", "ทั้งภาพ", "Toda la imagen", "整幅图片"], "Các vùng khoanh thủ công (mỗi vùng một phong cách)": ["Selected regions (one style per region)", "ແຕ່ລະບໍລິເວນທີ່ວົງເອງ (ແຕ່ລະບໍລິເວນຄົນລະແບບ)", "เฉพาะบางพื้นที่ที่วงเอง (แต่ละพื้นที่ใช้คนละสไตล์)", "Zonas seleccionadas (un estilo por zona)", "手动圈选的区域（每个区域一种风格）"], "Hoàn thành vùng (áp dụng)": ["Finish region (apply)", "ສຳເລັດບໍລິເວນ (ນຳໃຊ້)", "เสร็จสิ้นพื้นที่ (นำไปใช้)", "Terminar zona (aplicar)", "完成区域（应用）"], "Khoanh vùng: BẬT": ["Lasso: ON", "ວົງບໍລິເວນ: ເປີດ", "วงพื้นที่: เปิด", "Lazo: ACTIVADO", "圈选：开"], "Khoanh vùng: TẮT": ["Lasso: OFF", "ວົງບໍລິເວນ: ປິດ", "วงพื้นที่: ปิด", "Lazo: DESACTIVADO", "圈选：关"], "Xóa tất cả vùng": ["Remove all regions", "ລຶບທຸກບໍລິເວນ", "ลบทุกพื้นที่", "Quitar todas las zonas", "清除所有区域"], "Vùng": ["Region", "ບໍລິເວນ", "พื้นที่", "Zona", "区域"], "Hãy chọn một phong cách trước": ["Choose a style first", "ກະລຸນາເລືອກແບບກ່ອນ", "โปรดเลือกสไตล์ก่อน", "Elige primero un estilo", "请先选择一种风格"], "Đã áp dụng phong cách cho vùng!": ["Style applied to the region!", "ໃຊ້ແບບກັບບໍລິເວນແລ້ວ!", "ใช้สไตล์กับพื้นที่แล้ว!", "¡Estilo aplicado a la zona!", "已为该区域应用风格！"], "Chưa có vùng nào": ["No regions yet", "ຍັງບໍ່ມີບໍລິເວນ", "ยังไม่มีพื้นที่", "Aún no hay zonas", "还没有区域"], "Kéo ảnh trên Tivi, dùng thanh trượt hoặc thu phóng để chọn phần ảnh được hiển thị.": ["Drag the image on the TV preview, or use the sliders and zoom, to choose which part is shown.", "ລາກຮູບໃນຕົວຢ່າງທີວີ ຫຼື ໃຊ້ແຖບເລື່ອນ ແລະ ການຊູມ ເພື່ອເລືອກສ່ວນຂອງຮູບທີ່ຈະສະແດງ.", "ลากภาพบนตัวอย่างทีวี หรือใช้แถบเลื่อนและการซูม เพื่อเลือกส่วนของภาพที่จะแสดง", "Arrastra la imagen en la vista previa, o usa los deslizadores y el zoom, para elegir qué parte se muestra.", "在电视预览上拖动图片，或使用滑块和缩放，来选择要显示的部分。"], "Kéo để di chuyển ảnh: BẬT": ["Drag to move image: ON", "ລາກເພື່ອຍ້າຍຮູບ: ເປີດ", "ลากเพื่อเลื่อนภาพ: เปิด", "Arrastrar para mover la imagen: SÍ", "拖动移动图片：开"], "Kéo để di chuyển ảnh: TẮT": ["Drag to move image: OFF", "ລາກເພື່ອຍ້າຍຮູບ: ປິດ", "ลากเพื่อเลื่อนภาพ: ปิด", "Arrastrar para mover la imagen: NO", "拖动移动图片：关"], "Đặt lại vị trí": ["Reset position", "ຣີເຊັດຕຳແໜ່ງ", "รีเซ็ตตำแหน่ง", "Restablecer posición", "重置位置"], "Vị trí ngang": ["Horizontal position", "ຕຳແໜ່ງແນວນອນ", "ตำแหน่งแนวนอน", "Posición horizontal", "水平位置"], "Vị trí dọc": ["Vertical position", "ຕຳແໜ່ງແນວຕັ້ງ", "ตำแหน่งแนวตั้ง", "Posición vertical", "垂直位置"], "Thu phóng": ["Zoom", "ຊູມ", "ซูม", "Zoom", "缩放"], "Chọn một chế độ ở trên (Hoạt hình, Phác thảo, Sơn dầu, Màu nước hoặc một họa sĩ), khoanh một vùng trên ảnh Tivi rồi bấm \"Hoàn thành vùng\". Lặp lại với chế độ khác cho vùng khác. \"Vẽ lại\" (khi chọn họa sĩ) sẽ vẽ lại vùng cuối cùng.": ["Pick a mode above (Cartoon, 
+Sketch, Oil, Watercolor or an artist), lasso a region on the TV preview, then press \"Finish region\". Repeat with another mode for another region. \"Repaint\" (artist mode) redraws the last region.", "ເລືອກໂໝດຂ້າງເທິງ (ກາຕູນ, ຮ່າງດ້ວຍສໍ, ສີນ້ຳມັນ, ສີນ້ຳ ຫຼື ສິລະປິນ), ວົງບໍລິເວນໃນຕົວຢ່າງທີວີ ແລ້ວກົດ \"ສຳເລັດບໍລິເວນ\". ເຮັດຊ້ຳດ້ວຍໂໝດອື່ນສຳລັບບໍລິເວນອື່ນ. \"ແຕ້ມໃໝ່\" (ໂໝດສິລະປິນ) ຈະແຕ້ມບໍລິເວນສຸດທ້າຍຄືນໃໝ່.", "เลือกโหมดด้านบน (การ์ตูน สเก็ตช์ดินสอ สีน้ำมัน สีน้ำ หรือศิลปิน) วงพื้นที่บนตัวอย่างทีวี แล้วกด \"เสร็จสิ้นพื้นที่\" ทำซ้ำด้วยโหมดอื่นสำหรับพื้นที่อื่น \"วาดใหม่\" (โหมดศิลปิน) จะวาดพื้นที่สุดท้ายใหม่", "Elige un modo arriba (dibujo animado, boceto, óleo, acuarela o un artista), rodea una zona en la vista previa y pulsa «Terminar zona». Repite con otro modo para otra zona. «Repintar» (modo artista) vuelve a pintar la última zona.", "先在上方选择模式（卡通、素描、油画、水彩或某位画家），在电视预览上圈出一个区域，再点击“完成区域”。换一种模式可继续圈选其他区域。“重绘”（画家模式）会重绘最后一个区域。"]};
+        const LANG_IDX = { en: 0, lo: 1, th: 2, es: 3, zh: 4 };
+        let currentLang = 'en';
+        const t = (key) => (currentLang === 'vi' || !I18N[key]) ? key : I18N[key][LANG_IDX[currentLang]];
+        const dlLabel = () => `${t('Tải ảnh chuẩn Art Mode')} (${state.targetWidth}x${state.targetHeight})`;
+        let updateJumpLabel = () => {};
+
+        function translateDom() {
+            const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+            const nodes = [];
+            while (w.nextNode()) nodes.push(w.currentNode);
+            for (const n of nodes) {
+                const tag = n.parentNode && n.parentNode.nodeName;
+                if (tag === 'SCRIPT' || tag === 'STYLE') continue;
+                if (n.__vi === undefined) {
+                    const key = n.nodeValue.trim();
+                    if (!I18N[key]) continue;
+                    n.__vi = key;
+                }
+                const lead = n.nodeValue.match(/^\s*/)[0], trail = n.nodeValue.match(/\s*$/)[0];
+                n.nodeValue = lead + t(n.__vi) + trail;
+            }
+            document.querySelectorAll('optgroup[label]').forEach((g) => {
+                if (g.__vi === undefined) g.__vi = g.getAttribute('label');
+                g.setAttribute('label', t(g.__vi));
+            });
+        }
+
+        function updateDropText() {
+            if (!state.imgName) return;
+            document.getElementById('dropTitle').textContent = t('✔ Đã chọn:') + ' ' + state.imgName;
+            document.getElementById('dropHint').textContent = t('Nhấn hoặc kéo thả ảnh khác vào đây để thay đổi');
+        }
+
+        function setLanguage(lang) {
+            currentLang = (lang === 'vi' || LANG_IDX[lang] !== undefined) ? lang : 'en';
+            try { localStorage.setItem('frameart_lang', currentLang); } catch (e) {}
+            document.documentElement.lang = currentLang;
+            renderLangUI();
+            translateDom();
+            updateResolutionLabels();
+            updateDropText();
+            updateJumpLabel();
+            renderRegionList(); updateRegionDrawLabel(); updatePanToggleLabel();
+            if (state.image) scheduleSizeEstimate();
+        }
+
+// ===== Cờ quốc gia thay chữ + hộp hướng dẫn =====
+        const LANG_NAMES = { en: 'English', vi: 'Tiếng Việt', lo: 'ລາວ', th: 'ไทย', es: 'Español', zh: '中文' };
+        const star = (cx, cy, R, fill) => {
+            const pts = [];
+            for (let i = 0; i < 10; i++) {
+                const r = i % 2 ? R * 0.382 : R, a = -Math.PI / 2 + i * Math.PI / 5;
+                pts.push((cx + r * Math.cos(a)).toFixed(2) + ',' + (cy + r * Math.sin(a)).toFixed(2));
+            }
+            return `<polygon fill="${fill}" points="${pts.join(' ')}"/>`;
+        };
+        const FLAG_BODY = {
+            en: '<rect width="30" height="20" fill="#012169"/><path d="M0 0L30 20M30 0L0 20" stroke="#fff" stroke-width="4"/><path d="M0 0L30 20M30 0L0 20" stroke="#C8102E" stroke-width="1.6"/><path d="M15 0V20M0 10H30" stroke="#fff" stroke-width="6"/><path d="M15 0V20M0 10H30" stroke="#C8102E" stroke-width="3.2"/>',
+            vi: '<rect width="30" height="20" fill="#DA251D"/>' + star(15, 10.6, 6.5, '#FFFF00'),
+            lo: '<rect width="30" height="20" fill="#CE1126"/><rect y="5" width="30" height="10" fill="#002868"/><circle cx="15" cy="10" r="4" fill="#fff"/>',
+            th: '<rect width="30" height="20" fill="#A51931"/><rect y="3.33" width="30" height="13.34" fill="#F4F5F8"/><rect y="6.67" width="30" height="6.66" fill="#2D2A4A"/>',
+            es: '<rect width="30" height="20" fill="#AA151B"/><rect y="5" width="30" height="10" fill="#F1BF00"/>',
+            zh: '<rect width="30" height="20" fill="#DE2910"/>' + star(6, 6.2, 3.4, '#FFDE00') + star(12, 2.4, 1.1, '#FFDE00') + star(14.2, 4.8, 1.1, '#FFDE00') + star(14.2, 7.8, 1.1, '#FFDE00') + star(12, 10, 1.1, '#FFDE00')
+        };
+        const flagSvg = (l) => `<svg viewBox="0 0 30 20" width="30" height="20" aria-hidden="true" style="display:block;width:30px;height:20px;border-radius:3px;box-shadow:0 0 0 1px rgba(0,0,0,.4)">${FLAG_BODY[l]}</svg>`;
+
+        function renderLangUI() {
+            document.getElementById('langCurrent').innerHTML = flagSvg(currentLang);
+            document.getElementById('btnLang').title = LANG_NAMES[currentLang];
+            document.querySelectorAll('#langMenu button').forEach((b) => {
+                b.style.boxShadow = b.dataset.lang === currentLang ? '0 0 0 2px #eab308' : 'none';
+            });
+        }
+
+        function setupLangMenu() {
+            const menu = document.getElementById('langMenu'), btn = document.getElementById('btnLang');
+            menu.innerHTML = Object.keys(LANG_NAMES).map((l) =>
+                `<button type="button" data-lang="${l}" title="${LANG_NAMES[l]}" aria-label="${LANG_NAMES[l]}" style="display:flex;align-items:center;justify-content:center;width:44px;height:34px;border-radius:8px;background:transparent;border:0;cursor:pointer;padding:0">${flagSvg(l)}</button>`).join('');
+            const toggle = (open) => { menu.style.display = open ? 'grid' : 'none'; };
+            btn.addEventListener('click', (e) => { e.stopPropagation(); toggle(menu.style.display === 'none'); });
+            menu.addEventListener('click', (e) => {
+                const b = e.target.closest('button[data-lang]');
+                if (b) { setLanguage(b.dataset.lang); toggle(false); }
+            });
+            document.addEventListener('click', (e) => { if (!document.getElementById('langWrap').contains(e.target)) toggle(false); });
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggle(false); });
+        }
+
+        function setupGuide() {
+            const modal = document.getElementById('guideModal'), btn = document.getElementById('btnGuide');
+            const open = (v) => { modal.classList.toggle('hidden', !v); modal.classList.toggle('flex', v); };
+            btn.addEventListener('click', () => {
+                btn.classList.remove('animate-pulse');
+                try { localStorage.setItem('frameart_seen', '1'); } catch (e) {}
+                open(true);
+            });
+            document.getElementById('btnGuideClose').addEventListener('click', () => open(false));
+            modal.addEventListener('click', (e) => { if (e.target === modal) open(false); });
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') open(false); });
+        }
+
+        function initLang() {
+            let saved = 'en';
+            try { saved = localStorage.getItem('frameart_lang') || 'en'; } catch (e) {}
+            setupLangMenu();
+            setupGuide();
+            setLanguage(saved);
+            try {
+                if (!localStorage.getItem('frameart_seen')) { document.getElementById('btnGuide').classList.add('animate-pulse'); }
+            } catch (e) {}
+        }
+
+        const IS_MOBILE = window.matchMedia('(pointer: coarse)').matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const PREVIEW_MAX = IS_MOBILE ? 1280 : 1920;   // xem trước ở độ phân giải thấp cho mượt, xuất file vẫn full
+        const maskScale = () => Math.min(1, 1400 / state.targetWidth);
+
+        // Global App State
+        const state = {
+            image: null,
+            fileName: 'The_Frame_Art_Mode.jpg',
+            targetWidth: 4200,
+            targetHeight: 2362,
+            gradientWidth: 150,
+            blurRadius: 5,
+            bgColor: '#000000',
+            fitMode: 'fit-height',
+            maskShape: 'edge',
+            brushSize: 50,
+            customMaskCanvas: null,   // nét cọ xóa
+            customTool: 'lasso',      // 'lasso' | 'brush'
+            lassoStrokes: [],
+            lassoMaskCanvas: null,    // vùng GIỮ LẠI đã khép kín
+            lassoBlur: null,          // cache mask đã blur
+            lastPos: null,
+            isDrawing: false,
+            bezelStyle: 'teak',
+            highResCanvas: null
+        };
+
+        // DOM Elements
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const btnLoadDemo = document.getElementById('btnLoadDemo');
+        const previewCanvas = document.getElementById('previewCanvas');
+        const offscreenCanvas = document.getElementById('offscreenCanvas');
+        const tvFrameWrapper = document.getElementById('tvFrameWrapper');
+        const previewPlaceholder = document.getElementById('previewPlaceholder');
+        const previewStatus = document.getElementById('previewStatus');
+        const originalDim = document.getElementById('originalDim');
+        const vignetteStatus = document.getElementById('vignetteStatus');
+        const btnDownload = document.getElementById('btnDownload');
+        const btnResetAll = document.getElementById('btnResetAll');
+
+        const sliderGradientWidth = document.getElementById('sliderGradientWidth');
+        const valGradientWidth = document.getElementById('valGradientWidth');
+        const sliderBlurRadius = document.getElementById('sliderBlurRadius');
+        const valBlurRadius = document.getElementById('valBlurRadius');
+        const bgColorPicker = document.getElementById('bgColorPicker');
+        const bgColorCode = document.getElementById('bgColorCode');
+        const selectFitMode = document.getElementById('selectFitMode');
+        const selectMaskShape = document.getElementById('selectMaskShape');
+        const customBrushControls = document.getElementById('customBrushControls');
+        const sliderBrushSize = document.getElementById('sliderBrushSize');
+        const valBrushSize = document.getElementById('valBrushSize');
+        const btnResetMask = document.getElementById('btnResetMask');
+        const targetResolutionLabel = document.getElementById('targetResolutionLabel');
+        const customWidthWrapper = document.getElementById('customWidthWrapper');
+        const inputCustomWidth = document.getElementById('inputCustomWidth');
+        const customHeightCalc = document.getElementById('customHeightCalc');
+        const metaRes = document.getElementById('metaRes');
+        const imageMetaInfo = document.getElementById('imageMetaInfo');
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMessage.textContent = t(message);
+            toastIcon.innerHTML = isError
+                ? '<i class="fa-solid fa-circle-xmark text-rose-400"></i>'
+                : '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function bootApp() {
+            const steps = { initLang, setupUploadHandlers, setupControlListeners, setupPresetResolutionButtons, setupBezelSelectors,
+                setupColorSwatches, setupCustomMaskDrawing, setupStyleControls, setupMobileUX, setupRegionControls, setupPanControls };
+            const errs = [];
+            for (const name of Object.keys(steps)) {
+                try { steps[name](); } catch (e) { console.error(name, e); errs.push(name + ': ' + e.message); }
+            }
+            if (errs.length) {
+                const d = document.createElement('div');
+                d.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#7f1d1d;color:#fff;font:12px/1.4 monospace;padding:8px 10px;white-space:pre-wrap';
+                d.textContent = errs.join('\n'); d.onclick = () => d.remove();
+                document.body.appendChild(d);
+            }
+        }
+        if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', bootApp); else bootApp();
+
+        // 1. Upload Handlers
+        function setupUploadHandlers() {
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    handleFileSelect(e.target.files[0]);
+                }
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.add('border-brand-500', 'bg-brand-500/10');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.remove('border-brand-500', 'bg-brand-500/10');
+                }, false);
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                const files = e.dataTransfer.files;
+                if (files && files.length > 0) {
+                    handleFileSelect(files[0]);
+                }
+            });
+
+            btnLoadDemo.addEventListener('click', () => {
+                loadDemoArtwork();
+            });
+        }
+
+        function markImageLoaded(src, name) {
+            state.styled = null; state.styleRaw = null;
+            state.regions = []; state.regionStrokes = []; state.regionSrc = null; renderRegionList(); resetPan();
+            if (state.styleMode !== 'none') applyStyle();
+            const thumb = document.getElementById('dropThumb');
+            thumb.src = src;
+            thumb.classList.remove('hidden');
+            dropZone.classList.remove('border-dashed', 'border-slate-700');
+            dropZone.classList.add('border-emerald-500/60');
+            const clean = (name || '').replace(/_ArtMode_16x9\.jpg$/, '');
+            state.imgName = clean;
+            updateDropText();
+        }
+
+        function handleFileSelect(file) {
+            if (!file.type.match('image.*')) {
+                showToast('Vui lòng chọn file hình ảnh (JPG, PNG, WEBP)', true);
+                return;
+            }
+
+            state.fileName = file.name.replace(/\.[^/.]+$/, "") + "_ArtMode_16x9.jpg";
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    state.image = img;
+                    markImageLoaded(img.src, state.fileName);
+                    originalDim.textContent = `${img.width} x ${img.height} px`;
+
+                    previewPlaceholder.classList.add('hidden');
+                    tvFrameWrapper.classList.remove('hidden');
+                    previewStatus.classList.remove('hidden');
+                    imageMetaInfo.classList.remove('hidden');
+                    btnDownload.disabled = false;
+
+                    renderArtCanvas();
+                    showToast('Đã tải ảnh lên thành công!');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function loadDemoArtwork() {
+            const demoCanvas = document.createElement('canvas');
+            demoCanvas.width = 1600;
+            demoCanvas.height = 2000;
+            const ctx = demoCanvas.getContext('2d');
+
+            const grad = ctx.createRadialGradient(800, 1000, 100, 800, 1000, 1200);
+            grad.addColorStop(0, '#f59e0b');
+            grad.addColorStop(0.3, '#b45309');
+            grad.addColorStop(0.7, '#78350f');
+            grad.addColorStop(1, '#292524');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 1600, 2000);
+
+            const light = ctx.createRadialGradient(500, 500, 10, 500, 500, 600);
+            light.addColorStop(0, 'rgba(254, 243, 199, 0.9)');
+            light.addColorStop(0.5, 'rgba(217, 119, 6, 0.4)');
+            light.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = light;
+            ctx.fillRect(0, 0, 1600, 2000);
+
+            ctx.fillStyle = 'rgba(255,255,255,0.85)';
+            ctx.font = 'italic 52px serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Jean-Honoré Fragonard', 800, 1750);
+            ctx.font = '36px serif';
+            ctx.fillText('Le Verrou (The Lock, 1777)', 800, 1820);
+
+            const img = new Image();
+            img.onload = () => {
+                state.image = img;
+                    markImageLoaded(img.src, state.fileName);
+                state.fileName = "Fragonard_The_Lock_ArtMode_16x9.jpg";
+                originalDim.textContent = `${img.width} x ${img.height} px`;
+
+                previewPlaceholder.classList.add('hidden');
+                tvFrameWrapper.classList.remove('hidden');
+                previewStatus.classList.remove('hidden');
+                imageMetaInfo.classList.remove('hidden');
+                btnDownload.disabled = false;
+
+                renderArtCanvas();
+                showToast('Đã nạp bức tranh nghệ thuật mẫu!');
+            };
+            img.src = demoCanvas.toDataURL('image/jpeg');
+        }
+
+        // 2. Control Listeners
+        function setupControlListeners() {
+            sliderGradientWidth.addEventListener('input', (e) => {
+                state.gradientWidth = parseInt(e.target.value);
+                valGradientWidth.textContent = `${state.gradientWidth} px`;
+                vignetteStatus.textContent = `${state.gradientWidth}px`;
+                renderArtCanvas();
+            });
+
+            sliderBlurRadius.addEventListener('input', (e) => {
+                state.blurRadius = parseInt(e.target.value);
+                valBlurRadius.textContent = `${state.blurRadius} px`;
+                renderArtCanvas();
+            });
+
+            bgColorPicker.addEventListener('input', (e) => {
+                state.bgColor = e.target.value;
+                bgColorCode.textContent = state.bgColor.toUpperCase();
+                renderArtCanvas();
+            });
+
+            selectFitMode.addEventListener('change', (e) => {
+                state.fitMode = e.target.value;
+                renderArtCanvas();
+            });
+
+            selectMaskShape.addEventListener('change', (e) => {
+                state.maskShape = e.target.value;
+                if (state.maskShape === 'custom') {
+                    customBrushControls.classList.remove('hidden');
+                    previewCanvas.classList.add('cursor-crosshair', 'canvas-draw');
+                } else {
+                    customBrushControls.classList.add('hidden');
+                    previewCanvas.classList.remove('cursor-crosshair', 'canvas-draw');
+                }
+                renderArtCanvas();
+            });
+
+            document.getElementById('selectCustomTool').addEventListener('change', (e) => {
+                state.customTool = e.target.value;
+            });
+
+            sliderBrushSize.addEventListener('input', (e) => {
+                state.brushSize = parseInt(e.target.value);
+                valBrushSize.textContent = `${state.brushSize}%`;
+            });
+
+            btnResetMask.addEventListener('click', () => {
+                clearCustomMask();
+            });
+
+            inputCustomWidth.addEventListener('input', (e) => {
+                let w = parseInt(e.target.value) || 4200;
+                if (w < 500) w = 500;
+                if (IS_MOBILE && w > 4200) w = 4200;
+                state.targetWidth = w;
+                state.targetHeight = Math.round(w * 9 / 16);
+                customHeightCalc.textContent = state.targetHeight;
+                updateResolutionLabels();
+                clearCustomMask();
+                renderArtCanvas();
+            });
+
+            btnDownload.addEventListener('click', handleDownload);
+
+            btnResetAll.addEventListener('click', () => {
+                state.gradientWidth = 150;
+                state.blurRadius = 5;
+                state.bgColor = '#000000';
+                state.fitMode = 'fit-height';
+                state.targetWidth = 4200;
+                state.targetHeight = 2362;
+                state.maskShape = 'edge';
+                state.brushSize = 50;
+                state.customTool = 'lasso';
+                document.getElementById('selectCustomTool').value = 'lasso';
+
+                sliderGradientWidth.value = 150;
+                valGradientWidth.textContent = '150 px';
+                sliderBlurRadius.value = 5;
+                valBlurRadius.textContent = '5 px';
+                bgColorPicker.value = '#000000';
+                bgColorCode.textContent = '#000000';
+                selectFitMode.value = 'fit-height';
+                selectMaskShape.value = 'edge';
+                customBrushControls.classList.add('hidden');
+                previewCanvas.classList.remove('cursor-crosshair', 'canvas-draw');
+                sliderBrushSize.value = 50;
+                valBrushSize.textContent = '50%';
+
+                clearCustomMask();
+                updateResolutionLabels();
+                renderArtCanvas();
+                state.styleMode = 'none'; state.styled = null; state.styleRaw = null;
+                state.styleScope = 'all'; state.regions = []; state.regionStrokes = []; state.regionSrc = null;
+                document.getElementById('selectStyleScope').value = 'all'; updateScopeUI(); renderRegionList(); resetPan();
+                document.getElementById('selectStyleMode').value = 'none';
+                document.getElementById('artistWrap').classList.add('hidden');
+                document.getElementById('styleIntensityWrap').classList.add('hidden');
+                renderArtCanvas();
+                showToast('Đã khôi phục cài đặt mặc định');
+            });
+        }
+
+        function setupPresetResolutionButtons() {
+            const btns = document.querySelectorAll('.btn-preset');
+            btns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btns.forEach(b => {
+                        b.classList.remove('active', 'border-brand-500/50', 'bg-brand-500/10', 'text-brand-300');
+                        b.classList.add('border-slate-800', 'bg-slate-900', 'text-slate-300');
+                    });
+                    btn.classList.add('active', 'border-brand-500/50', 'bg-brand-500/10', 'text-brand-300');
+                    btn.classList.remove('border-slate-800', 'bg-slate-900', 'text-slate-300');
+
+                    if (btn.id === 'btnCustomRes') {
+                        customWidthWrapper.classList.remove('hidden');
+                        state.targetWidth = parseInt(inputCustomWidth.value) || 4200;
+                        state.targetHeight = Math.round(state.targetWidth * 9 / 16);
+                    } else {
+                        customWidthWrapper.classList.add('hidden');
+                        const w = parseInt(btn.dataset.width);
+                        state.targetWidth = w;
+                        state.targetHeight = Math.round(w * 9 / 16);
+                    }
+
+                    updateResolutionLabels();
+                    clearCustomMask();
+                    renderArtCanvas();
+                });
+            });
+        }
+
+        function updateResolutionLabels() {
+            targetResolutionLabel.textContent = `${state.targetWidth} x ${state.targetHeight} px`;
+            metaRes.textContent = `${state.targetWidth} x ${state.targetHeight}`;
+            btnDownload.querySelector('span').textContent = dlLabel();
+        }
+
+        function setupBezelSelectors() {
+            const btns = document.querySelectorAll('.btn-bezel');
+            btns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btns.forEach(b => b.className = 'btn-bezel px-2.5 py-1 rounded hover:bg-slate-800 text-slate-400 transition');
+                    btn.className = 'btn-bezel px-2.5 py-1 rounded bg-brand-500/20 text-brand-300 font-medium transition';
+                    const bezel = btn.dataset.bezel;
+                    tvFrameWrapper.className = `relative max-w-full w-full transition-all duration-300 frame-bezel-${bezel} rounded-sm`;
+                });
+            });
+        }
+
+        function setupColorSwatches() {
+            const swatches = document.querySelectorAll('.btn-color-swatch');
+            swatches.forEach(swatch => {
+                swatch.addEventListener('click', () => {
+                    const color = swatch.dataset.color;
+                    bgColorPicker.value = color;
+                    state.bgColor = color;
+                    bgColorCode.textContent = color.toUpperCase();
+                    renderArtCanvas();
+                });
+            });
+        }
+
+        // ===== Custom mask: cọ xóa + khoanh vùng giữ lại =====
+        function makeMaskCanvas() {
+            const c = document.createElement('canvas');
+            c.width = Math.round(state.targetWidth * maskScale());
+            c.height = Math.round(state.targetHeight * maskScale());
+            return c;
+        }
+
+        function ensureMaskSize() {
+            const m = state.customMaskCanvas;
+            if (!m || m.width !== Math.round(state.targetWidth * maskScale())) {
+                state.customMaskCanvas = makeMaskCanvas();
+                state.lassoMaskCanvas = null;
+                state.lassoBlur = null;
+            }
+        }
+
+        function clearCustomMask() {
+            state.customMaskCanvas = makeMaskCanvas();
+            state.lassoMaskCanvas = null;
+            state.lassoBlur = null;
+            state.lassoStrokes = [];
+            if (state.image) renderArtCanvas();
+        }
+
+        // Blur có fallback cho trình duyệt không hỗ trợ ctx.filter (Safari)
+        function blurCanvas(src, px) {
+            if (px <= 0) return src;
+            const out = document.createElement('canvas');
+            out.width = src.width;
+            out.height = src.height;
+            const c = out.getContext('2d');
+            if ('filter' in c) {
+                c.filter = `blur(${px}px)`;
+                c.drawImage(src, 0, 0);
+                c.filter = 'none';
+            } else {
+                const f = Math.max(1, Math.round(px));
+                const s = document.createElement('canvas');
+                s.width = Math.max(1, Math.round(src.width / f));
+                s.height = Math.max(1, Math.round(src.height / f));
+                s.getContext('2d').drawImage(src, 0, 0, s.width, s.height);
+                c.imageSmoothingEnabled = true;
+                c.imageSmoothingQuality = 'high';
+                c.drawImage(s, 0, 0, src.width, src.height);
+            }
+            return out;
+        }
+
+        // Đường khoanh nét đứt vàng: giữ nguyên cho tới khi bấm "Hoàn thành vẽ mask"
+        function drawLassoOutline() {
+            if (state.maskShape !== 'custom') return;
+            const strokes = state.lassoStrokes;
+            if (!strokes.length) return;
+            const p = previewCanvas.getContext('2d');
+            const lw = Math.max(2, state.targetWidth / 300);
+            p.save();
+            const kk = previewCanvas.width / state.targetWidth; p.scale(kk, kk);
+            p.lineWidth = lw;
+            p.lineJoin = 'round';
+            p.lineCap = 'round';
+            p.setLineDash([lw * 3, lw * 2]);
+            p.strokeStyle = '#facc15';
+            strokes.forEach(st => {
+                if (st.length < 2) return;
+                p.beginPath();
+                p.moveTo(st[0].x, st[0].y);
+                for (let i = 1; i < st.length; i++) p.lineTo(st[i].x, st[i].y);
+                p.stroke();
+            });
+            // Đường khép kín mờ (gợi ý vùng sẽ được nối lại)
+            const first = strokes[0][0];
+            const lastStroke = strokes[strokes.length - 1];
+            const last = lastStroke[lastStroke.length - 1];
+            p.globalAlpha = 0.5;
+            p.beginPath();
+            p.moveTo(last.x, last.y);
+            p.lineTo(first.x, first.y);
+            p.stroke();
+            p.restore();
+        }
+
+        function finishLasso() {
+            const pts = state.lassoStrokes.flat();
+            if (pts.length < 3) {
+                showToast('Hãy kéo chuột khoanh quanh vùng muốn giữ trước', true);
+                return;
+            }
+            ensureMaskSize();
+            const m = makeMaskCanvas();
+            const c = m.getContext('2d');
+            c.fillStyle = '#fff';
+            c.setTransform(maskScale(), 0, 0, maskScale(), 0, 0);
+            c.beginPath();
+            c.moveTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < pts.length; i++) c.lineTo(pts[i].x, pts[i].y);
+            c.closePath();
+            c.fill();
+            state.lassoMaskCanvas = m;
+            state.lassoBlur = null;
+            state.lassoStrokes = [];
+            renderArtCanvas();
+            showToast('Đã hoàn thành mask: vùng ngoài mờ dần về màu nền');
+        }
+
+        function setupCustomMaskDrawing() {
+            function getMousePos(evt) {
+                const rect = previewCanvas.getBoundingClientRect();
+                const t = (evt.touches && evt.touches[0]) || (evt.changedTouches && evt.changedTouches[0]) || evt;
+                return {
+                    x: (t.clientX - rect.left) * (state.targetWidth / rect.width),
+                    y: (t.clientY - rect.top) * (state.targetHeight / rect.height)
+                };
+            }
+
+            function drawBrushSegment(a, b) {
+                const ctx = state.customMaskCanvas.getContext('2d');
+                const maxDim = Math.max(state.targetWidth, state.targetHeight);
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.lineWidth = (maxDim * 0.2) * (state.brushSize / 100);
+                ctx.strokeStyle = '#fff';
+                ctx.setTransform(maskScale(), 0, 0, maskScale(), 0, 0);
+                ctx.beginPath();
+                ctx.moveTo(a.x, a.y);
+                ctx.lineTo(b.x, b.y);
+                ctx.stroke();
+            }
+
+            function startDrawing(evt) {
+                if (!state.image) return;
+                if (panActive()) { evt.preventDefault(); state.isPanning = true; state.panLast = getMousePos(evt); return; }
+                const reg = regionActive();
+                if (!reg && state.maskShape !== 'custom') return;
+                evt.preventDefault();
+                state.isDrawing = true;
+                const pos = getMousePos(evt);
+                if (reg) {
+                    state.regionStrokes.push([pos]);
+                } else {
+                    ensureMaskSize();
+                    if (state.customTool === 'lasso') state.lassoStrokes.push([pos]);
+                    else { state.lastPos = pos; drawBrushSegment(pos, pos); }
+                }
+                renderArtCanvas();
+            }
+
+            function drawStroke(evt) {
+                if (state.isPanning) { evt.preventDefault(); const pp = getMousePos(evt); doPan(pp.x - state.panLast.x, pp.y - state.panLast.y); state.panLast = pp; return; }
+                if (!state.isDrawing) return;
+                const reg = regionActive();
+                if (!reg && state.maskShape !== 'custom') return;
+                evt.preventDefault();
+                const pos = getMousePos(evt);
+                if (reg) {
+                    const cur = state.regionStrokes[state.regionStrokes.length - 1];
+                    if (cur) cur.push(pos);
+                } else if (state.customTool === 'lasso') {
+                    const cur = state.lassoStrokes[state.lassoStrokes.length - 1];
+                    if (cur) cur.push(pos);
+                } else {
+                    drawBrushSegment(state.lastPos, pos);
+                    state.lastPos = pos;
+                }
+                renderArtCanvas();
+            }
+
+            function stopDrawing(evt) {
+                if (state.isPanning) { state.isPanning = false; if (evt && evt.cancelable) evt.preventDefault(); return; }
+                if (!state.isDrawing) return;
+                if (evt && evt.cancelable) evt.preventDefault();
+                state.isDrawing = false;
+                renderArtCanvas();
+            }
+
+            previewCanvas.addEventListener('pointerdown', (e) => {
+                startDrawing(e);
+                if (state.isDrawing || state.isPanning) { try { previewCanvas.setPointerCapture(e.pointerId); } catch (_) {} }
+            });
+            previewCanvas.addEventListener('pointermove', drawStroke);
+            window.addEventListener('pointerup', stopDrawing);
+            window.addEventListener('pointercancel', stopDrawing);
+
+            // Nút điều khiển lasso
+            const lassoActions = document.getElementById('lassoActions');
+            document.getElementById('btnLassoDone').addEventListener('click', finishLasso);
+            document.getElementById('btnLassoUndo').addEventListener('click', () => {
+                state.lassoStrokes.pop();
+                renderArtCanvas();
+            });
+            document.getElementById('selectCustomTool').addEventListener('change', (e) => {
+                lassoActions.classList.toggle('hidden', e.target.value !== 'lasso');
+            });
+        }
+
+        // Ước tính dung lượng file JPEG xuất ra (đo thật bằng toBlob, có debounce)
+        let sizeTimer = null, sizeToken = 0;
+        function formatBytes(b) {
+            return b >= 1048576 ? (b / 1048576).toFixed(2) + ' MB' : Math.round(b / 1024) + ' KB';
+        }
+        function scheduleSizeEstimate() {
+            const el = document.getElementById('metaSize');
+            if (!el) return;
+            el.textContent = t('đang tính...');
+            clearTimeout(sizeTimer);
+            const token = ++sizeToken;
+            sizeTimer = setTimeout(() => {
+                const cv = state.highResCanvas;
+                if (!cv) return;
+                cv.toBlob((blob) => {
+                    if (token !== sizeToken) return;
+                    el.textContent = blob ? '~' + formatBytes(blob.size / Math.pow(state.renderK || 1, 2)) : t('không xác định');
+                }, 'image/jpeg', 1.0);
+            }, 500);
+        }
+
+
+       // ===== Biến ảnh thật thành tranh / phong cách =====
+        Object.assign(state, { styleMode: 'none', artist: 'vangogh', styleIntensity: 100, styleSeed: Math.floor(Math.random() * 1e9), panX: 0, panY: 0, zoom: 1, panMode: true, isPanning: false, panLast: null, styleScope: 'all', regions: [], regionStrokes: [], regionDrawing: true, regionSrc: null, layout: null, styled: null, styleRaw: null, styleSrc: null });
+        let styleToken = 0;
+
+        function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+        function workCanvas(img, maxDim) {
+            const k = Math.min(1, maxDim / Math.max(img.width, img.height));
+            const c = document.createElement('canvas');
+            c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+            return c;
+        }
+        const pix = (cv) => cv.getContext('2d').getImageData(0, 0, cv.width, cv.height);
+        function grayOf(d, n) { const g = new Float32Array(n); for (let i = 0; i < n; i++) g[i] = 0.299 * d[i*4] + 0.587 * d[i*4+1] + 0.114 * d[i*4+2]; return g; }
+        function sobel(g, w, h) {
+            const m = new Float32Array(w * h), a = new Float32Array(w * h);
+            for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+                const i = y * w + x;
+                const gx = -g[i-w-1] + g[i-w+1] - 2*g[i-1] + 2*g[i+1] - g[i+w-1] + g[i+w+1];
+                const gy = -g[i-w-1] - 2*g[i-w] - g[i-w+1] + g[i+w-1] + 2*g[i+w] + g[i+w+1];
+                m[i] = Math.hypot(gx, gy) / 4; a[i] = Math.atan2(gy, gx);
+            }
+            return { m, a };
+        }
+
+        function styleCartoon(src, levels, edge, muted, sat = 1) {
+            const w = src.width, h = src.height;
+            const out = blurCanvas(src, 2), id = pix(out), d = id.data;
+            const { m } = sobel(grayOf(pix(blurCanvas(src, 1.2)).data, w * h), w, h);
+            const q = 255 / (levels - 1);
+            for (let i = 0; i < w * h; i++) {
+                const k = i * 4, l = 0.3 * d[k] + 0.59 * d[k+1] + 0.11 * d[k+2], dark = m[i] > edge;
+                for (let c = 0; c < 3; c++) {
+                    let v = l + (d[k+c] - l) * sat;
+                    if (muted) v = v * 0.8 + 40;
+                    v = Math.round(Math.max(0, Math.min(255, v)) / q) * q;
+                    d[k+c] = dark ? v * 0.12 : v;
+                }
+            }
+            out.getContext('2d').putImageData(id, 0, 0);
+            return out;
+        }
+
+        function styleSketch(src) {
+            const w = src.width, h = src.height, n = w * h;
+            const g = grayOf(pix(src).data, n);
+            const gc = document.createElement('canvas'); gc.width = w; gc.height = h;
+            const gctx = gc.getContext('2d'), gid = gctx.createImageData(w, h);
+            for (let i = 0; i < n; i++) { const v = 255 - g[i]; gid.data[i*4] = gid.data[i*4+1] = gid.data[i*4+2] = v; gid.data[i*4+3] = 255; }
+            gctx.putImageData(gid, 0, 0);
+            const bd = pix(blurCanvas(gc, Math.max(3, Math.max(w, h) / 200))).data;
+            const out = document.createElement('canvas'); out.width = w; out.height = h;
+            const octx = out.getContext('2d'), oid = octx.createImageData(w, h);
+            for (let i = 0; i < n; i++) {
+                const v = Math.min(255, g[i] * 255 / (255 - bd[i*4] + 1));
+                oid.data[i*4] = oid.data[i*4+1] = oid.data[i*4+2] = v; oid.data[i*4+3] = 255;
+            }
+            octx.putImageData(oid, 0, 0);
+            return out;
+        }
+
+        function styleOil(src, r, levels) {
+            const w = src.width, h = src.height, d = pix(src).data;
+            const out = document.createElement('canvas'); out.width = w; out.height = h;
+            const octx = out.getContext('2d'), oid = octx.createImageData(w, h), o = oid.data;
+            const cnt = new Int32Array(levels), R = new Int32Array(levels), G = new Int32Array(levels), B = new Int32Array(levels);
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                cnt.fill(0); R.fill(0); G.fill(0); B.fill(0);
+                for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+                    if (dx*dx + dy*dy > r*r) continue;
+                    const xx = Math.min(w-1, Math.max(0, x+dx)), yy = Math.min(h-1, Math.max(0, y+dy));
+                    const k = (yy*w + xx) * 4, I = ((d[k] + d[k+1] + d[k+2]) / 3 * levels / 256) | 0;
+                    cnt[I]++; R[I] += d[k]; G[I] += d[k+1]; B[I] += d[k+2];
+                }
+                let mi = 0; for (let i = 1; i < levels; i++) if (cnt[i] > cnt[mi]) mi = i;
+                const k = (y*w + x) * 4;
+                o[k] = R[mi] / cnt[mi]; o[k+1] = G[mi] / cnt[mi]; o[k+2] = B[mi] / cnt[mi]; o[k+3] = 255;
+            }
+            octx.putImageData(oid, 0, 0);
+            return out;
+        }
+
+        function styleWatercolor(src) {
+            const oil = styleOil(src, 2, 24), out = blurCanvas(oil, 1.5);
+            const c = out.getContext('2d');
+            c.globalCompositeOperation = 'lighten'; c.fillStyle = 'rgb(70,70,70)'; c.fillRect(0, 0, out.width, out.height);
+            c.globalCompositeOperation = 'screen'; c.fillStyle = 'rgba(255,248,235,0.18)'; c.fillRect(0, 0, out.width, out.height);
+            return out;
+        }
+
+        // Nhiễu mượt (value noise) -> hướng nét cọ liền mạch như tay người vẽ
+        function makeNoise(seed) {
+            const r = mulberry(seed), g = new Float32Array(1024);
+            for (let i = 0; i < 1024; i++) g[i] = r();
+            const H = (a, b) => g[((a & 31) * 32) + (b & 31)];
+            return (x, y) => {
+                const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+                const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+                const a = H(xi, yi), b = H(xi + 1, yi), c = H(xi, yi + 1), d = H(xi + 1, yi + 1);
+                return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+            };
+        }
+        function overlay(out, fill, alpha, mode) {
+            const c = out.getContext('2d');
+            c.save(); c.globalCompositeOperation = mode; c.globalAlpha = alpha; c.fillStyle = fill; c.fillRect(0, 0, out.width, out.height); c.restore();
+            return out;
+        }
+        function glow(out, px, alpha) {
+            const b = blurCanvas(out, px), c = out.getContext('2d');
+            c.save(); c.globalCompositeOperation = 'screen'; c.globalAlpha = alpha; c.drawImage(b, 0, 0); c.restore();
+            return out;
+        }
+        function grain(out, amt, rnd) {
+            const c = out.getContext('2d'), id = c.getImageData(0, 0, out.width, out.height), d = id.data;
+            for (let i = 0; i < d.length; i += 4) { const v = (rnd() - 0.5) * amt; d[i] += v; d[i+1] += v; d[i+2] += v; }
+            c.putImageData(id, 0, 0);
+            return out;
+        }
+        const clamp255 = (v) => Math.max(0, Math.min(255, v | 0));
+
+        // Vẽ bằng hàng nghìn nét cọ lấy màu từ ảnh gốc: 2 lớp (nét to -> nét nhỏ ở chỗ có chi tiết) + nhiễu theo seed
+        function stylePaint(src, o) {
+            const w = src.width, h = src.height, s = Math.max(w, h) / 1400;
+            const seed = state.styleSeed ^ (o.salt || 0), rnd = mulberry(seed), nz = makeNoise(seed);
+            const vary = (v) => v * (1 + (rnd() - 0.5) * 0.2);   // mỗi lần vẽ lệch nhẹ ±10% thông số
+            const blurred = blurCanvas(src, o.baseBlur * s), d = pix(blurred).data;
+            const dd = pix(blurCanvas(src, 0.8 * s)).data;
+            const { m, a } = sobel(grayOf(d, w * h), w, h);
+            const out = document.createElement('canvas'); out.width = w; out.height = h;
+            const c = out.getContext('2d');
+            if (o.bg) { c.fillStyle = o.bg; c.fillRect(0, 0, w, h); } else c.drawImage(blurred, 0, 0);
+            const passes = [{ k: 1, edge: false, data: d }, { k: 0.45, edge: true, data: dd }];
+            c.lineCap = 'round';
+            for (const ps of passes) {
+                const W = vary(o.width) * s * ps.k, L = vary(o.len) * s * ps.k;
+                const n = Math.round(w * h / (W * Math.max(L, W)) * vary(o.density) * (ps.edge ? 0.5 : 1));
+                const D = ps.data, jit = o.jitter === undefined ? 10 : o.jitter, aj = o.angJit === undefined ? 0.3 : o.angJit;
+                for (let i = 0; i < n; i++) {
+                    const x = rnd() * w, y = rnd() * h, p = (y | 0) * w + (x | 0);
+                    if (ps.edge && m[p] < (o.detailThr || 10)) continue;
+                    let r = D[p*4], g = D[p*4+1], b = D[p*4+2];
+                    const l = 0.3 * r + 0.59 * g + 0.11 * b, j = (rnd() - 0.5) * 2 * jit;
+                    r = (l + (r - l) * o.sat - 128) * o.contrast + 128 + o.bright + j;
+                    g = (l + (g - l) * o.sat - 128) * o.contrast + 128 + o.bright + j;
+                    b = (l + (b - l) * o.sat - 128) * o.contrast + 128 + o.bright + j;
+                    const ang = o.angle(x / s, y / s, a[p] + Math.PI / 2, m[p], rnd, nz) + (rnd() - 0.5) * aj;
+                    const len = L * (0.6 + rnd() * 0.8), dx = Math.cos(ang) * len / 2, dy = Math.sin(ang) * len / 2;
+                    c.globalAlpha = o.alpha * (0.8 + rnd() * 0.2);
+                    c.strokeStyle = `rgb(${clamp255(r)},${clamp255(g)},${clamp255(b)})`;
+                    c.lineWidth = W * (0.7 + rnd() * 0.6);
+                    c.beginPath(); c.moveTo(x - dx, y - dy); c.lineTo(x + dx, y + dy); c.stroke();
+                }
+            }
+            c.globalAlpha = 1;
+            const res = o.after ? blurCanvas(out, o.after * s) : out;
+            return o.post ? o.post(res, s, rnd) : res;
+        }
+
+        // Warhol: 4 ô, mỗi ô tô 3 mức sáng bằng bảng màu pop ngẫu nhiên
+        function styleWarhol(src) {
+            const w = src.width, h = src.height, rnd = mulberry(state.styleSeed ^ 0x77);
+            const hw = Math.floor(w / 2), hh = Math.floor(h / 2);
+            const half = document.createElement('canvas'); half.width = hw; half.height = hh;
+            half.getContext('2d').drawImage(src, 0, 0, hw, hh);
+            const g = grayOf(pix(half).data, hw * hh), hist = new Array(256).fill(0);
+            for (let i = 0; i < g.length; i++) hist[g[i] | 0]++;
+            let acc = 0, t1 = 0, t2 = 0;
+            for (let v = 0; v < 256; v++) { acc += hist[v]; if (!t1 && acc > g.length * 0.3) t1 = v; if (!t2 && acc > g.length * 0.68) t2 = v; }
+            const PAL = [[[20,20,40],[230,40,90],[255,225,60]], [[10,30,60],[40,170,200],[255,240,200]], [[40,10,40],[250,110,30],[250,230,90]],
+                         [[10,40,30],[240,70,150],[170,240,120]], [[30,30,30],[110,60,200],[255,200,60]], [[60,10,10],[30,160,110],[250,215,215]]];
+            for (let i = PAL.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [PAL[i], PAL[j]] = [PAL[j], PAL[i]]; }
+            const out = document.createElement('canvas'); out.width = hw * 2; out.height = hh * 2;
+            const c = out.getContext('2d');
+            for (let q = 0; q < 4; q++) {
+                const id = c.createImageData(hw, hh), pal = PAL[q];
+                for (let i = 0; i < g.length; i++) {
+                    const col = g[i] < t1 ? pal[0] : g[i] < t2 ? pal[1] : pal[2];
+                    id.data[i*4] = col[0]; id.data[i*4+1] = col[1]; id.data[i*4+2] = col[2]; id.data[i*4+3] = 255;
+                }
+                c.putImageData(id, (q % 2) * hw, (q >> 1) * hh);
+            }
+            return out;
+        }
+
+        // Lichtenstein: chấm Ben-Day + viền đen dày
+        function styleLichtenstein(src) {
+            const w = src.width, h = src.height, s = Math.max(w, h) / 1400;
+            const d = pix(blurCanvas(src, 2 * s)).data;
+            const { m } = sobel(grayOf(pix(blurCanvas(src, 1.2 * s)).data, w * h), w, h);
+            const out = document.createElement('canvas'); out.width = w; out.height = h;
+            const c = out.getContext('2d');
+            c.fillStyle = '#fffdf2'; c.fillRect(0, 0, w, h);
+            const cell = Math.max(5, 7 * s), q = (v) => v < 90 ? 0 : v < 170 ? 120 : 255;
+            for (let y = 0, row = 0; y < h; y += cell, row++) for (let x = (row % 2) * cell / 2; x < w; x += cell) {
+                const p = ((y | 0) * w + (x | 0)) * 4, l = 0.3 * d[p] + 0.59 * d[p+1] + 0.11 * d[p+2];
+                const r = q(l + (d[p] - l) * 1.9), g = q(l + (d[p+1] - l) * 1.9), b = q(l + (d[p+2] - l) * 1.9);
+                const rad = cell * 0.62 * Math.sqrt(1 - Math.min(0.9, l / 255 * 0.9));
+                c.fillStyle = `rgb(${r},${g},${b})`;
+                c.beginPath(); c.arc(x, y, rad, 0, Math.PI * 2); c.fill();
+            }
+            const id = c.getImageData(0, 0, w, h), o = id.data;
+            for (let i = 0; i < w * h; i++) if (m[i] > 40) { o[i*4] = o[i*4+1] = o[i*4+2] = 10; }
+            c.putImageData(id, 0, 0);
+            return out;
+        }
+
+        // Picasso lập thể: chia ảnh thành mảnh tam giác, lấy màu lệch vị trí cho cảm giác vỡ mảnh
+        function stylePicasso(src) {
+            const w = src.width, h = src.height, s = Math.max(w, h) / 1400, rnd = mulberry(state.styleSeed ^ 0x51);
+            const d = pix(blurCanvas(src, 3 * s)).data;
+            const out = document.createElement('canvas'); out.width = w; out.height = h;
+            const c = out.getContext('2d');
+            const cell = Math.round(60 * s), cols = Math.ceil(w / cell) + 1, rows = Math.ceil(h / cell) + 1, pts = [];
+            for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+                let x = i * cell + (rnd() - 0.5) * cell * 0.7, y = j * cell + (rnd() - 0.5) * cell * 0.7;
+                if (i === 0) x = 0; if (i === cols - 1) x = w; if (j === 0) y = 0; if (j === rows - 1) y = h;
+                pts.push({ x, y });
+            }
+            const P = (i, j) => pts[j * cols + i];
+            const sample = (x, y) => { const p = (Math.min(h-1, Math.max(0, y | 0)) * w + Math.min(w-1, Math.max(0, x | 0))) * 4; return [d[p], d[p+1], d[p+2]]; };
+            c.lineJoin = 'round';
+            for (let j = 0; j < rows - 1; j++) for (let i = 0; i < cols - 1; i++) {
+                const A = P(i, j), B = P(i+1, j), C = P(i+1, j+1), D = P(i, j+1);
+                const tris = rnd() < 0.5 ? [[A, B, C], [A, C, D]] : [[A, B, D], [B, C, D]];
+                for (const t of tris) {
+                    const cx = (t[0].x + t[1].x + t[2].x) / 3, cy = (t[0].y + t[1].y + t[2].y) / 3, off = (rnd() - 0.5) * cell * 0.9;
+                    const col = sample(cx + off, cy + off * 0.6), sh = 1 + (rnd() - 0.5) * 0.28, l = 0.3 * col[0] + 0.59 * col[1] + 0.11 * col[2];
+                    const f = (v) => clamp255((l + (v - l) * 1.25) * sh);
+                    c.fillStyle = `rgb(${f(col[0])},${f(col[1])},${f(col[2])})`;
+                    c.strokeStyle = 'rgba(25,15,10,0.3)'; c.lineWidth = 1.3 * s;
+                    c.beginPath(); c.moveTo(t[0].x, t[0].y); c.lineTo(t[1].x, t[1].y); c.lineTo(t[2].x, t[2].y); c.closePath(); c.fill(); c.stroke();
+                }
+            }
+            return out;
+        }
+
+        // Klimt: nền nét cọ nhỏ + ô vàng lá, vòng tròn, họa tiết dồn về phía rìa tranh
+        function styleKlimt(src) {
+            const w = src.width, h = src.height, s = Math.max(w, h) / 1400;
+            const base = stylePaint(src, { baseBlur: 3, width: 4, len: 9, density: 3, alpha: 0.9, sat: 1.35, contrast: 1.12, bright: 4, jitter: 8, salt: 0x4b,
+                angle: (x, y, perp, mag, rnd, nz) => nz(x / 60, y / 60) * Math.PI * 2 });
+            const c = base.getContext('2d'), rnd = mulberry(state.styleSeed ^ 0x99), nz = makeNoise(state.styleSeed ^ 0x55);
+            const cell = Math.max(14, 20 * s), gold = ['#c8962b', '#e3b84a', '#f4d98a', '#a8741c'];
+            for (let y = 0; y < h; y += cell) for (let x = 0; x < w; x += cell) {
+                const edge = Math.hypot((x - w / 2) / w, (y - h / 2) / h) * 1.6;
+                if (nz(x / (200 * s), y / (200 * s)) + edge * 0.5 < 0.78 || rnd() > 0.88) continue;
+                const t = rnd(); c.globalAlpha = 0.85;
+                if (t < 0.4) {
+                    const gr = c.createLinearGradient(x, y, x + cell, y + cell);
+                    gr.addColorStop(0, gold[1]); gr.addColorStop(1, gold[3]);
+                    c.fillStyle = gr; c.fillRect(x + 1, y + 1, cell - 2, cell - 2);
+                    c.fillStyle = '#35200d'; c.fillRect(x + cell * 0.32, y + cell * 0.32, cell * 0.36, cell * 0.36);
+                } else if (t < 0.78) {
+                    c.lineWidth = cell * 0.07;
+                    for (let r = cell * 0.46; r > cell * 0.08; r -= cell * 0.14) {
+                        c.strokeStyle = gold[Math.floor(rnd() * 3)];
+                        c.beginPath(); c.arc(x + cell / 2, y + cell / 2, r, 0, Math.PI * 2); c.stroke();
+                    }
+                } else {
+                    c.fillStyle = gold[2]; c.beginPath(); c.ellipse(x + cell / 2, y + cell / 2, cell * 0.45, cell * 0.28, rnd() * 3, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = '#2a1808'; c.beginPath(); c.arc(x + cell / 2, y + cell / 2, cell * 0.12, 0, Math.PI * 2); c.fill();
+                }
+            }
+            c.globalAlpha = 1;
+            return glow(base, 3 * s, 0.12);
+        }
+
+        // Vermeer: màu ultramarine/vàng đất, ánh sáng cửa sổ từ trái, điểm sáng "pointillé", mịn như sfumato
+        function styleVermeer(src) {
+            const w = src.width, h = src.height, s = Math.max(w, h) / 1400, rnd = mulberry(state.styleSeed ^ 0x3d);
+            const out = blurCanvas(src, 0.9 * s), c = out.getContext('2d');
+            const id = c.getImageData(0, 0, w, h), d = id.data;
+            const curve = (v) => { const x = Math.max(0, Math.min(1, v / 255)); return (x * x * (3 - 2 * x) * 0.5 + x * 0.5) * 255; };
+            for (let i = 0; i < w * h; i++) {
+                const k = i * 4, l = 0.3 * d[k] + 0.59 * d[k+1] + 0.11 * d[k+2], n = l / 255;
+                let r = l + (d[k] - l) * 0.85, g = l + (d[k+1] - l) * 0.85, b = l + (d[k+2] - l) * 0.85;
+                const sh = Math.max(0, 0.45 - n) / 0.45, hi = Math.max(0, n - 0.6) / 0.4;
+                r += -10 * sh + 14 * hi; g += -2 * sh + 8 * hi; b += 14 * sh - 12 * hi;
+                d[k] = curve(r); d[k+1] = curve(g); d[k+2] = curve(b);
+            }
+            c.putImageData(id, 0, 0);
+            const lg = c.createLinearGradient(0, 0, w, h * 0.3);
+            lg.addColorStop(0, 'rgba(255,230,170,0.16)'); lg.addColorStop(0.5, 'rgba(0,0,0,0)'); lg.addColorStop(1, 'rgba(15,10,30,0.4)');
+            c.fillStyle = lg; c.fillRect(0, 0, w, h);
+            const vg = c.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.3, w / 2, h / 2, Math.max(w, h) * 0.75);
+            vg.addColorStop(0, 'rgba(10,6,3,0)'); vg.addColorStop(1, 'rgba(10,6,3,0.5)');
+            c.fillStyle = vg; c.fillRect(0, 0, w, h);
+            for (let i = 0; i < 3000; i++) {
+                const x = rnd() * w, y = rnd() * h, k = ((y | 0) * w + (x | 0)) * 4;
+                if ((0.3 * d[k] + 0.59 * d[k+1] + 0.11 * d[k+2]) / 255 < 0.82) continue;
+                c.fillStyle = 'rgba(255,248,225,0.7)'; c.beginPath(); c.arc(x, y, (1 + rnd() * 1.4) * s, 0, Math.PI * 2); c.fill();
+            }
+            return grain(out, 5, rnd);
+        }
+
+        const ARTISTS = {
+            vangogh: (src) => stylePaint(src, { baseBlur: 4, width: 6, len: 28, density: 3.2, alpha: 0.9, sat: 1.5, contrast: 1.25, bright: 0, salt: 1,
+                angle: (x, y, perp, mag, rnd, nz) => mag > 12 ? perp : Math.sin(x / 70 + nz(x / 150, y / 150) * 4) * Math.PI * 0.6 + Math.cos(y / 90) * Math.PI * 0.6 }),
+            monet: (src) => stylePaint(src, { baseBlur: 3, width: 7, len: 9, density: 3, alpha: 0.55, sat: 1.1, contrast: 0.85, bright: 18, after: 0.8, salt: 2,
+                angle: (x, y, perp, mag, rnd, nz) => nz(x / 40, y / 40) * 1.6 - 0.8,
+                post: (out, s) => glow(out, 5 * s, 0.2) }),
+            renoir: (src) => stylePaint(src, { baseBlur: 3, width: 6, len: 11, density: 3.2, alpha: 0.5, sat: 1.15, contrast: 0.92, bright: 10, jitter: 8, angJit: 0.5, after: 0.7, salt: 3,
+                angle: (x, y, perp, mag, rnd, nz) => nz(x / 70, y / 70) * Math.PI * 1.5 - 0.4,
+                post: (out, s) => { glow(out, 6 * s, 0.28); return overlay(out, 'rgb(255,205,185)', 0.12, 'soft-light'); } }),
+            seurat: (src) => stylePaint(src, { baseBlur: 2, width: 5, len: 0.1, density: 3.5, alpha: 1, sat: 1.35, contrast: 1.05, bright: 6, bg: '#f3ecd8', jitter: 14, salt: 4,
+                angle: () => 0 }),
+            cezanne: (src) => stylePaint(src, { baseBlur: 3, width: 9, len: 15, density: 3, alpha: 0.95, sat: 1.05, contrast: 1.12, bright: 0, jitter: 6, angJit: 0.1, salt: 5,
+                angle: (x, y, perp, mag, rnd, nz) => -0.8 + nz(x / 200, y / 200) * 0.3 }),
+            gauguin: (src) => { const t = styleCartoon(src, 6, 38, false, 1.6); return glow(t, 2, 0.08); },
+            turner: (src) => stylePaint(src, { baseBlur: 14, width: 16, len: 40, density: 2.2, alpha: 0.4, sat: 0.95, contrast: 0.75, bright: 30, jitter: 6, angJit: 0.2, after: 2, salt: 6,
+                angle: (x, y, perp, mag, rnd, nz) => nz(x / 200, y / 200) * 0.8 - 0.4,
+                post: (out, s) => { glow(out, 12 * s, 0.35); return overlay(out, 'rgb(255,200,120)', 0.22, 'soft-light'); } }),
+            munch: (src) => stylePaint(src, { baseBlur: 5, width: 7, len: 30, density: 3, alpha: 0.85, sat: 1.4, contrast: 1.2, bright: 0, salt: 7,
+                angle: (x, y, perp, mag, rnd, nz) => Math.sin(y / 25 + nz(x / 200, y / 200) * 6) * 0.9,
+                post: (out) => overlay(out, 'rgb(255,120,40)', 0.08, 'soft-light') }),
+            klimt: styleKlimt,
+            vermeer: styleVermeer,
+            picasso: stylePicasso,
+            warhol: styleWarhol,
+            lichtenstein: styleLichtenstein,
+            hokusai: (src) => {
+                const t = styleCartoon(src, 5, 45, true);
+                overlay(t, 'rgb(240,225,190)', 0.35, 'multiply');
+                return grain(t, 10, mulberry(state.styleSeed ^ 0x21));
+            }
+        };
+
+        function blendStyled() {
+            if (state.styleScope === 'region') return;
+            if (!state.styleRaw || !state.styleSrc) return;
+            const s = state.styleSrc, f = document.createElement('canvas');
+            f.width = s.width; f.height = s.height;
+            const c = f.getContext('2d');
+            c.drawImage(s, 0, 0);
+            c.globalAlpha = state.styleIntensity / 100;
+            c.drawImage(state.styleRaw, 0, 0);
+            state.styled = f;
+            renderArtCanvas();
+        }
+
+        function applyStyle() {
+            if (!state.image) return;
+            if (state.styleScope === 'region') { composeRegions(); return; }
+            const mode = state.styleMode;
+            if (mode === 'none') { state.styled = null; state.styleRaw = null; renderArtCanvas(); return; }
+            showToast('Đang xử lý phong cách, vui lòng đợi...');
+            const token = ++styleToken;
+            setTimeout(() => {
+                try {
+                    const src = workCanvas(state.image, (mode === 'oil' || mode === 'watercolor' ? 1100 : 1500) * (IS_MOBILE ? 0.7 : 1));
+                    const raw = runStyle(mode, state.artist, src);
+                    if (token !== styleToken) return;
+                    state.styleSrc = src; state.styleRaw = raw;
+                    blendStyled();
+                    showToast('Đã áp dụng phong cách!');
+                } catch (err) {
+                    showToast(t('Lỗi xử lý phong cách:') + ' ' + err.message, true);
+                }
+            }, 60);
+        }
+
+        function setupStyleControls() {
+            const modeSel = document.getElementById('selectStyleMode');
+            modeSel.addEventListener('change', (e) => {
+                state.styleMode = e.target.value;
+                document.getElementById('artistWrap').classList.toggle('hidden', state.styleMode !== 'artist');
+                document.getElementById('styleIntensityWrap').classList.toggle('hidden', state.styleMode === 'none');
+                updateScopeUI();
+                applyStyle();
+            });
+            document.getElementById('btnReroll').addEventListener('click', () => { state.styleSeed = Math.floor(Math.random() * 1e9); if (state.styleScope === 'region') rerollLastRegion(); else applyStyle(); });
+            document.getElementById('selectArtist').addEventListener('change', (e) => { state.artist = e.target.value; applyStyle(); });
+            document.getElementById('sliderStyleIntensity').addEventListener('input', (e) => {
+                state.styleIntensity = parseInt(e.target.value);
+                document.getElementById('valStyleIntensity').textContent = state.styleIntensity + '%';
+                blendStyled();
+            });
+        }
+
+        // ===== Phong cách theo từng vùng khoanh thủ công =====
+        const panActive = () => state.fitMode === 'fill-crop' && state.panMode && !!state.image;
+        const regionActive = () => state.styleScope === 'region' && state.styleMode !== 'none' && state.regionDrawing && !!state.image;
+        function updateCanvasMode() {
+            const on = state.maskShape === 'custom' || regionActive() || panActive();
+            previewCanvas.classList.toggle('cursor-crosshair', on);
+            previewCanvas.classList.toggle('canvas-draw', on);
+        }
+        function updateScopeUI() {
+            const on = state.styleMode !== 'none';
+            document.getElementById('scopeWrap').classList.toggle('hidden', !on);
+            document.getElementById('regionPanel').classList.toggle('hidden', !(on && state.styleScope === 'region'));
+            updateCanvasMode();
+        }
+        function updateRegionDrawLabel() {
+            document.getElementById('btnRegionDraw').textContent = t(state.regionDrawing ? 'Khoanh vùng: BẬT' : 'Khoanh vùng: TẮT');
+        }
+        function runStyle(mode, artist, src, seed) {
+            const old = state.styleSeed;
+            if (seed !== undefined) state.styleSeed = seed;
+            try {
+                if (mode === 'cartoon') return styleCartoon(src, 6, 30, false);
+                if (mode === 'sketch') return styleSketch(src);
+                if (mode === 'oil') return styleOil(workCanvas(src, 800), 3, 18);   // xử lý ở độ phân giải thấp cho nhanh, nét sơn dầu vốn đã to
+                if (mode === 'watercolor') return styleWatercolor(workCanvas(src, 1000));
+                return ARTISTS[artist](src);
+            } finally { state.styleSeed = old; }
+        }
+        function regionLabel(r) {
+            if (r.mode === 'artist') {
+                const o = document.querySelector(`#selectArtist option[value="${r.artist}"]`);
+                return o ? o.textContent.trim() : r.artist;
+            }
+            return t({ cartoon: 'Hoạt hình (Cartoon)', sketch: 'Phác thảo bút chì (Pencil Sketch)', oil: 'Tranh sơn dầu (Oil Painting)', watercolor: 'Tranh màu nước (Watercolor)' }[r.mode]);
+        }
+        function renderRegionList() {
+            const ul = document.getElementById('regionList');
+            if (!ul) return;
+            ul.innerHTML = '';
+            state.regions.forEach((r, i) => {
+                const li = document.createElement('li');
+                li.className = 'flex items-center justify-between gap-2 px-2 py-1 rounded bg-slate-950 border border-slate-800';
+                const sp = document.createElement('span');
+                sp.className = 'text-slate-300 truncate';
+                sp.textContent = `${t('Vùng')} ${i + 1}: ${regionLabel(r)}`;
+                const b = document.createElement('button');
+                b.type = 'button'; b.className = 'text-rose-300 hover:text-rose-200 px-1'; b.setAttribute('aria-label', 'Delete');
+                b.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                b.addEventListener('click', () => { state.regions.splice(i, 1); renderRegionList(); composeRegions(); });
+                li.append(sp, b); ul.appendChild(li);
+            });
+        }
+        function ensureRegionSrc() {
+            if (!state.regionSrc) state.regionSrc = workCanvas(state.image, 1500 * (IS_MOBILE ? 0.7 : 1));
+            return state.regionSrc;
+        }
+        function composeRegions() {
+            if (!state.image) return;
+            if (state.styleMode === 'none' || !state.regions.length || !state.regionSrc) { state.styled = null; renderArtCanvas(); return; }
+            const src = state.regionSrc, w = src.width, h = src.height;
+            const out = document.createElement('canvas'); out.width = w; out.height = h;
+            const c = out.getContext('2d');
+            c.drawImage(src, 0, 0);
+            const L = state.layout || { newW: w };
+            const feather = Math.max(1, (state.blurRadius + state.gradientWidth / 4) * (w / L.newW));
+            for (const r of state.regions) {
+                const layer = document.createElement('canvas'); layer.width = w; layer.height = h;
+                const lc = layer.getContext('2d');
+                lc.drawImage(src, 0, 0);
+                lc.globalAlpha = r.intensity / 100; lc.drawImage(r.raw, 0, 0, w, h); lc.globalAlpha = 1;
+                const m = document.createElement('canvas'); m.width = w; m.height = h;
+                const mc = m.getContext('2d');
+                mc.fillStyle = '#fff'; mc.beginPath();
+                r.pts.forEach((p, i) => (i ? mc.lineTo(p.x * w, p.y * h) : mc.moveTo(p.x * w, p.y * h)));
+                mc.closePath(); mc.fill();
+                lc.globalCompositeOperation = 'destination-in';
+                lc.drawImage(blurCanvas(m, feather), 0, 0);
+                c.drawImage(layer, 0, 0);
+            }
+            state.styled = out;
+            renderArtCanvas();
+        }
+        function finishRegion() {
+            const pts = state.regionStrokes.flat();
+            if (state.styleMode === 'none') { showToast('Hãy chọn một phong cách trước', true); return; }
+            if (pts.length < 3 || !state.layout) { showToast('Hãy kéo chuột khoanh quanh vùng muốn giữ trước', true); return; }
+            const L = state.layout;
+            const norm = pts.map((p) => ({ x: (p.x - L.offsetX) / L.newW, y: (p.y - L.offsetY) / L.newH }));
+            const mode = state.styleMode, artist = state.artist, intensity = state.styleIntensity;
+            showToast('Đang xử lý phong cách, vui lòng đợi...');
+            setTimeout(() => {
+                try {
+                    const seed = Math.floor(Math.random() * 1e9);
+                    const raw = runStyle(mode, artist, ensureRegionSrc(), seed);
+                    state.regions.push({ pts: norm, mode, artist, seed, intensity, raw });
+                    state.regionStrokes = [];
+                    renderRegionList(); composeRegions();
+                    showToast('Đã áp dụng phong cách cho vùng!');
+                } catch (err) { showToast(t('Lỗi xử lý phong cách:') + ' ' + err.message, true); }
+            }, 60);
+        }
+        function rerollLastRegion() {
+            const r = state.regions[state.regions.length - 1];
+            if (!r) { showToast('Chưa có vùng nào', true); return; }
+            showToast('Đang xử lý phong cách, vui lòng đợi...');
+            setTimeout(() => {
+                try {
+                    r.seed = Math.floor(Math.random() * 1e9);
+                    r.raw = runStyle(r.mode, r.artist, ensureRegionSrc(), r.seed);
+                    composeRegions();
+                    showToast('Đã áp dụng phong cách cho vùng!');
+                } catch (err) { showToast(t('Lỗi xử lý phong cách:') + ' ' + err.message, true); }
+            }, 60);
+        }
+        function drawRegionOutline() {
+            const strokes = state.regionStrokes;
+            if (!strokes.length || !state.regionDrawing || state.styleScope !== 'region') return;
+            const p = previewCanvas.getContext('2d'), lw = Math.max(2, state.targetWidth / 300);
+            p.save();
+            const kk = previewCanvas.width / state.targetWidth; p.scale(kk, kk);
+            p.lineWidth = lw; p.lineJoin = 'round'; p.lineCap = 'round';
+            p.setLineDash([lw * 3, lw * 2]); p.strokeStyle = '#22d3ee';
+            strokes.forEach((st) => {
+                if (st.length < 2) return;
+                p.beginPath(); p.moveTo(st[0].x, st[0].y);
+                for (let i = 1; i < st.length; i++) p.lineTo(st[i].x, st[i].y);
+                p.stroke();
+            });
+            const first = strokes[0][0], ls = strokes[strokes.length - 1], last = ls[ls.length - 1];
+            p.globalAlpha = 0.5; p.beginPath(); p.moveTo(last.x, last.y); p.lineTo(first.x, first.y); p.stroke();
+            p.restore();
+        }
+        function setupRegionControls() {
+            const redo = (() => { let tm; return () => { clearTimeout(tm); tm = setTimeout(() => { if (state.styleScope === 'region' && state.regions.length) composeRegions(); }, 120); }; })();
+            document.getElementById('sliderGradientWidth').addEventListener('input', redo);
+            document.getElementById('sliderBlurRadius').addEventListener('input', redo);
+            document.getElementById('selectMaskShape').addEventListener('change', updateCanvasMode);
+            document.getElementById('selectStyleScope').addEventListener('change', (e) => {
+                state.styleScope = e.target.value;
+                updateScopeUI();
+                if (state.image) { if (state.styleScope === 'region') composeRegions(); else applyStyle(); }
+            });
+            document.getElementById('btnRegionDone').addEventListener('click', finishRegion);
+            document.getElementById('btnRegionUndo').addEventListener('click', () => { state.regionStrokes.pop(); renderArtCanvas(); });
+            document.getElementById('btnRegionDraw').addEventListener('click', () => { state.regionDrawing = !state.regionDrawing; updateRegionDrawLabel(); updateCanvasMode(); renderArtCanvas(); });
+            document.getElementById('btnRegionClear').addEventListener('click', () => { state.regions = []; state.regionStrokes = []; renderRegionList(); composeRegions(); });
+            updateScopeUI(); renderRegionList();
+        }
+
+        // ===== Di chuyển / thu phóng ảnh khi chọn "Cắt cúp vừa vặn 16:9" =====
+        const clamp1 = (v) => Math.max(-1, Math.min(1, v));
+        function updatePanToggleLabel() {
+            const b = document.getElementById('btnPanToggle');
+            if (b) b.textContent = t(state.panMode ? 'Kéo để di chuyển ảnh: BẬT' : 'Kéo để di chuyển ảnh: TẮT');
+        }
+        function syncPanUI() {
+            document.getElementById('sliderPanX').value = Math.round(state.panX * 100);
+            document.getElementById('sliderPanY').value = Math.round(state.panY * 100);
+            document.getElementById('sliderZoom').value = Math.round(state.zoom * 100);
+            document.getElementById('valPanX').textContent = Math.round(state.panX * 100) + '%';
+            document.getElementById('valPanY').textContent = Math.round(state.panY * 100) + '%';
+            document.getElementById('valZoom').textContent = Math.round(state.zoom * 100) + '%';
+        }
+        function resetPan() {
+            state.panX = 0; state.panY = 0; state.zoom = 1; state.panMode = true;
+            const w = document.getElementById('panWrap');
+            if (w) { w.classList.toggle('hidden', state.fitMode !== 'fill-crop'); syncPanUI(); updatePanToggleLabel(); updateCanvasMode(); }
+        }
+        function doPan(dx, dy) {
+            const L = state.layout;
+            if (!L) return;
+            const ox = (state.targetWidth - L.newW) / 2, oy = (state.targetHeight - L.newH) / 2;
+            if (ox < 0) state.panX = clamp1(state.panX + dx / ox);
+            if (oy < 0) state.panY = clamp1(state.panY + dy / oy);
+            syncPanUI();
+            renderArtCanvas();
+        }
+        function setupPanControls() {
+            document.getElementById('selectFitMode').addEventListener('change', () => {
+                document.getElementById('panWrap').classList.toggle('hidden', state.fitMode !== 'fill-crop');
+                updateCanvasMode();
+            });
+            document.getElementById('sliderPanX').addEventListener('input', (e) => { state.panX = e.target.value / 100; syncPanUI(); renderArtCanvas(); });
+            document.getElementById('sliderPanY').addEventListener('input', (e) => { state.panY = e.target.value / 100; syncPanUI(); renderArtCanvas(); });
+            document.getElementById('sliderZoom').addEventListener('input', (e) => { state.zoom = e.target.value / 100; syncPanUI(); renderArtCanvas(); });
+            document.getElementById('btnPanToggle').addEventListener('click', () => { state.panMode = !state.panMode; updatePanToggleLabel(); updateCanvasMode(); });
+            document.getElementById('btnPanReset').addEventListener('click', () => { state.panX = 0; state.panY = 0; state.zoom = 1; syncPanUI(); renderArtCanvas(); });
+        }
+
+        // 3. Core Image Processing
+        function renderArtCanvas(full = false) {
+            if (!state.image) return;
+
+            const targetW = state.targetWidth, targetH = state.targetHeight;
+            const gradW = state.gradientWidth, bgColor = state.bgColor;
+            const fitMode = state.fitMode, maskShape = state.maskShape;
+            const k = full ? 1 : Math.min(1, PREVIEW_MAX / targetW);   // tỉ lệ vẽ (xem trước nhỏ hơn, xuất file = 1)
+            const mk = maskScale();
+            state.renderK = k;
+            const cw = Math.round(targetW * k), ch = Math.round(targetH * k);
+
+            const canvas = offscreenCanvas;
+            canvas.width = cw;
+            canvas.height = ch;
+            const ctx = canvas.getContext('2d');
+            ctx.setTransform(k, 0, 0, k, 0, 0);   // từ đây mọi tọa độ tính theo độ phân giải đích
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, targetW, targetH);
+
+            const img = state.styled || state.image;
+            const aspect = img.width / img.height;
+            let newW, newH;
+            if (fitMode === 'fit-height') {
+                newH = targetH; newW = Math.round(newH * aspect);
+            } else if (fitMode === 'fit-width') {
+                newW = targetW; newH = Math.round(newW / aspect);
+            } else {
+                const targetAspect = targetW / targetH;
+                if (aspect > targetAspect) { newH = targetH; newW = Math.round(newH * aspect); }
+                else { newW = targetW; newH = Math.round(newW / aspect); }
+            }
+
+            if (fitMode === 'fill-crop') { newW = Math.round(newW * state.zoom); newH = Math.round(newH * state.zoom); }
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = cw;
+            tempCanvas.height = ch;
+            const tCtx = tempCanvas.getContext('2d');
+            tCtx.setTransform(k, 0, 0, k, 0, 0);
+
+            let offsetX = Math.floor((targetW - newW) / 2);
+            let offsetY = Math.floor((targetH - newH) / 2);
+            if (fitMode === 'fill-crop') {   // di chuyển ảnh trong khung 16:9: -1 = sát mép trái/trên, +1 = sát mép phải/dưới
+                if (newW > targetW) offsetX = Math.round((targetW - newW) / 2 * (1 + state.panX));
+                if (newH > targetH) offsetY = Math.round((targetH - newH) / 2 * (1 + state.panY));
+            }
+            state.layout = { offsetX, offsetY, newW, newH };
+            tCtx.imageSmoothingEnabled = true;
+            tCtx.imageSmoothingQuality = 'high';
+            tCtx.drawImage(img, offsetX, offsetY, newW, newH);
+
+            if (maskShape === 'custom') {
+                if (state.lassoMaskCanvas) {
+                    const px = state.blurRadius + gradW / 2;
+                    if (!state.lassoBlur || state.lassoBlur.px !== px) {
+                        state.lassoBlur = { px, canvas: blurCanvas(state.lassoMaskCanvas, px * mk) };
+                    }
+                    tCtx.globalCompositeOperation = 'destination-in';
+                    tCtx.drawImage(state.lassoBlur.canvas, 0, 0, targetW, targetH);
+                }
+                if (state.customMaskCanvas) {
+                    const px = state.blurRadius + gradW / 4;
+                    tCtx.globalCompositeOperation = 'destination-out';
+                    tCtx.drawImage(state.isDrawing ? state.customMaskCanvas : blurCanvas(state.customMaskCanvas, px * mk), 0, 0, targetW, targetH);
+                }
+                tCtx.globalCompositeOperation = 'source-over';
+            }
+            else if (maskShape === 'rect' || maskShape === 'square') {
+                let rx = Math.max(offsetX, 0), ry = Math.max(offsetY, 0);
+                let rw = Math.min(offsetX + newW, targetW) - rx;
+                let rh = Math.min(offsetY + newH, targetH) - ry;
+                if (maskShape === 'square') {
+                    const side = Math.min(rw, rh);
+                    rx += (rw - side) / 2; ry += (rh - side) / 2; rw = side; rh = side;
+                }
+                const inset = gradW / 2;
+                const m = document.createElement('canvas');
+                m.width = cw; m.height = ch;
+                const mc = m.getContext('2d');
+                mc.setTransform(k, 0, 0, k, 0, 0);
+                mc.fillStyle = '#fff';
+                mc.fillRect(rx + inset, ry + inset, Math.max(1, rw - 2 * inset), Math.max(1, rh - 2 * inset));
+                tCtx.globalCompositeOperation = 'destination-in';
+                tCtx.drawImage(blurCanvas(m, (state.blurRadius + gradW / 3) * k), 0, 0, targetW, targetH);
+                tCtx.globalCompositeOperation = 'source-over';
+            }
+            else if (gradW > 0 && fitMode !== 'fill-crop') {
+                if (maskShape === 'edge') {
+                    tCtx.globalCompositeOperation = 'destination-out';
+                    const colorSolid = 'rgba(0,0,0,1)', colorTransparent = 'rgba(0,0,0,0)';
+                    if (fitMode === 'fit-height') {
+                        const leftG = tCtx.createLinearGradient(offsetX, 0, offsetX + gradW, 0);
+                        leftG.addColorStop(0, colorSolid); leftG.addColorStop(1, colorTransparent);
+                        tCtx.fillStyle = leftG; tCtx.fillRect(offsetX - 2, offsetY, gradW + 2, newH);
+                        const rightG = tCtx.createLinearGradient(offsetX + newW, 0, offsetX + newW - gradW, 0);
+                        rightG.addColorStop(0, colorSolid); rightG.addColorStop(1, colorTransparent);
+                        tCtx.fillStyle = rightG; tCtx.fillRect(offsetX + newW - gradW, offsetY, gradW + 2, newH);
+                    }
+                    if (fitMode === 'fit-width') {
+                        const topG = tCtx.createLinearGradient(0, offsetY, 0, offsetY + gradW);
+                        topG.addColorStop(0, colorSolid); topG.addColorStop(1, colorTransparent);
+                        tCtx.fillStyle = topG; tCtx.fillRect(offsetX, offsetY - 2, newW, gradW + 2);
+                        const bottomG = tCtx.createLinearGradient(0, offsetY + newH, 0, offsetY + newH - gradW);
+                        bottomG.addColorStop(0, colorSolid); bottomG.addColorStop(1, colorTransparent);
+                        tCtx.fillStyle = bottomG; tCtx.fillRect(offsetX, offsetY + newH - gradW, newW, gradW + 2);
+                    }
+                } else if (maskShape === 'oval' || maskShape === 'circle') {
+                    tCtx.globalCompositeOperation = 'destination-in';
+                    const cx = offsetX + newW / 2, cy = offsetY + newH / 2;
+                    let rx = newW / 2, ry = newH / 2;
+                    if (maskShape === 'circle') { const radius = Math.min(rx, ry); rx = radius; ry = radius; }
+                    tCtx.save();
+                    tCtx.translate(cx, cy);
+                    tCtx.scale(rx, ry);
+                    let edgeRatio = gradW / Math.max(rx, ry);
+                    if (edgeRatio > 1) edgeRatio = 1;
+                    const radGrad = tCtx.createRadialGradient(0, 0, Math.max(0, 1 - edgeRatio), 0, 0, 1);
+                    radGrad.addColorStop(0, 'rgba(0,0,0,1)');
+                    radGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                    tCtx.fillStyle = radGrad;
+                    tCtx.fillRect(-1, -1, 2, 2);
+                    tCtx.restore();
+                }
+            }
+
+            ctx.drawImage(tempCanvas, 0, 0, targetW, targetH);
+            state.highResCanvas = canvas;
+            if (!full) {
+                updatePreviewDisplay(canvas);
+                drawLassoOutline();
+                drawRegionOutline();
+                scheduleSizeEstimate();
+            }
+            return canvas;
+        }
+
+        function updatePreviewDisplay(sourceCanvas) {
+            previewCanvas.width = sourceCanvas.width;
+            previewCanvas.height = sourceCanvas.height;
+            const pCtx = previewCanvas.getContext('2d');
+            pCtx.drawImage(sourceCanvas, 0, 0);
+        }
+
+        // 4. Download
+        function handleDownload() {
+            if (!state.image) return;
+            btnDownload.disabled = true;
+            btnDownload.querySelector('span').textContent = t('Đang đóng gói file 100% Quality...');
+            const restore = () => {
+                btnDownload.disabled = false;
+                btnDownload.querySelector('span').textContent = dlLabel();
+                renderArtCanvas();   // trả về độ phân giải xem trước
+            };
+            setTimeout(() => {
+                try {
+                    const cv = renderArtCanvas(true);   // vẽ lại ở độ phân giải đầy đủ
+                    cv.toBlob((blob) => {
+                        if (!blob) {
+                            showToast('Không tạo được file (có thể thiếu bộ nhớ). Hãy thử độ phân giải thấp hơn.', true);
+                            restore();
+                            return;
+                        }
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.download = state.fileName;
+                        link.href = url;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        setTimeout(() => URL.revokeObjectURL(url), 15000);
+                        showToast('Đã xuất file tranh Art Mode 16:9 thành công!');
+                        restore();
+                    }, 'image/jpeg', 1.0);
+                } catch (err) {
+                    showToast(t('Lỗi khi tải file:') + ' ' + err.message, true);
+                    restore();
+                }
+            }, 100);
+        }
+
+        // ===== Tối ưu cho điện thoại =====
+        function setupMobileUX() {
+            if (IS_MOBILE) {
+                const big = document.querySelector('[data-width="7111"]');
+                if (big) big.classList.add('hidden');   // iOS giới hạn ~16 triệu pixel/canvas
+                inputCustomWidth.max = 4200;
+            }
+            const jump = document.getElementById('btnJump');
+            const anchor = document.getElementById('previewAnchor');
+            const top = document.getElementById('controlsTop');
+            const nearPreview = () => anchor.getBoundingClientRect().top < window.innerHeight * 0.5;
+            const label = () => {
+                jump.innerHTML = nearPreview()
+                    ? '<i class="fa-solid fa-sliders"></i> ' + t('Thông số')
+                    : '<i class="fa-solid fa-tv"></i> ' + t('Xem tranh');
+            };
+            jump.addEventListener('click', () => (nearPreview() ? top : anchor).scrollIntoView({ behavior: 'smooth', block: 'start' }));
+            window.addEventListener('scroll', label, { passive: true });
+            updateJumpLabel = label;
+            label();
+        }
+    </script>
+</body>
+</html>
