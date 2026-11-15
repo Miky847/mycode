@@ -81,13 +81,13 @@ body.full.nc,body.full.nc *{cursor:none!important}
 <input id="sn" placeholder="Tên nguồn (tuỳ chọn)"><input id="su" placeholder="URL JSON kiểu Monplayer hoặc M3U / M3U8">
 <div class="row"><button id="sa">＋ Thêm nguồn</button><button id="sfb">📂 Nhập M3U vào danh sách cá nhân</button><input id="sf" type="file" accept=".m3u,.m3u8,.json,.txt" hidden></div>
 <h3>Danh sách cá nhân</h3><p class="hn">Kênh do bạn tự thêm, lưu ngay trong trình duyệt này. “Xuất M3U” để sao lưu hoặc dùng ở máy khác; “Nhập M3U” để thêm hàng loạt.</p><div id="ml"></div><input id="mn" placeholder="Tên kênh"><input id="mg" placeholder="Nhóm (vd: Bóng đá)"><input id="mu2" placeholder="URL luồng (m3u8, mp3, YouTube…)"><div class="row"><button id="ma">＋ Thêm kênh</button><button id="mx">⬇ Xuất M3U</button></div>
-<h3>Thiết bị</h3><p class="hn">Chọn thủ công nếu app nhận sai thiết bị. Ảnh hưởng tới điều khiển bằng remote và việc tự xoay ngang màn hình.</p><select id="dm"><option value="">Tự động</option><option value="tv">TV / TV box</option><option value="mob">Điện thoại / tablet</option><option value="pc">Máy tính</option></select>
-<div class="row"><label><input type="checkbox" id="px"> Tải danh sách qua CORS proxy</label></div><input id="pu" placeholder="https://corsproxy.io/?url="><p class="hn">CORS proxy chỉ dùng khi nguồn danh sách bị trình duyệt chặn; chỉ áp dụng khi tải danh sách, không áp dụng cho luồng phát.</p>
+<h3>Thiết bị</h3><div class="row"><label><input type="checkbox" id="dbg"> Hiện mã phím remote (để chẩn đoán)</label></div><p class="hn">Chọn thủ công nếu app nhận sai thiết bị. Ảnh hưởng tới điều khiển bằng remote và việc tự xoay ngang màn hình.</p><select id="dm"><option value="">Tự động</option><option value="tv">TV / TV box</option><option value="mob">Điện thoại / tablet</option><option value="pc">Máy tính</option></select>
+<div class="row"><label><input type="checkbox" id="sp"> Phát luồng qua proxy (khi kênh bị CORS chặn)</label></div><div class="row"><label><input type="checkbox" id="px"> Tải danh sách qua CORS proxy</label></div><input id="pu" placeholder="https://corsproxy.io/?url="><p class="hn">CORS proxy dùng khi trình duyệt chặn (CORS). Áp dụng cho tải danh sách nếu tick ô thứ hai, và cho luồng phát nếu tick ô “Phát luồng qua proxy”. Nên dùng proxy riêng của bạn; proxy công cộng thường giới hạn băng thông.</p>
 <div class="row"><button id="sx">Lưu &amp; tải lại</button></div></dialog>
 <dialog id="hp"><h3>Hướng dẫn nhanh</h3><ul>
 <li>↻ tải lại danh sách · ⚙ cài đặt: nguồn phát, YouTube, danh sách cá nhân, thiết bị.</li>
 <li>Bấm nhanh 2 lần vào khung phát (hoặc nút ⛶) để bật/tắt toàn màn hình. Bấm lại kênh đang phát cũng vào toàn màn hình.</li>
-<li>Remote, khi toàn màn hình: ↑↓ đổi kênh · ←→ âm lượng · OK phát/dừng · phím số nhảy kênh · đỏ yêu thích · xanh lá đổi link · vàng đổi khung hình · xanh dương toàn màn hình · Back thoát.</li>
+<li>Remote, khi toàn màn hình: ↑ hoặc CH+ kênh sau · ↓ hoặc CH− kênh trước · ←→ âm lượng · OK phát/dừng · phím số nhảy kênh · đỏ yêu thích · xanh lá đổi link · vàng đổi khung hình · xanh dương toàn màn hình · Back thoát.</li>
 <li>Bàn phím: F yêu thích · M tắt tiếng · PgUp/PgDn đổi kênh.</li>
 <li>Kênh cuối, âm lượng, khung hình, nhóm đang xem được nhớ tự động.</li></ul>
 <div class="row"><button id="hc">Đóng</button></div></dialog>
@@ -102,7 +102,7 @@ let srcs=J('o_srcs',[{n:'MI BOX TV 7',u:DEF}]),favs=J('o_fav',[]),rec=J('o_rec',
 let chans=[],vis=[],group='all',cur=null,li=0,hls=null,full=0,T,lim=200,lastN=0;
 const v=$('#v'),dlg=$('#dlg');
 let st=Object.assign({vol:1,mute:0,fit:'contain',group:'all',dev:''},J('o_set',{})),my=J('o_my',[]),ytH=J('o_yt',[]);
-let raw=[],ytp=null,ytm=0,ytl=0,vT,T2,num='',numT,pushed=0,isTV=0,isMob=0;
+let raw=[],ytp=null,ytm=0,ytl=0,vT,T2,lk=0,wt=0,num='',numT,pushed=0,isTV=0,isMob=0;
 const sv=()=>S('o_set',st),UA=navigator.userAgent,TCH=navigator.maxTouchPoints>0;
 function dev(){const d=st.dev;
 isTV=d?d=='tv':(/SMART-?TV|Tizen|BRAVIA|AFT[A-Z]|HbbTV|Web0S|CrKey|MIBOX|X96|H96|Philips|AndroidTV|\bTV\b/i.test(UA)||(/Android/.test(UA)&&!TCH));
@@ -161,7 +161,7 @@ function tp(){if(ytm&&ytp&&ytp.getPlayerState)ytp.getPlayerState()==1?ytp.pauseV
 function attach(u){const y=ytId(u);if(y){ytPlay(y);return}kill();msg('⏳ Đang tải…');let n=0;
 const nat=()=>{v.src=u;go()};
 if(/\.(mp4|mp3|aac|ogg|webm|m4a)(\?|$)/i.test(u)||!window.Hls||!Hls.isSupported()){nat();return}
-hls=new Hls({maxBufferLength:30});hls.loadSource(u);hls.attachMedia(v);
+hls=new Hls({maxBufferLength:30,xhrSetup:(x,q)=>{if(opt.sp&&opt.pu)x.open('GET',opt.pu+encodeURIComponent(q),true)}});hls.loadSource(u);hls.attachMedia(v);
 hls.on(Hls.Events.MANIFEST_PARSED,(e,d)=>{go();quals(d.levels)});
 hls.on(Hls.Events.ERROR,(e,d)=>{if(!d.fatal)return;
 if(d.type==Hls.ErrorTypes.MEDIA_ERROR&&!n++){hls.recoverMediaError();return}
@@ -218,32 +218,37 @@ v.addEventListener('waiting',()=>msg('⏳ Đang đệm…'));
 v.addEventListener('error',nextLink);
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&full)setFull(0)});
 addEventListener('pointermove',poke);addEventListener('pointerdown',poke);
+$('#dbg').onchange=e=>{st.dbg=e.target.checked?1:0;sv()};
+['keyup','keypress'].forEach(t=>addEventListener(t,e=>{if(st.dbg&&Date.now()-lk>500)msg(t+': '+e.key+' / '+e.keyCode)}));
+addEventListener('wheel',e=>{if(!(full&&isTV)||document.querySelector('dialog[open]'))return;e.preventDefault();if(Date.now()-wt<350)return;wt=Date.now();ch(e.deltaY<0?1:-1)},{passive:false});
+try{['ChannelUp','ChannelDown','MediaPlayPause','MediaTrackPrevious','MediaTrackNext','ColorF0Red','ColorF1Green','ColorF2Yellow','ColorF3Blue'].forEach(k=>tizen.tvinputdevice.registerKey(k))}catch(e){}
 $('#hb').onclick=()=>$('#hp').showModal?$('#hp').showModal():$('#hp').setAttribute('open','');$('#hc').onclick=()=>$('#hp').close();
 addEventListener('popstate',()=>{if(full)setFull(0,1)});
 v.addEventListener('volumechange',()=>{st.vol=v.volume;st.mute=v.muted?1:0;sv();$('#mu').textContent=v.muted||!v.volume?'🔇':'🔊'});
 $('#ft').onclick=()=>{const f=['contain','cover','fill'];st.fit=f[(f.indexOf(st.fit)+1)%3];v.style.objectFit=st.fit;sv();msg('Khung hình: '+({contain:'Vừa khung',cover:'Phủ đầy',fill:'Kéo giãn'})[st.fit]);setTimeout(()=>msg(''),1200)};
 $('#dm').onchange=e=>{st.dev=e.target.value;sv();dev()};
 addEventListener('keydown',e=>{const k=e.key,c=e.keyCode,tg=e.target.tagName,typing=tg=='INPUT'||tg=='TEXTAREA',x=()=>e.preventDefault();poke();
-if(k=='PageUp'||c==427||k=='ChannelUp'){x();ch(-1);return}
-if(k=='PageDown'||c==428||k=='ChannelDown'){x();ch(1);return}
+lk=Date.now();if(st.dbg)msg(e.type+': '+k+' / '+c);
+if([427,166,33,10233,417,176].includes(c)||k=='ChannelUp'||k=='PageUp'||k=='MediaTrackNext'){x();ch(1);return}
+if([428,167,34,10232,412,177].includes(c)||k=='ChannelDown'||k=='PageDown'||k=='MediaTrackPrevious'){x();ch(-1);return}
 if(k=='Escape'||c==10009||c==461||k=='BrowserBack'){const o=document.querySelector('dialog[open]');if(o)o.close();else if(full)setFull(0);else return;x();return}
 if(c==403){x();toggleFav();return}if(c==404){x();$('#lk').click();return}if(c==405){x();$('#ft').click();return}if(c==406){x();setFull(!full);return}
 if(c==415||c==19||c==10252||k=='MediaPlayPause'){x();tp();return}
 if(!typing&&!dlg.open&&/^\d$/.test(k)){num+=k;msg('CH '+num);clearTimeout(numT);numT=setTimeout(()=>{const t=vis[+num-1];num='';msg('');if(t)play(t)},1500);return}
 const d=({ArrowRight:'R',ArrowLeft:'L',ArrowDown:'D',ArrowUp:'U'})[k];
-if(full&&!dlg.open&&d){x();if(d=='U')ch(-1);else if(d=='D')ch(1);else vol(d=='R'?.1:-.1);return}
+if(full&&!dlg.open&&d){x();if(d=='U')ch(1);else if(d=='D')ch(-1);else vol(d=='R'?.1:-.1);return}
 if(d&&isTV){if((tg=='INPUT'&&(d=='L'||d=='R'))||(tg=='SELECT'&&(d=='U'||d=='D')))return;x();nav(d);return}
 if(typing)return;
 if(k=='f'||k=='F')toggleFav();else if(k=='m'||k=='M')$('#mu').click();
 else if((k=='Enter'||k==' ')&&full&&!dlg.open&&tg!='BUTTON'&&tg!='SELECT'){x();tp()}});
 /* nguồn phát */
 function rs(){$('#sl').innerHTML=srcs.map((s,i)=>`<div class="sr"><span>${esc(s.n)}<small>${esc(s.u)}</small></span><button data-d="${i}">✕</button></div>`).join('')}
-$('#cf').onclick=()=>{rs();rm();$('#dm').value=st.dev;$('#px').checked=!!opt.px;$('#pu').value=opt.pu;dlg.showModal?dlg.showModal():dlg.setAttribute('open','')};
+$('#cf').onclick=()=>{rs();rm();$('#dm').value=st.dev;$('#dbg').checked=!!st.dbg;$('#px').checked=!!opt.px;$('#sp').checked=!!opt.sp;$('#pu').value=opt.pu;dlg.showModal?dlg.showModal():dlg.setAttribute('open','')};
 $('#sa').onclick=()=>{const u=$('#su').value.trim();if(!u)return;srcs.push({n:$('#sn').value.trim()||u.split('/').pop().slice(0,30),u});S('o_srcs',srcs);$('#su').value=$('#sn').value='';rs()};
 $('#sl').onclick=e=>{const b=e.target.closest('[data-d]');if(b){srcs.splice(+b.dataset.d,1);S('o_srcs',srcs);rs()}};
 $('#sfb').onclick=()=>$('#sf').click();
 $('#sf').onchange=async e=>{const f=e.target.files[0];if(!f)return;my=my.concat(parse(await f.text()).map(c=>({n:c.n,g:c.g,logo:c.logo,links:c.links})));S('o_my',my);e.target.value='';rm();build()};
-$('#sx').onclick=()=>{opt={px:$('#px').checked?1:0,pu:$('#pu').value.trim()||opt.pu};S('o_opt',opt);dlg.close();load()};
+$('#sx').onclick=()=>{opt={sp:$('#sp').checked?1:0,px:$('#px').checked?1:0,pu:$('#pu').value.trim()||opt.pu};S('o_opt',opt);dlg.close();load()};
 $('#rf').onclick=load;
 function rm(){$('#ml').innerHTML=my.map((c,i)=>`<div class="sr"><span>${esc(c.n)}<small>${esc(c.g)}</small></span><button data-x="${i}">✕</button></div>`).join('')||'<small>Chưa có kênh cá nhân.</small>'}
 $('#ma').onclick=()=>{const u=$('#mu2').value.trim(),n=$('#mn').value.trim()||u.split('/').pop().slice(0,30);if(!u)return;my.push({n:n,g:$('#mg').value.trim()||'Cá nhân',links:[{n:'Link 1',u:u}]});S('o_my',my);$('#mu2').value=$('#mn').value='';rm();build()};
