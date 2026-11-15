@@ -163,3 +163,16 @@ https://www.youtube.com/watch?v=4xDzrJKXOOY
 https://www.youtube.com/watch?v=A_nRzRZQqv0
 #EXTINF:-1 group-title="Nhạc YouTube",Lofi Girl - peaceful piano radio
 https://www.youtube.com/watch?v=nWjC1RnLYbM
+# --- Bổ sung: France 24 (link dự phòng), CNN, ABC News Australia ---
+#EXTINF:-1 group-title="Quốc tế",FRANCE 24
+https://mumbai-edge.smartplaytv.in/france24/index.m3u8
+#EXTINF:-1 group-title="Tin tức quốc tế",CNN International
+https://d3bp6dwmpbdajl.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-ury0meh5m4nzm/index.m3u8
+#EXTINF:-1 group-title="Tin tức quốc tế",CNN International
+https://d2sybdl23b9psq.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-bocx3i7bjz0dg/CNNFAST_GB.m3u8
+#EXTINF:-1 group-title="Tin tức quốc tế",CNN Originals
+https://amg01918-cnnus-amg01918c2-vizio-us-9192.playouts.now.amagi.tv/playlist/amg01918-cnnus-cnnoriginals-vizious/playlist.m3u8
+#EXTINF:-1 group-title="Tin tức quốc tế",CNN en Español
+https://amg00803-cnnfast-amg00803c3-lg-es-5477.playouts.now.amagi.tv/playlist.m3u8
+#EXTINF:-1 group-title="Tin tức quốc tế",ABC News (Australia)
+https://abc-news-dmd-streams-1.akamaized.net/out/v1/701126012d044971b3fa89406a440133/index.m3u8
