@@ -102,7 +102,7 @@ let srcs=J('o_srcs',[{n:'MI BOX TV 7',u:DEF}]),favs=J('o_fav',[]),rec=J('o_rec',
 let chans=[],vis=[],group='all',cur=null,li=0,hls=null,full=0,T,lim=200,lastN=0;
 const v=$('#v'),dlg=$('#dlg');
 let st=Object.assign({vol:1,mute:0,fit:'contain',group:'all',dev:''},J('o_set',{})),my=J('o_my',[]),ytH=J('o_yt',[]);
-let raw=[],ytp=null,ytm=0,ytl=0,vT,T2,lk=0,wt=0,num='',numT,pushed=0,isTV=0,isMob=0;
+let raw=[],ytp=null,ytm=0,ytl=0,vT,T2,lastErr='',lk=0,wt=0,num='',numT,pushed=0,isTV=0,isMob=0;
 const sv=()=>S('o_set',st),UA=navigator.userAgent,TCH=navigator.maxTouchPoints>0;
 function dev(){const d=st.dev;
 isTV=d?d=='tv':(/SMART-?TV|Tizen|BRAVIA|AFT[A-Z]|HbbTV|Web0S|CrKey|MIBOX|X96|H96|Philips|AndroidTV|\bTV\b/i.test(UA)||(/Android/.test(UA)&&!TCH));
@@ -147,7 +147,7 @@ function msg(t){$('#msg').textContent=t}
 function kill(){ytStop();if(hls){hls.destroy();hls=null}v.removeAttribute('src');v.load();$('#ql').hidden=true}
 function go(){const p=v.play();if(p&&p.catch)p.catch(()=>{v.muted=true;v.play().catch(()=>{})})}
 function nextLink(){if(!cur||Date.now()-lastN<1500)return;lastN=Date.now();
-if(li+1<cur.links.length)play(cur,li+1);else msg('Không phát được kênh này. Thử kênh khác (⏭).')}
+if(li+1<cur.links.length)play(cur,li+1);else msg('Không phát được kênh này'+(lastErr?' ('+lastErr+')':'')+'. '+(/manifestLoad/.test(lastErr)&&!/HTTP/.test(lastErr)?'Có thể bị CORS hoặc chặn vùng; thử bật proxy ở ⚙. ':'')+'Thử kênh khác (⏭).')}
 function ytId(u){if(!/youtu\.?be/.test(u))return null;const a=u.match(/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/|\/live\/)([\w-]{11})/),b=u.match(/[?&]list=([\w-]+)/);return a||b?{v:a&&a[1],l:b&&b[1]}:null}
 function ytStop(){if(!ytm)return;ytm=0;document.body.classList.remove('yt');try{ytp.stopVideo()}catch(e){}}
 function ytPlay(y){kill();ytm=1;ytl=!!y.l;document.body.classList.add('yt');$('#pw').classList.remove('aud');msg('⏳ YouTube…');
@@ -163,14 +163,14 @@ const nat=()=>{v.src=u;go()};
 if(/\.(mp4|mp3|aac|ogg|webm|m4a)(\?|$)/i.test(u)||!window.Hls||!Hls.isSupported()){nat();return}
 hls=new Hls({maxBufferLength:30,xhrSetup:(x,q)=>{if(opt.sp&&opt.pu)x.open('GET',opt.pu+encodeURIComponent(q),true)}});hls.loadSource(u);hls.attachMedia(v);
 hls.on(Hls.Events.MANIFEST_PARSED,(e,d)=>{go();quals(d.levels)});
-hls.on(Hls.Events.ERROR,(e,d)=>{if(!d.fatal)return;
+hls.on(Hls.Events.ERROR,(e,d)=>{if(st.dbg)msg(d.details);if(!d.fatal)return;lastErr=d.details+(d.response&&d.response.code?' HTTP '+d.response.code:'');
 if(d.type==Hls.ErrorTypes.MEDIA_ERROR&&!n++){hls.recoverMediaError();return}
 if(!n++){kill();nat();return}
 nextLink()})}
 function quals(L){const s=$('#ql');if(L.length<2)return;
 s.innerHTML='<option value="-1">Auto</option>'+L.map((x,i)=>`<option value="${i}">${x.height?x.height+'p':Math.round(x.bitrate/1e3)+'k'}</option>`).join('');s.hidden=false}
 function play(c,k){k=k||0;cur=c;li=k;
-if(!k){rec=[c.id].concat(rec.filter(x=>x!=c.id)).slice(0,40);S('o_rec',rec);S('o_last',c.id)}
+if(!k){lastErr='';rec=[c.id].concat(rec.filter(x=>x!=c.id)).slice(0,40);S('o_rec',rec);S('o_last',c.id)}
 $('#nm').innerHTML=esc(c.n)+' <small>'+esc(c.g)+'</small>';
 $('#lk').textContent='Link '+(k+1)+'/'+c.links.length;$('#lk').hidden=c.links.length<2;
 const cl=$('#cl');c.logo?cl.src=c.logo:cl.removeAttribute('src');$('#cn').textContent=c.n;
