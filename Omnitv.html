@@ -107,7 +107,7 @@ let srcs=J('o_srcs',[{n:'MI BOX TV 7',u:DEF}]),favs=J('o_fav',[]),rec=J('o_rec',
 let chans=[],vis=[],group='all',cur=null,li=0,hls=null,full=0,T,lim=200,lastN=0;
 const v=$('#v'),dlg=$('#dlg');
 let st=Object.assign({vol:1,mute:0,fit:'contain',group:'all',dev:''},J('o_set',{})),my=J('o_my',[]),ytH=J('o_yt',[]);
-let raw=[],ytp=null,ytm=0,ytl=0,vT,T2,lastErr='',lk=0,wt=0,num='',numT,pushed=0,isTV=0,isMob=0;
+let raw=[],ytp=null,ytm=0,ytl=0,vT,T2,lastErr='',dcount=0,lk=0,wt=0,num='',numT,pushed=0,isTV=0,isMob=0;
 const sv=()=>S('o_set',st),UA=navigator.userAgent,TCH=navigator.maxTouchPoints>0;
 function dev(){const d=st.dev;
 isTV=d?d=='tv':(/SMART-?TV|Tizen|BRAVIA|AFT[A-Z]|HbbTV|Web0S|CrKey|MIBOX|X96|H96|Philips|AndroidTV|\bTV\b/i.test(UA)||(/Android/.test(UA)&&!TCH));
@@ -126,15 +126,15 @@ function parse(t){try{return parseMon(JSON.parse(t))}catch(e){return parseM3U(t)
 async function load(){
 $('#st').textContent='Đang tải nguồn…';
 const L=[{n:'Mặc định',u:'omami-tv.txt',d:1}].concat(srcs);
-const r=await Promise.all(L.map(async s=>{try{const u=opt.px&&!s.d?opt.pu+encodeURIComponent(s.u):s.u;const x=await fetch(u);if(!x.ok)throw 0;const c=parse(await x.text());c.forEach(z=>z.s=s.n);return c}catch(e){return s.d?[]:null}}));
-let all=[],bad=0,cached=0;r.forEach(x=>{if(x)all=all.concat(x);else bad++});
+const r=await Promise.all(L.map(async s=>{try{const u=opt.px&&!s.d?opt.pu+encodeURIComponent(s.u):s.u;const x=await fetch(u,{cache:'no-cache'});if(!x.ok)throw 0;const c=parse(await x.text());c.forEach(z=>z.s=s.n);return c}catch(e){return s.d?[]:null}}));
+let all=[],bad=0,cached=0;r.forEach(x=>{if(x)all=all.concat(x);else bad++});dcount=r[0]?r[0].length:0;
 if(!all.length){all=J('o_cache',[]);cached=all.length}
 raw=all;if(!cached&&all.length)S('o_cache',raw);build(bad,cached)}
 function build(bad,cached){
 const all=raw.concat(my.map(c=>Object.assign({s:'Cá nhân'},c)),ytH.map(h=>({id:'yt|'+h.u,n:h.n,g:'YouTube',links:[{n:'YouTube',u:h.u}]})));
 const m=new Map();all.forEach(c=>{const k=c.g+'|'+c.n.toLowerCase(),o=m.get(k);if(o)c.links.forEach(l=>{if(!o.links.some(x=>x.u==l.u))o.links.push(l)});else m.set(k,c)});
 chans=[];m.forEach(c=>chans.push(c));chans.forEach((c,i)=>{c.i=i;c.id=c.id||c.g+'|'+c.n});
-$('#st').textContent=chans.length+' kênh'+(bad?' · '+bad+' nguồn lỗi (CORS/URL?)':'')+(cached?' · dữ liệu đã lưu':'');
+$('#st').textContent=chans.length+' kênh'+(bad?' · '+bad+' nguồn lỗi (CORS/URL?)':'')+(cached?' · dữ liệu đã lưu':'')+' · omami-tv.txt: '+dcount+' mục';
 if(group!='all'&&group!='fav'&&group!='rec'&&!chans.some(c=>c.g==group))group='all';
 drawTabs();drawGrid();
 if(!cur){const l=chans.find(c=>c.id==J('o_last',''));if(l)play(l)}}
