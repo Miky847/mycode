@@ -176,3 +176,16 @@ https://amg01918-cnnus-amg01918c2-vizio-us-9192.playouts.now.amagi.tv/playlist/a
 https://amg00803-cnnfast-amg00803c3-lg-es-5477.playouts.now.amagi.tv/playlist.m3u8
 #EXTINF:-1 group-title="Tin tức quốc tế",ABC News (Australia)
 https://abc-news-dmd-streams-1.akamaized.net/out/v1/701126012d044971b3fa89406a440133/index.m3u8
+# --- Nhạc YouTube bổ sung ---
+#EXTINF:-1 group-title="Nhạc YouTube",KUMAMICHI（熊道） — Japanese Zen Music Along the Bear’s Path
+https://youtu.be/vFJuk4U-V7Q
+#EXTINF:-1 group-title="Nhạc YouTube",Listen When It’s Too Quiet - Haunting Violin & Cello Music
+https://youtu.be/Dw-fGKgm81E
+#EXTINF:-1 group-title="Nhạc YouTube",Liszt - The Best Of Liszt Solo Piano With AI Story Art | Listen & Learn
+https://youtu.be/drezUKhT5HI
+#EXTINF:-1 group-title="Nhạc YouTube",Classical Music for Focus | 50 Pieces to Study, Read and Think To
+https://youtu.be/IZSU1P40T88
+#EXTINF:-1 group-title="Nhạc YouTube",MOKUSŌ（黙想） — Japanese Zen Music of Silent Meditation
+https://youtu.be/n2AeCW2GGeI
+#EXTINF:-1 group-title="Nhạc YouTube",The Last Departure ❄️ Haunting Piano & Cello Music
+https://youtu.be/Iv9OJJvs2mc
