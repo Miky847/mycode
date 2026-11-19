@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trình Đọc Sách Tiếng Lào AI</title>
+    <style>
+        body { font-family: 'Saisettha OT', Arial, sans-serif; padding: 15px; line-height: 1.8; max-width: 600px; margin: 0 auto; background-color: #f7f9fa; color: #2c3e50; }
+        .sticky-panel { position: sticky; top: 0; background: white; padding: 15px; border-bottom: 2px solid #e2e8f0; z-index: 1000; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-radius: 0 0 8px 8px; }
+        textarea { width: 100%; height: 120px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 15px; margin-bottom: 10px; resize: vertical; }
+        .btn-group { display: flex; gap: 8px; margin-bottom: 10px; }
+        button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: white; transition: background 0.2s; }
+        .btn-load { background-color: #3498db; }
+        .btn-play { background-color: #2ecc71; }
+        .btn-pause { background-color: #f1c40f; }
+        .btn-stop { background-color: #e74c3c; }
+        button:disabled { background-color: #cbd5e1; cursor: not-allowed; }
+        .status { font-size: 13px; color: #64748b; text-align: center; font-style: italic; }
+        .book-content { margin-top: 20px; font-size: 19px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); min-height: 300px; }
+        .sentence { display: inline; cursor: pointer; border-radius: 3px; transition: background 0.3s; padding: 0 2px; }
+        .sentence:hover { background-color: #f1f5f9; }
+        .highlight { background-color: #ffeb3b !important; color: #000; font-weight: bold; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="sticky-panel">
+        <!-- Vùng nhập văn bản ban đầu -->
+        <div id="input-area">
+            <textarea id="raw-text" placeholder="Dán văn bản hoặc chương sách tiếng Lào vào đây..."></textarea>
+            <button class="btn-load" onclick="processText()">📖 Tải sách vào trình đọc</button>
+        </div>
+        
+        <!-- Vùng điều khiển trình phát (Mặc định ẩn, hiện sau khi tải sách) -->
+        <div id="player-area" class="hidden">
+            <div class="btn-group">
+                <button class="btn-play" id="btn-play-pause" onclick="togglePlay()">▶️ Đọc</button>
+                <button class="btn-stop" onclick="stopBook()">⏹️ Đừng</button>
+                <button class="btn-load" style="background-color: #7f8c8d;" onclick="showInputArea()">✍️ Đổi sách khác</button>
+            </div>
+            <div class="status" id="status">Sẵn sàng phát...</div>
+        </div>
+    </div>
+
+    <!-- Nơi hiển thị nội dung sách đã được xử lý tách câu -->
+    <div class="book-content hidden" id="book-viewer"></div>
+
+    <!-- Thẻ audio ẩn xử lý âm thanh -->
+    <audio id="tts-audio"></audio>
+
+    <script>
+        const audio = document.getElementById('tts-audio');
+        const statusText = document.getElementById('status');
+        const playBtn = document.getElementById('btn-play-pause');
+        
+        let sentencesElements = [];
+        let currentIndex = 0;
+        let isPlaying = false;
+
+        // 1. Hàm tự động nhận diện và cắt nhỏ văn bản tiếng Lào
+        function processText() {
+            const rawText = document.getElementById('raw-text').value.trim();
+            if (!rawText) {
+                alert("Vui lòng dán văn bản tiếng Lào trước!");
+                return;
+            }
+
+            // Quy tắc cắt câu: Cắt theo dấu chấm (.), dấu hỏi (?), dấu chấm than (!), xuống dòng (\n)
+            // Hoặc khoảng trắng dài của tiếng Lào (khoảng trắng trong tiếng Lào thường dùng để ngắt vế/câu)
+            const sentenceEndRegEx = /([.!?\n\r]+|\s{2,})/g;
+            
+            // Tách chuỗi thành mảng các câu
+            const rawSentences = rawText.split(sentenceEndRegEx);
+            const viewer = document.getElementById('book-viewer');
+            viewer.innerHTML = ''; // Reset vùng hiển thị
+
+            let currentParagraph = document.createElement('p');
+
+            rawSentences.forEach(text => {
+                const trimmed = text.trim();
+                if (!trimmed) return;
+
+                // Nếu gặp ký tự xuống dòng thì tạo đoạn văn mới (Paragraph)
+                if (text.includes('\n') || text.includes('\r')) {
+                    if (currentParagraph.children.length > 0) {
+                        viewer.appendChild(currentParagraph);
+                        currentParagraph = document.createElement('p');
+                    }
+                    return;
+                }
+
+                // Giới hạn ký tự Google TTS là 200. Nếu câu quá dài (> 150 ký tự), tự động cắt nhỏ tiếp theo khoảng trắng đơn
+                if (trimmed.length > 150) {
+                    const subWords = trimmed.split(' ');
+                    let subSentence = '';
+                    subWords.forEach(word => {
+                        if ((subSentence + ' ' + word).length > 150) {
+                            createSentenceSpan(subSentence.trim(), currentParagraph);
+                            subSentence = word;
+                        } else {
+                            subSentence += ' ' + word;
+                        }
+                    });
+                    if (subSentence.trim()) {
+                        createSentenceSpan(subSentence.trim(), currentParagraph);
+                    }
+                } else {
+                    createSentenceSpan(trimmed, currentParagraph);
+                }
+            });
+
+            if (currentParagraph.children.length > 0) {
+                viewer.appendChild(currentParagraph);
+            }
+
+            // Thu thập lại danh sách các thẻ câu vừa tạo
+            sentencesElements = document.querySelectorAll('.sentence');
+            
+            // Gán sự kiện click vào bất kỳ câu nào để nhảy đến câu đó đọc luôn
+            sentencesElements.forEach((el, index) => {
+                el.onclick = () => jumpToSentence(index);
+            });
+
+            // Giao diện chuyển đổi trạng thái
+            document.getElementById('input-area').classList.add('hidden');
+            document.getElementById('player-area').classList.remove('hidden');
+            viewer.classList.remove('hidden');
+            
+            currentIndex = 0;
+            stopBook();
+        }
+
+        function createSentenceSpan(text, parentElement) {
+            const span = document.createElement('span');
+            span.className = 'sentence';
+            span.innerText = text + ' ';
+            parentElement.appendChild(span);
+        }
+
+        // 2. Logic điều khiển phát nhạc & Auto-scroll
+        function togglePlay() {
+            if (isPlaying) {
+                pauseBook();
+            } else {
+                playBook();
+            }
+        }
+
+        function playBook() {
+            if (sentencesElements.length === 0) return;
+            isPlaying = true;
+            playBtn.innerText = "⏸️ Tạm dừng";
+            playBtn.className = "btn-pause";
+            speakSentence(currentIndex);
+        }
+
+        function speakSentence(index) {
+            if (!isPlaying || index >= sentencesElements.length) {
+                if (index >= sentencesElements.length) {
+                    statusText.innerText = "Đã đọc xong toàn bộ sách.";
+                    stopBook();
+                }
+                return;
+            }
+
+            currentIndex = index;
+            resetHighlight();
+            
+            const currentElement = sentencesElements[index];
+            currentElement.classList.add('highlight');
+
+            // Tự động cuộn màn hình đưa câu đang đọc vào giữa màn hình
+            currentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            const text = currentElement.innerText.trim();
+            statusText.innerText = Đang đọc câu ${index + 1}/${sentencesElements.length}...;
+
+            // Gọi API Google TTS bí mật dành cho tiếng Lào
+            audio.src = https://google.com{encodeURIComponent(text)};
+            
+            audio.play().catch(err => {
+                console.error("Lỗi trình duyệt chặn phát âm thanh:", err);
+                statusText.innerText = "Bấm nút Phát lại để cấp quyền âm thanh.";
+                pauseBook();
+            });
+
+            // Tự động chuyển câu khi kết thúc âm thanh
+            audio.onended = () => {
+                currentIndex++;
+                speakSentence(currentIndex);
+            };
+        }
+
+        function pauseBook() {
+            isPlaying = false;
+            audio.pause();
+            playBtn.innerText = "▶️ Tiếp tục";
+            playBtn.className = "btn-play";
+            statusText.innerText = "Đang tạm dừng.";
+        }
+
+        function stopBook() {
+            isPlaying = false;
+            audio.pause();
+            audio.currentTime = 0;
+            resetHighlight();
+            currentIndex = 0;
+            playBtn.innerText = "▶️ Đọc sách";
+            playBtn.className = "btn-play";
+            statusText.innerText = "Đã dừng hẳn.";
+        }
+
+        function jumpToSentence(index) {
+            stopBook();
+            currentIndex = index;
+            playBook();
+        }
+
+        function resetHighlight() {
+            sentencesElements.forEach(s => s.classList.remove('highlight'));
+        }
+
+        function showInputArea() {
+            stopBook();
+            document.getElementById('input-area').classList.remove('hidden');
+            document.getElementById('player-area').classList.add('hidden');
+            document.getElementById('book-viewer').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
