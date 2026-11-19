@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trình Đọc Văn Bản Tiếng Lào Offline</title>
+  <style>
+    /* Nhúng font Lào để không bị lỗi hiển thị */
+    @font-face {
+      font-family: 'NotoSansLao';
+      src: url('./fonts/NotoSansLao-Regular.ttf') format('truetype');
+      font-display: swap;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'NotoSansLao', system-ui, -apple-system, sans-serif;
+      background: #f0f2f5;
+      color: #333;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      background: #fff;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+      color: #1e3a8a;
+      text-align: center;
+    }
+
+    textarea {
+      width: 100%;
+      height: 180px;
+      padding: 14px;
+      font-size: 1.2rem;
+      line-height: 1.8;
+      border: 2px solid #cbd5e1;
+      border-radius: 12px;
+      resize: none;
+      outline: none;
+      margin-bottom: 16px;
+    }
+
+    textarea:focus {
+      border-color: #2563eb;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+
+    select, input[type="range"] {
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      flex: 1;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #btnSpeak {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    #btnSpeak:hover {
+      background: #1d4ed8;
+    }
+
+    #btnStop {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    #btnStop:hover {
+      background: #dc2626;
+    }
+
+    .status {
+      margin-top: 12px;
+      font-size: 0.85rem;
+      color: #64748b;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>🇱🇦 Trình Đọc Tiếng Lào (Offline TTS)</h2>
+    
+    <!-- Ô nhập văn bản tiếng Lào -->
+    <textarea id="textInput" placeholder="ວາງ ຫຼື ພິມຂໍ້ຄວາມພາສາລາວຢູ່ບ່ອນນີ້... (Nhập văn bản tiếng Lào tại đây)"></textarea>
+
+    <!-- Tùy chỉnh Tốc độ & Giọng đọc -->
+    <div class="controls">
+      <div class="control-group">
+        <label for="voiceSelect">Giọng đọc phát hiện được:</label>
+        <select id="voiceSelect">
+          <option value="">Đang quét giọng nói hệ thống...</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="rateRange">Tốc độ đọc: <span id="rateValue">1.0</span>x</label>
+        <input type="range" id="rateRange" min="0.5" max="1.5" step="0.1" value="1.0">
+      </div>
+    </div>
+
+    <!-- Nút điều khiển -->
+    <div class="btn-group">
+      <button id="btnSpeak">🔊 Đọc văn bản</button>
+      <button id="btnStop">⏹ Dừng</button>
+    </div>
+
+    <div class="status" id="statusText">Ứng dụng đã sẵn sàng chạy ngoại tuyến.</div>
+  </div>
+
+  <script>
+    const textInput = document.getElementById('textInput');
+    const voiceSelect = document.getElementById('voiceSelect');
+    const rateRange = document.getElementById('rateRange');
+    const rateValue = document.getElementById('rateValue');
+    const btnSpeak = document.getElementById('btnSpeak');
+    const btnStop = document.getElementById('btnStop');
+    const statusText = document.getElementById('statusText');
+
+    let synth = window.speechSynthesis;
+    let voices = [];
+
+    // 1. Hàm nạp danh sách giọng nói TTS có sẵn trên thiết bị của người dùng
+    function loadVoices() {
+      voices = synth.getVoices();
+      voiceSelect.innerHTML = '';
+      
+      // Lọc tìm các giọng có mã ngôn ngữ là tiếng Lào (lo hoặc lo-LA)
+      let laoVoices = voices.filter(voice => voice.lang.toLowerCase().includes('lo'));
+
+      if (laoVoices.length > 0) {
+        laoVoices.forEach(voice => {
+          const option = document.createElement('option');
+          option.value = voice.name;
+          option.textContent = `${voice.name} (${voice.lang})`;
+          voiceSelect.appendChild(option);
+        });
+        statusText.textContent = `Tìm thấy ${laoVoices.length} giọng đọc tiếng Lào offline tích hợp trong thiết bị của bạn.`;
+      } else {
+        // Nếu thiết bị chưa cài gói ngôn ngữ Lào, app sẽ cố gọi giọng mặc định để giả lập
+        const option = document.createElement('option');
+        option.value = "default";
+        option.textContent = "Dùng bộ lọc tự động hệ thống (lo-LA)";
+        voiceSelect.appendChild(option);
+        statusText.innerHTML = `⚠️ Thiết bị chưa cài gói tiếng Lào ngoại tuyến. <br>Vào Cài đặt máy > Ngôn ngữ & Giọng nói > Tải gói tiếng Lào (Lao) để đọc hay nhất.`;
+      }
+    }
+
+    // Kích hoạt nạp giọng nói (Hỗ trợ cả Chrome, Safari, Android và iOS)
+    loadVoices();
+    if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    // Cập nhật hiển thị khi kéo thanh tốc độ
+    rateRange.addEventListener('input', () => {
+      rateValue.textContent = rateRange.value;
+    });
+
+    // 2. Xử lý sự kiện bấm nút ĐỌC VĂN BẢN
+    btnSpeak.addEventListener('click', () => {
+      if (synth.speaking) {
+        synth.cancel(); // Nếu đang đọc dở thì dừng lại để đọc câu mới
+      }
+
+      const text = textInput.value.trim();
+      if (!text) {
+        alert("Vui lòng nhập văn bản tiếng Lào!");
+        return;
+      }
+
+      // Khởi tạo đối tượng phát âm
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      // Thiết lập ngôn ngữ bắt buộc là tiếng Lào
+      utterance.lang = 'lo-LA';
+      utterance.rate = parseFloat(rateRange.value);
+
+      // Gán giọng đọc được chọn
+      const selectedVoiceName = voiceSelect.value;
+      const selectedVoice = voices.find(v => v.name === selectedVoiceName);
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+
+      // Bắt đầu phát âm trực tiếp từ phần cứng máy
+      synth.speak(utterance);
+    });
+
+    // 3. Xử lý nút DỪNG
+    btnStop.addEventListener('click', () => {
+      if (synth.speaking) {
+        synth.cancel();
+      }
+    });
+  </script>
+</body>
+</html>
