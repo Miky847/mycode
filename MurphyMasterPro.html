@@ -87,6 +87,123 @@
     background: rgba(56, 189, 248, 0.1); border-left: 4px solid var(--primary);
     padding: 13px 15px; border-radius: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 0.93rem; margin: 12px 0; color: #e0f2fe; line-height: 1.55;
+    transition: all 0.25s ease;
+  }
+  .rule-block { margin-bottom: 12px; line-height: 1.6; color: #e2e8f0; padding: 6px 10px; border-radius: 8px; border: 1px solid transparent; transition: all 0.25s ease; }
+  .example-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: var(--bg); padding: 11px 13px; border-radius: 10px; border: 1px solid #334155;
+    margin-bottom: 8px; transition: all 0.25s ease;
+  }
+  .reading-highlight {
+    border-color: var(--primary) !important;
+    background: rgba(56, 189, 248, 0.16) !important;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35), 0 6px 18px rgba(2, 132, 199, 0.25);
+  }
+  .example-en { font-weight: 600; color: #fff; font-size: 0.98rem; }
+  .example-vi { font-size: 0.85rem; color: var(--muted); margin-top: 3px; }
+  .audio-btns { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
+
+  /* Lesson Audio Reader Bar */
+  .reader-toolbar {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .reader-main-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .reader-controls-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .speaker-hero-btn {
+    background: linear-gradient(135deg, #0284c7, #7e22ce);
+    color: #fff;
+    border: none;
+    padding: 9px 15px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+    transition: 0.15s;
+  }
+  .speaker-hero-btn:hover { filter: brightness(1.12); }
+  .speaker-hero-btn.playing {
+    background: linear-gradient(135deg, #d97706, #dc2626);
+    animation: pulse-soft 1.8s infinite;
+  }
+  @keyframes pulse-soft {
+    0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.55); }
+    70% { box-shadow: 0 0 0 8px rgba(56, 189, 248, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+  }
+  .reader-settings-panel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+  }
+  .slider-box {
+    background: var(--bg);
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    font-size: 0.8rem;
+  }
+  .slider-box label {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .slider-box input[type="range"] {
+    width: 100%;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+  .toggle-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+  }
+  .toggle-pill input { accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer; }
+  .resume-banner {
+    background: rgba(168, 85, 247, 0.14);
+    border: 1px solid rgba(168, 85, 247, 0.45);
+    border-radius: 10px;
+    padding: 9px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.84rem;
   }
   .rule-block { margin-bottom: 12px; line-height: 1.6; color: #e2e8f0; }
   .example-row {
@@ -174,6 +291,42 @@
   .mic-pulse { animation: pulse 1.2s infinite; background: #dc2626 !important; }
   @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); } 70% { box-shadow: 0 0 0 12px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
   
+  /* Lesson Audio Player & Active Reading Highlight */
+  .audio-player-bar {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    border-radius: 12px;
+    padding: 14px;
+    margin: 14px 0 18px;
+    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.15);
+  }
+  .audio-player-top {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 8px; margin-bottom: 10px;
+  }
+  .audio-status-pill {
+    font-size: 0.8rem; font-weight: 700; color: var(--primary);
+    background: rgba(56, 189, 248, 0.12); padding: 4px 10px; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .audio-controls-row {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  }
+  .audio-controls-row select {
+    width: auto; padding: 6px 10px; font-size: 0.82rem; border-radius: 8px;
+  }
+  .rule-item-card {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+    background: rgba(15, 23, 42, 0.55); border: 1px solid #334155;
+    padding: 10px 12px; border-radius: 10px; margin-bottom: 8px; transition: all 0.25s ease;
+  }
+  .active-reading {
+    border-color: #38bdf8 !important;
+    background: rgba(56, 189, 248, 0.16) !important;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35), 0 6px 18px rgba(56, 189, 248, 0.18);
+    transform: translateX(3px);
+  }
+
   #toast-msg {
     position: fixed; bottom: 20px; right: 20px; background: var(--surface2); color: #fff;
     border: 1px solid var(--primary); padding: 12px 16px; border-radius: 12px;
@@ -763,12 +916,25 @@ let state = {
   streak: 1,
   lastDay: new Date().toDateString(),
   completedUnits: [],
-  currentUnitId: 1
+  currentUnitId: 1,
+  audioPrefs: {
+    enVoiceURI: "",
+    viVoiceURI: "",
+    rate: 1.0,
+    pitch: 1.0,
+    volume: 1.0,
+    autoNext: true,
+    showSettings: false
+  },
+  audioBookmark: null // { unitId, stepIndex, label }
 };
 
 try {
   const saved = JSON.parse(localStorage.getItem("murphy_master_live_v1") || "null");
-  if (saved) state = Object.assign(state, saved);
+  if (saved) {
+    state = Object.assign(state, saved);
+    if (saved.audioPrefs) state.audioPrefs = Object.assign(state.audioPrefs, saved.audioPrefs);
+  }
 } catch (e) {}
 
 function saveState() {
@@ -785,6 +951,336 @@ function addXP(pts) {
   state.xp += pts;
   saveState();
 }
+
+// ==================== 2B. LESSON BILINGUAL AUDIO READER ENGINE ====================
+const readerState = {
+  status: "idle", // 'idle' | 'playing' | 'paused'
+  unitId: null,
+  queue: [],
+  stepIndex: 0,
+  subIndex: 0, // 0 = first utterance in step, 1 = second (e.g. Vietnamese translation)
+  sessionToken: 0
+};
+
+function getAvailableVoices() {
+  if (!("speechSynthesis" in window)) return [];
+  return window.speechSynthesis.getVoices() || [];
+}
+
+function populateVoiceSelectors() {
+  const voices = getAvailableVoices();
+  const enSel = document.getElementById("reader-en-voice");
+  const viSel = document.getElementById("reader-vi-voice");
+  if (!enSel || !viSel) return;
+
+  const enVoices = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith("en"));
+  const viVoices = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith("vi"));
+
+  enSel.innerHTML = `<option value="">Mặc định tiếng Anh (${enVoices.length ? enVoices[0].lang : "en-US"})</option>` +
+    enVoices.map(v => `<option value="${v.voiceURI}" ${state.audioPrefs.enVoiceURI === v.voiceURI ? "selected" : ""}>${v.name} (${v.lang})</option>`).join("");
+
+  if (viVoices.length > 0) {
+    viSel.innerHTML = `<option value="">Mặc định tiếng Việt (${viVoices[0].name})</option>` +
+      viVoices.map(v => `<option value="${v.voiceURI}" ${state.audioPrefs.viVoiceURI === v.voiceURI ? "selected" : ""}>${v.name} (${v.lang})</option>`).join("");
+  } else {
+    viSel.innerHTML = `<option value="">Tự động vi-VN (Dự phòng thiết bị)</option>`;
+  }
+}
+
+if ("speechSynthesis" in window) {
+  window.speechSynthesis.onvoiceschanged = () => {
+    populateVoiceSelectors();
+  };
+}
+
+function buildLessonPlaylist(u) {
+  const steps = [];
+  // Step 0: Title
+  steps.push({
+    domId: `read-title-${u.id}`,
+    label: "Tiêu đề bài học",
+    parts: [
+      { text: `${u.unit}. ${u.title}.`, lang: "en-US" }
+    ]
+  });
+  // Step 1: Core Formula
+  const cleanFormula = u.formula.replace(/\n/g, ". ").replace(/\+/g, " plus ").replace(/\//g, " or ");
+  steps.push({
+    domId: `read-formula-${u.id}`,
+    label: "Công thức cốt lõi",
+    parts: [
+      { text: "Công thức cốt lõi.", lang: "vi-VN" },
+      { text: cleanFormula, lang: "en-US" }
+    ]
+  });
+  // Rules
+  u.rules.forEach((rule, rIdx) => {
+    steps.push({
+      domId: `read-rule-${u.id}-${rIdx}`,
+      label: `Quy tắc ${rIdx + 1}`,
+      parts: [
+        { text: `Quy tắc ${rIdx + 1}. ${rule}`, lang: "vi-VN" }
+      ]
+    });
+  });
+  // Examples (English then Vietnamese)
+  u.examples.forEach((ex, eIdx) => {
+    const cleanEn = ex.en.replace(/\s*\(Not:.*?\)/gi, "").replace(/\(.*?\)/g, "").trim();
+    steps.push({
+      domId: `read-ex-${u.id}-${eIdx}`,
+      label: `Ví dụ ${eIdx + 1}`,
+      parts: [
+        { text: `Ví dụ ${eIdx + 1}.`, lang: "vi-VN" },
+        { text: cleanEn, lang: "en-US" },
+        { text: ex.vi, lang: "vi-VN" }
+      ]
+    });
+  });
+  return steps;
+}
+
+function clearReadingHighlights() {
+  document.querySelectorAll(".reading-highlight").forEach(el => el.classList.remove("reading-highlight"));
+}
+
+function highlightCurrentStep() {
+  clearReadingHighlights();
+  if (readerState.status === "idle") return;
+  const step = readerState.queue[readerState.stepIndex];
+  if (!step) return;
+  const el = document.getElementById(step.domId);
+  if (el) {
+    el.classList.add("reading-highlight");
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+}
+
+function saveAudioBookmark() {
+  if (!readerState.unitId || !readerState.queue.length) return;
+  const step = readerState.queue[readerState.stepIndex] || readerState.queue[0];
+  state.audioBookmark = {
+    unitId: readerState.unitId,
+    stepIndex: readerState.stepIndex,
+    label: step ? step.label : "Đầu bài"
+  };
+  saveState();
+}
+
+function updateReaderUI() {
+  const mainBtn = document.getElementById("reader-main-btn");
+  const statusTxt = document.getElementById("reader-status-text");
+  if (!mainBtn) return;
+
+  const isThisUnit = readerState.unitId === state.currentUnitId;
+  if (isThisUnit && readerState.status === "playing") {
+    mainBtn.className = "speaker-hero-btn playing";
+    mainBtn.innerHTML = "⏸ Tạm dừng đọc";
+    const step = readerState.queue[readerState.stepIndex];
+    statusTxt.innerText = step ? `Đang đọc: ${step.label} (${readerState.stepIndex + 1}/${readerState.queue.length})` : "Đang đọc...";
+  } else if (isThisUnit && readerState.status === "paused") {
+    mainBtn.className = "speaker-hero-btn";
+    mainBtn.innerHTML = "▶️ Tiếp tục đọc";
+    const step = readerState.queue[readerState.stepIndex];
+    statusTxt.innerText = step ? `Đã tạm dừng tại: ${step.label} (${readerState.stepIndex + 1}/${readerState.queue.length})` : "Đã tạm dừng";
+  } else {
+    mainBtn.className = "speaker-hero-btn";
+    mainBtn.innerHTML = "🔊 Đọc toàn bộ bài học";
+    statusTxt.innerText = "Sẵn sàng đọc tự động lý thuyết & ví dụ song ngữ";
+  }
+}
+
+function toggleLessonReader(unitId, startStepIdx = null) {
+  if (!("speechSynthesis" in window)) {
+    showToast("Trình duyệt của bạn không hỗ trợ đọc giọng nói TTS.");
+    return;
+  }
+
+  // If currently playing this unit -> Pause
+  if (readerState.status === "playing" && readerState.unitId === unitId && startStepIdx === null) {
+    pauseLessonReader();
+    return;
+  }
+
+  // If paused on this unit and no explicit jump -> Resume
+  if (readerState.status === "paused" && readerState.unitId === unitId && startStepIdx === null) {
+    resumeLessonReader();
+    return;
+  }
+
+  // Start fresh or from bookmark/step
+  const u = MURPHY_UNITS.find(x => x.id === unitId) || MURPHY_UNITS[0];
+  window.speechSynthesis.cancel();
+  readerState.sessionToken++;
+  readerState.unitId = u.id;
+  readerState.queue = buildLessonPlaylist(u);
+
+  if (startStepIdx !== null && startStepIdx >= 0 && startStepIdx < readerState.queue.length) {
+    readerState.stepIndex = startStepIdx;
+  } else if (state.audioBookmark && state.audioBookmark.unitId === u.id && state.audioBookmark.stepIndex < readerState.queue.length) {
+    readerState.stepIndex = state.audioBookmark.stepIndex;
+  } else {
+    readerState.stepIndex = 0;
+  }
+  readerState.subIndex = 0;
+  readerState.status = "playing";
+  saveAudioBookmark();
+  updateReaderUI();
+  playCurrentReaderChunk(readerState.sessionToken);
+}
+
+function pauseLessonReader() {
+  if (readerState.status !== "playing") return;
+  readerState.sessionToken++;
+  window.speechSynthesis.cancel();
+  readerState.status = "paused";
+  readerState.subIndex = 0;
+  saveAudioBookmark();
+  updateReaderUI();
+  showToast("⏸ Đã tạm dừng và ghi nhớ vị trí đọc.");
+}
+
+function resumeLessonReader() {
+  if (readerState.status !== "paused") return;
+  readerState.status = "playing";
+  readerState.sessionToken++;
+  updateReaderUI();
+  playCurrentReaderChunk(readerState.sessionToken);
+}
+
+function stopLessonReader(keepBookmark = true) {
+  readerState.sessionToken++;
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  if (keepBookmark && readerState.status !== "idle") {
+    saveAudioBookmark();
+  }
+  readerState.status = "idle";
+  readerState.subIndex = 0;
+  clearReadingHighlights();
+  updateReaderUI();
+}
+
+function stepLessonReader(delta) {
+  if (readerState.unitId !== state.currentUnitId || !readerState.queue.length) {
+    const u = MURPHY_UNITS.find(x => x.id === state.currentUnitId);
+    readerState.unitId = u.id;
+    readerState.queue = buildLessonPlaylist(u);
+    readerState.stepIndex = 0;
+  }
+  const nextIdx = Math.max(0, Math.min(readerState.queue.length - 1, readerState.stepIndex + delta));
+  toggleLessonReader(state.currentUnitId, nextIdx);
+}
+
+function resumeFromBookmark() {
+  if (!state.audioBookmark) return;
+  const bm = state.audioBookmark;
+  if (state.currentUnitId !== bm.unitId) {
+    state.currentUnitId = bm.unitId;
+    saveState();
+    renderUnitList();
+    renderLessonDetail(bm.unitId);
+  }
+  setTimeout(() => {
+    toggleLessonReader(bm.unitId, bm.stepIndex);
+  }, 80);
+}
+
+function playCurrentReaderChunk(token) {
+  if (token !== readerState.sessionToken || readerState.status !== "playing") return;
+
+  if (readerState.stepIndex >= readerState.queue.length) {
+    // Finished current unit
+    clearReadingHighlights();
+    state.audioBookmark = null;
+    saveState();
+    if (state.audioPrefs.autoNext && readerState.unitId < MURPHY_UNITS.length) {
+      const nextUnitId = readerState.unitId + 1;
+      showToast(`⏭ Tự động chuyển sang bài tiếp theo...`);
+      state.currentUnitId = nextUnitId;
+      saveState();
+      renderUnitList();
+      renderLessonDetail(nextUnitId);
+      setTimeout(() => {
+        toggleLessonReader(nextUnitId, 0);
+      }, 650);
+    } else {
+      readerState.status = "idle";
+      updateReaderUI();
+      showToast("✅ Đã đọc xong toàn bộ nội dung bài học!");
+    }
+    return;
+  }
+
+  const step = readerState.queue[readerState.stepIndex];
+  highlightCurrentStep();
+  saveAudioBookmark();
+  updateReaderUI();
+
+  if (readerState.subIndex >= step.parts.length) {
+    readerState.stepIndex++;
+    readerState.subIndex = 0;
+    setTimeout(() => playCurrentReaderChunk(token), 280);
+    return;
+  }
+
+  const part = step.parts[readerState.subIndex];
+  const utter = new SpeechSynthesisUtterance(part.text);
+  const voices = getAvailableVoices();
+
+  if (part.lang.startsWith("vi")) {
+    utter.lang = "vi-VN";
+    const chosenVi = voices.find(v => v.voiceURI === state.audioPrefs.viVoiceURI) ||
+                     voices.find(v => v.lang && v.lang.toLowerCase().startsWith("vi"));
+    if (chosenVi) utter.voice = chosenVi;
+  } else {
+    const accent = document.getElementById("voice-accent") ? document.getElementById("voice-accent").value : "en-US";
+    utter.lang = accent;
+    const chosenEn = voices.find(v => v.voiceURI === state.audioPrefs.enVoiceURI) ||
+                     voices.find(v => v.lang && v.lang.includes(accent)) ||
+                     voices.find(v => v.lang && v.lang.toLowerCase().startsWith("en"));
+    if (chosenEn) utter.voice = chosenEn;
+  }
+
+  utter.rate = parseFloat(state.audioPrefs.rate) || 1.0;
+  utter.pitch = parseFloat(state.audioPrefs.pitch) || 1.0;
+  utter.volume = parseFloat(state.audioPrefs.volume) ?? 1.0;
+
+  utter.onend = () => {
+    if (token !== readerState.sessionToken || readerState.status !== "playing") return;
+    readerState.subIndex++;
+    setTimeout(() => playCurrentReaderChunk(token), 180);
+  };
+
+  utter.onerror = (e) => {
+    if (token !== readerState.sessionToken || readerState.status !== "playing") return;
+    if (e.error === "interrupted" || e.error === "canceled") return;
+    // Gracefully skip chunk if mobile lacks a specific voice pack
+    readerState.subIndex++;
+    setTimeout(() => playCurrentReaderChunk(token), 150);
+  };
+
+  window.speechSynthesis.speak(utter);
+}
+
+function updateAudioPref(key, val) {
+  state.audioPrefs[key] = val;
+  saveState();
+  if (key === "rate") document.getElementById("lbl-rate").innerText = Number(val).toFixed(2) + "x";
+  if (key === "pitch") document.getElementById("lbl-pitch").innerText = Number(val).toFixed(2);
+  if (key === "volume") document.getElementById("lbl-volume").innerText = Math.round(Number(val) * 100) + "%";
+}
+
+function toggleReaderSettings() {
+  state.audioPrefs.showSettings = !state.audioPrefs.showSettings;
+  saveState();
+  const panel = document.getElementById("reader-settings-panel");
+  if (panel) panel.style.display = state.audioPrefs.showSettings ? "grid" : "none";
+}
+
+window.addEventListener("beforeunload", () => {
+  if (readerState.status === "playing" || readerState.status === "paused") {
+    saveAudioBookmark();
+  }
+});
 
 // ==================== 3. NAVIGATION ====================
 document.querySelectorAll(".tab-btn").forEach(btn => {
@@ -834,6 +1330,7 @@ function renderUnitList() {
       <span>${isDone ? "✅" : "📘"}</span>
     `;
     btn.onclick = () => {
+      stopLessonReading(true);
       state.currentUnitId = u.id;
       saveState();
       renderUnitList();
@@ -844,9 +1341,19 @@ function renderUnitList() {
 }
 
 function speakExample(unitId, exIdx, rate) {
+  if (readerState.status === "playing") pauseLessonReader();
   const u = MURPHY_UNITS.find(x => x.id === unitId);
   if (u && u.examples[exIdx]) {
     speakText(u.examples[exIdx].en, rate);
+  }
+}
+
+function speakFormula(unitId, rate) {
+  if (readerState.status === "playing") pauseLessonReader();
+  const u = MURPHY_UNITS.find(x => x.id === unitId);
+  if (u) {
+    const cleanFormula = u.formula.replace(/\n/g, ". ").replace(/\+/g, " plus ").replace(/\//g, " or ");
+    speakText(cleanFormula, rate);
   }
 }
 
@@ -859,15 +1366,27 @@ function renderLessonDetail(id) {
     ? `<span class="audit-tag audit-ok">✓ Đã đối chiếu chuẩn Cambridge</span>`
     : `<span class="audit-tag audit-fix">⚠ Đã hiệu đính lỗi OCR bản TXT</span>`;
 
+  const bm = state.audioBookmark;
+  const bmUnit = bm ? MURPHY_UNITS.find(x => x.id === bm.unitId) : null;
+  const resumeBannerHtml = (bm && bmUnit && readerState.status === "idle") ? `
+    <div class="resume-banner">
+      <span>🔖 <strong>Ghi nhớ chỗ dừng:</strong> ${bmUnit.unit} (${bm.label})</span>
+      <div style="display:flex; gap:6px;">
+        <button class="btn btn-sm btn-purple" onclick="resumeFromBookmark()">▶️ Đọc tiếp từ chỗ dừng</button>
+        <button class="btn btn-sm btn-outline" onclick="state.audioBookmark=null; saveState(); renderLessonDetail(${u.id});">Xóa dấu</button>
+      </div>
+    </div>
+  ` : "";
+
   let examplesHtml = u.examples.map((ex, idx) => `
-    <div class="example-row">
+    <div class="example-row" id="read-ex-${u.id}-${idx}">
       <div>
         <div class="example-en">${ex.en}</div>
         <div class="example-vi">${ex.vi}</div>
       </div>
       <div class="audio-btns">
-        <button class="btn btn-sm" onclick="speakExample(${u.id}, ${idx}, 1.0)" title="Nghe chuẩn">🔊</button>
-        <button class="btn btn-sm btn-outline" onclick="speakExample(${u.id}, ${idx}, 0.65)" title="Nghe chậm">🐢</button>
+        <button class="btn btn-sm" onclick="speakExample(${u.id}, ${idx}, 1.0)" title="Nghe chuẩn 1.0x">🔊 1.0x</button>
+        <button class="btn btn-sm btn-outline" onclick="speakExample(${u.id}, ${idx}, 0.65)" title="Nghe chậm 0.65x">🐢 0.65x</button>
       </div>
     </div>
   `).join("");
@@ -886,20 +1405,75 @@ function renderLessonDetail(id) {
 
   container.innerHTML = `
     <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+      <div id="read-title-${u.id}" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; margin-bottom:10px; padding:6px 8px; border-radius:8px; border:1px solid transparent;">
         <div>
           <span class="unit-cat">${u.unit} — ${u.cat}</span>
           <h2 style="margin-top:4px;">${u.title}</h2>
         </div>
         ${auditBadge}
       </div>
+
+      <!-- LESSON AUDIO READER TOOLBAR -->
+      <div class="reader-toolbar">
+        <div class="reader-main-row">
+          <div class="reader-controls-group">
+            <button id="reader-main-btn" class="speaker-hero-btn" onclick="toggleLessonReader(${u.id})">🔊 Đọc toàn bộ bài học</button>
+            <button class="btn btn-sm btn-outline" onclick="stepLessonReader(-1)" title="Đoạn trước">⏮</button>
+            <button class="btn btn-sm btn-outline" onclick="stepLessonReader(1)" title="Đoạn tiếp theo">⏭</button>
+            <button class="btn btn-sm btn-outline" onclick="stopLessonReader(true)" title="Dừng & Lưu vị trí">⏹ Dừng</button>
+          </div>
+          <div class="reader-controls-group">
+            <label class="toggle-pill" title="Tự động chuyển sang bài kế tiếp khi đọc xong">
+              <input type="checkbox" ${state.audioPrefs.autoNext ? "checked" : ""} onchange="updateAudioPref('autoNext', this.checked)">
+              <span>Tự động đọc bài tiếp theo</span>
+            </label>
+            <button class="btn btn-sm btn-outline" onclick="toggleReaderSettings()">⚙️ Giọng & Âm thanh</button>
+          </div>
+        </div>
+
+        <div id="reader-status-text" style="font-size:0.8rem; color:var(--primary); font-weight:600;">
+          Sẵn sàng đọc tự động lý thuyết & ví dụ song ngữ
+        </div>
+
+        ${resumeBannerHtml}
+
+        <div id="reader-settings-panel" class="reader-settings-panel" style="display:${state.audioPrefs.showSettings ? "grid" : "none"};">
+          <div class="slider-box">
+            <label><span>🇺🇸/🇬🇧 Giọng đọc Tiếng Anh</span></label>
+            <select id="reader-en-voice" onchange="updateAudioPref('enVoiceURI', this.value)"></select>
+          </div>
+          <div class="slider-box">
+            <label><span>🇻🇳 Giọng đọc Tiếng Việt</span></label>
+            <select id="reader-vi-voice" onchange="updateAudioPref('viVoiceURI', this.value)"></select>
+          </div>
+          <div class="slider-box">
+            <label><span>⚡ Tốc độ đọc</span><strong id="lbl-rate">${Number(state.audioPrefs.rate).toFixed(2)}x</strong></label>
+            <input type="range" min="0.5" max="1.6" step="0.05" value="${state.audioPrefs.rate}" oninput="updateAudioPref('rate', this.value)">
+          </div>
+          <div class="slider-box">
+            <label><span>🎵 Cao độ (Pitch)</span><strong id="lbl-pitch">${Number(state.audioPrefs.pitch).toFixed(2)}</strong></label>
+            <input type="range" min="0.7" max="1.4" step="0.05" value="${state.audioPrefs.pitch}" oninput="updateAudioPref('pitch', this.value)">
+          </div>
+          <div class="slider-box">
+            <label><span>🔊 Âm lượng</span><strong id="lbl-volume">${Math.round(Number(state.audioPrefs.volume) * 100)}%</strong></label>
+            <input type="range" min="0" max="1" step="0.05" value="${state.audioPrefs.volume}" oninput="updateAudioPref('volume', this.value)">
+          </div>
+        </div>
+      </div>
+
       <div style="font-size:0.82rem; color:var(--muted); margin-bottom:12px;">🛡️ ${u.auditNote}</div>
       
-      <div class="formula-box">${u.formula.split("\n").join("<br>")}</div>
+      <div class="formula-box" id="read-formula-${u.id}" style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:220px;">${u.formula.split("\n").join("<br>")}</div>
+        <div class="audio-btns">
+          <button class="btn btn-sm" onclick="speakFormula(${u.id}, 1.0)" title="Nghe công thức chuẩn">🔊 1.0x</button>
+          <button class="btn btn-sm btn-outline" onclick="speakFormula(${u.id}, 0.65)" title="Nghe công thức chậm">🐢 0.65x</button>
+        </div>
+      </div>
       
       <h3 style="margin-top:16px;">📌 Quy tắc cốt lõi (Raymond Murphy)</h3>
       <ul style="padding-left:20px; margin-bottom:16px;">
-        ${u.rules.map(r => `<li class="rule-block">${r}</li>`).join("")}
+        ${u.rules.map((r, rIdx) => `<li class="rule-block" id="read-rule-${u.id}-${rIdx}">${r}</li>`).join("")}
       </ul>
 
       <h3>🗣️ Ví dụ minh họa chuẩn (Bấm loa để nghe phát âm)</h3>
@@ -919,9 +1493,14 @@ function renderLessonDetail(id) {
       </div>
     </div>
   `;
+
+  populateVoiceSelectors();
+  updateReaderUI();
+  highlightCurrentStep();
 }
 
 function navUnit(id) {
+  if (readerState.status === "playing") stopLessonReader(false);
   state.currentUnitId = id;
   saveState();
   renderUnitList();
@@ -1167,8 +1746,12 @@ function speakText(text, rate = 1.0) {
   const accent = document.getElementById("voice-accent") ? document.getElementById("voice-accent").value : "en-US";
   utter.lang = accent;
   utter.rate = rate;
-  const voices = window.speechSynthesis.getVoices();
-  const matched = voices.find(v => v.lang.includes(accent)) || voices.find(v => v.lang.startsWith("en"));
+  utter.pitch = parseFloat(state.audioPrefs.pitch) || 1.0;
+  utter.volume = parseFloat(state.audioPrefs.volume) ?? 1.0;
+  const voices = getAvailableVoices();
+  const matched = voices.find(v => v.voiceURI === state.audioPrefs.enVoiceURI) ||
+                  voices.find(v => v.lang && v.lang.includes(accent)) ||
+                  voices.find(v => v.lang && v.lang.startsWith("en"));
   if (matched) utter.voice = matched;
   window.speechSynthesis.speak(utter);
 }
@@ -1291,7 +1874,10 @@ window.addEventListener("load", () => {
   nextPronounceSentence();
   renderFlashcard();
   renderAuditTable();
-  if ("speechSynthesis" in window) window.speechSynthesis.getVoices();
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.getVoices();
+    setTimeout(populateVoiceSelectors, 300);
+  }
 });
 </script>
 </body>
