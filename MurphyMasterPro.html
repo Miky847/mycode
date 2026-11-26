@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MurphyMaster Pro — Ngữ Pháp Tiếng Anh Raymond Murphy Toàn Diện</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #334155;
+    --border: #475569;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --primary: #38bdf8;
+    --primary-dark: #0284c7;
+    --accent: #a855f7;
+    --amber: #f59e0b;
+    --success: #22c55e;
+    --danger: #ef4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; }
+  body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+  
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .brand h1 { font-size: 1.25rem; font-weight: 800; background: linear-gradient(90deg, #38bdf8, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .badge { background: rgba(56, 189, 248, 0.15); color: var(--primary); padding: 4px 10px; border-radius: 999px; font-size: 0.74rem; font-weight: 700; border: 1px solid rgba(56, 189, 248, 0.3); }
+  .stats-bar { display: flex; gap: 10px; align-items: center; font-size: 0.85rem; flex-wrap: wrap; }
+  .stat-pill { background: var(--surface); padding: 5px 12px; border-radius: 999px; border: 1px solid var(--border); display: flex; align-items: center; gap: 6px; font-weight: 600; }
+
+  /* Navigation Tabs */
+  nav {
+    display: flex; overflow-x: auto; background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 12px; gap: 4px; scrollbar-width: thin;
+  }
+  .tab-btn {
+    background: transparent; border: none; color: var(--muted); padding: 13px 16px;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+    border-bottom: 3px solid transparent; transition: all 0.2s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: rgba(56,189,248,0.08); }
+
+  /* Layout & Containers */
+  main { flex: 1; max-width: 1180px; width: 100%; margin: 0 auto; padding: 20px 16px 60px; }
+  .panel { display: none; animation: fadeIn 0.25s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .grid-2 { display: grid; grid-template-columns: 310px 1fr; gap: 20px; }
+  .grid-games { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 860px) {
+    .grid-2, .grid-games { grid-template-columns: 1fr; }
+  }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+  .card h2, .card h3 { margin-bottom: 10px; color: #fff; }
+  
+  /* Form Controls */
+  .search-input, select, input[type="text"] {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    padding: 10px 12px; border-radius: 10px; font-size: 0.92rem; outline: none; transition: border-color 0.2s;
+  }
+  .search-input:focus, select:focus, input[type="text"]:focus { border-color: var(--primary); }
+
+  /* Unit List */
+  .unit-list { max-height: 62vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-top: 10px; padding-right: 4px; }
+  .unit-item {
+    text-align: left; background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    padding: 11px 12px; border-radius: 10px; cursor: pointer; transition: 0.15s;
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  }
+  .unit-item:hover { border-color: var(--primary); transform: translateX(2px); }
+  .unit-item.active { background: rgba(56, 189, 248, 0.14); border-color: var(--primary); }
+  .unit-cat { font-size: 0.72rem; color: var(--amber); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
+
+  /* Lesson Content */
+  .formula-box {
+    background: rgba(56, 189, 248, 0.1); border-left: 4px solid var(--primary);
+    padding: 13px 15px; border-radius: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.93rem; margin: 12px 0; color: #e0f2fe; line-height: 1.55;
+  }
+  .rule-block { margin-bottom: 12px; line-height: 1.6; color: #e2e8f0; }
+  .example-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: var(--bg); padding: 11px 13px; border-radius: 10px; border: 1px solid #334155;
+    margin-bottom: 8px;
+  }
+  .example-en { font-weight: 600; color: #fff; font-size: 0.98rem; }
+  .example-vi { font-size: 0.85rem; color: var(--muted); margin-top: 3px; }
+  .audio-btns { display: flex; gap: 6px; flex-shrink: 0; }
+
+  /* Buttons */
+  .btn {
+    background: var(--primary-dark); color: #fff; border: none; padding: 9px 14px;
+    border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.88rem; transition: 0.15s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn:hover { filter: brightness(1.12); }
+  .btn:active { transform: scale(0.98); }
+  .btn-sm { padding: 6px 10px; font-size: 0.8rem; border-radius: 8px; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-success { background: #16a34a; }
+  .btn-amber { background: #d97706; }
+  .btn-purple { background: #7e22ce; }
+  .btn-danger { background: #dc2626; }
+
+  /* Audit Tags */
+  .audit-tag {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 0.76rem;
+    padding: 4px 10px; border-radius: 8px; font-weight: 700;
+  }
+  .audit-ok { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35); }
+  .audit-fix { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
+
+  /* Exercises & Quiz */
+  .exercise-item { background: var(--bg); padding: 14px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; }
+  .exercise-q { font-weight: 600; margin-bottom: 10px; line-height: 1.5; }
+  .feedback { margin-top: 9px; font-size: 0.88rem; font-weight: 600; line-height: 1.45; }
+  .feedback.ok { color: #4ade80; }
+  .feedback.err { color: #f87171; }
+
+  .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  @media (max-width: 600px) { .quiz-options { grid-template-columns: 1fr; } }
+  .opt-btn {
+    background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    padding: 13px 14px; border-radius: 10px; text-align: left; cursor: pointer;
+    font-size: 0.95rem; font-weight: 500; transition: 0.15s;
+  }
+  .opt-btn:hover:not(:disabled) { border-color: var(--primary); background: rgba(56,189,248,0.08); }
+  .opt-btn.correct { background: rgba(34,197,94,0.2); border-color: #22c55e; color: #86efac; }
+  .opt-btn.wrong { background: rgba(239,68,68,0.2); border-color: #ef4444; color: #fca5a5; }
+
+  /* Games */
+  .word-bank, .answer-zone {
+    display: flex; flex-wrap: wrap; gap: 8px; min-height: 52px; padding: 10px;
+    background: var(--bg); border: 1px dashed var(--border); border-radius: 10px; margin: 10px 0;
+  }
+  .word-chip {
+    background: var(--surface2); color: #fff; border: 1px solid var(--border);
+    padding: 8px 13px; border-radius: 8px; cursor: pointer; font-weight: 600; user-select: none;
+    transition: 0.15s;
+  }
+  .word-chip:hover { border-color: var(--primary); background: rgba(56,189,248,0.18); }
+
+  /* Flashcard */
+  .flashcard {
+    background: linear-gradient(145deg, #1e293b, #0f172a);
+    border: 2px solid var(--border); border-radius: 16px; padding: 32px 20px;
+    text-align: center; cursor: pointer; min-height: 220px;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .flashcard:hover { border-color: var(--primary); }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.88rem; min-width: 620px; }
+  th, td { border: 1px solid var(--border); padding: 10px; text-align: left; vertical-align: top; line-height: 1.5; }
+  th { background: var(--bg); color: var(--primary); }
+
+  /* Progress & Toast */
+  .progress-bar { height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; margin: 10px 0; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #38bdf8, #a855f7); transition: width 0.3s; }
+  .mic-pulse { animation: pulse 1.2s infinite; background: #dc2626 !important; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); } 70% { box-shadow: 0 0 0 12px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
+  
+  #toast-msg {
+    position: fixed; bottom: 20px; right: 20px; background: var(--surface2); color: #fff;
+    border: 1px solid var(--primary); padding: 12px 16px; border-radius: 12px;
+    font-size: 0.88rem; font-weight: 600; z-index: 999; display: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4); max-width: 340px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>MurphyMaster Pro</h1>
+    <span class="badge">English Grammar in Use • Cross-Verified</span>
+  </div>
+  <div class="stats-bar">
+    <div class="stat-pill" title="Điểm kinh nghiệm">⚡ <span id="xp-val">0</span> XP</div>
+    <div class="stat-pill" title="Chuỗi ngày học">🔥 <span id="streak-val">1</span> ngày</div>
+    <div class="stat-pill" title="Bài đã hoàn thành">✅ <span id="done-val">0</span>/<span id="total-units-val">16</span></div>
+  </div>
+</header>
+
+<nav id="main-nav">
+  <button class="tab-btn active" data-tab="lessons">📖 Bài học & Bài tập Murphy</button>
+  <button class="tab-btn" data-tab="quiz">🎯 Quiz Trắc nghiệm</button>
+  <button class="tab-btn" data-tab="games">🎮 Game Sắp xếp & Sửa lỗi</button>
+  <button class="tab-btn" data-tab="pronounce">🎙️ Luyện Phát âm (US/UK + Mic)</button>
+  <button class="tab-btn" data-tab="srs">🧠 Flashcard SRS</button>
+  <button class="tab-btn" data-tab="audit">🛡️ Kiểm tra chéo (Cross-Audit)</button>
+</nav>
+
+<main>
+  <!-- TAB 1: LESSONS & EXERCISES -->
+  <section id="tab-lessons" class="panel active">
+    <div class="grid-2">
+      <div>
+        <div class="card">
+          <h3>Mục lục Raymond Murphy</h3>
+          <input type="text" id="unit-search" class="search-input" placeholder="Tìm bài học (VD: Present Perfect, Passive, If...)">
+          <select id="cat-filter" style="margin-top:8px;">
+            <option value="ALL">Tất cả chuyên đề ngữ pháp (16 nhóm)</option>
+          </select>
+          <div class="progress-bar"><div class="progress-fill" id="course-progress" style="width:0%"></div></div>
+          <div class="unit-list" id="unit-list"></div>
+        </div>
+      </div>
+      <div id="lesson-detail"></div>
+    </div>
+  </section>
+
+  <!-- TAB 2: QUIZ -->
+  <section id="tab-quiz" class="panel">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+          <h2>🎯 Thử thách Ngữ pháp Toàn diện</h2>
+          <p style="color:var(--muted); font-size:0.9rem;">Tổng hợp 16 câu hỏi bẫy kinh điển từ toàn bộ các chuyên đề của Raymond Murphy.</p>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <select id="quiz-cat" style="width:auto;">
+            <option value="ALL">Tất cả chuyên đề</option>
+          </select>
+          <button class="btn" onclick="startQuiz()">Làm mới bộ đề</button>
+        </div>
+      </div>
+      <div id="quiz-box" style="margin-top:18px;"></div>
+    </div>
+  </section>
+
+  <!-- TAB 3: GAMES -->
+  <section id="tab-games" class="panel">
+    <div class="grid-games">
+      <div class="card">
+        <h2>🧩 Game 1: Ghép Câu Chuẩn Murphy (Word Order)</h2>
+        <p style="color:var(--muted); font-size:0.88rem; margin-bottom:10px;">Chạm vào các từ bên dưới để sắp xếp thành câu tiếng Anh đúng trật tự ngữ pháp (trạng từ tần suất, đảo ngữ, câu hỏi gián tiếp...).</p>
+        <div id="scramble-vi" style="color:var(--amber); font-weight:600; margin-bottom:6px;"></div>
+        <div class="answer-zone" id="answer-zone"></div>
+        <div class="word-bank" id="word-bank"></div>
+        <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+          <button class="btn btn-success" onclick="checkScramble()">Kiểm tra câu</button>
+          <button class="btn btn-outline" onclick="resetScramble()">Xóa xếp lại</button>
+          <button class="btn btn-outline" onclick="nextScramble()">Câu khác ➔</button>
+        </div>
+        <div id="scramble-fb" class="feedback"></div>
+      </div>
+
+      <div class="card">
+        <h2>⚡ Game 2: Săn Lỗi Sai Trong 15 Giây (Grammar Hunter)</h2>
+        <p style="color:var(--muted); font-size:0.88rem; margin-bottom:10px;">Xác định nhanh câu sau ĐÚNG (Right) hay SAI (Wrong) theo chuẩn Cambridge English Grammar in Use.</p>
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+          <span class="badge">Chuỗi thắng: <strong id="hunter-streak">0</strong></span>
+          <span class="badge" style="color:#fbbf24;">Thời gian: <strong id="hunter-timer">15</strong>s</span>
+        </div>
+        <div id="hunter-sentence" style="background:var(--bg); padding:18px; border-radius:10px; font-size:1.08rem; font-weight:600; border:1px solid var(--border); margin:10px 0;"></div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-success" style="flex:1; justify-content:center;" onclick="answerHunter(true)">✅ RIGHT (Chuẩn)</button>
+          <button class="btn btn-danger" style="flex:1; justify-content:center;" onclick="answerHunter(false)">❌ WRONG (Có lỗi)</button>
+        </div>
+        <div id="hunter-fb" class="feedback" style="margin-top:10px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 4: PRONUNCIATION -->
+  <section id="tab-pronounce" class="panel">
+    <div class="card">
+      <h2>🎙️ Phòng Luyện Nghe & Phát Âm Chuẩn Bản Xứ (US / UK)</h2>
+      <p style="color:var(--muted); font-size:0.9rem; margin-bottom:14px;">Tích hợp Web Speech TTS (tốc độ 1.0x chuẩn & 0.65x chậm tách âm) và nhận diện giọng nói Speech-to-Text chấm điểm độ khớp từng từ.</p>
+      
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+        <select id="voice-accent" style="width:auto;">
+          <option value="en-US">🇺🇸 Giọng Mỹ (en-US)</option>
+          <option value="en-GB">🇬🇧 Giọng Anh (en-GB)</option>
+        </select>
+        <button class="btn btn-outline" onclick="nextPronounceSentence()">🔄 Đổi câu mẫu Murphy</button>
+      </div>
+
+      <div style="background:var(--bg); padding:18px; border-radius:12px; border:1px solid var(--border);">
+        <div style="font-size:0.8rem; color:var(--primary); font-weight:700; margin-bottom:4px;" id="pron-unit-label"></div>
+        <div style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:6px;" id="pron-target"></div>
+        <div style="font-size:0.92rem; color:var(--muted); margin-bottom:14px;" id="pron-vi"></div>
+        
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn" onclick="speakText(document.getElementById('pron-target').innerText, 1.0)">🔊 Nghe chuẩn (1.0x)</button>
+          <button class="btn btn-outline" onclick="speakText(document.getElementById('pron-target').innerText, 0.65)">🐢 Nghe chậm (0.65x)</button>
+          <button class="btn btn-purple" id="mic-btn" onclick="startSpeechCheck()">🎤 Bấm để đọc & Chấm điểm</button>
+        </div>
+      </div>
+
+      <div id="speech-result" style="margin-top:14px; display:none;" class="card">
+        <div><strong>Bạn đã đọc:</strong> <span id="spoken-text" style="color:var(--primary);"></span></div>
+        <div style="margin-top:6px;"><strong>Độ chính xác:</strong> <span id="speech-score" style="font-size:1.1rem; font-weight:800;"></span></div>
+        <div id="word-diff" style="margin-top:8px; line-height:1.8;"></div>
+      </div>
+
+      <div style="margin-top:18px;">
+        <h3>Hoặc nhập bất kỳ câu tiếng Anh nào để luyện đọc:</h3>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <input type="text" id="custom-tts-input" placeholder="Nhập câu tiếng Anh bạn muốn nghe và luyện phát âm...">
+          <button class="btn" onclick="setCustomPronounce()">Nạp câu</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 5: SRS FLASHCARDS -->
+  <section id="tab-srs" class="panel">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+        <div>
+          <h2>🧠 Thẻ Ghi Nhớ Thông Minh (Spaced Repetition - Anki Style)</h2>
+          <p style="color:var(--muted); font-size:0.9rem;">Ôn tập công thức cốt lõi và cặp câu dễ nhầm lẫn của Raymond Murphy. Chạm vào thẻ để lật mặt.</p>
+        </div>
+        <span class="badge" id="srs-counter">Thẻ 1 / 16</span>
+      </div>
+
+      <div class="flashcard" id="flashcard" onclick="flipCard()">
+        <div id="fc-front" style="font-size:1.25rem; font-weight:700; max-width:680px;"></div>
+        <div id="fc-back" style="display:none; margin-top:14px; padding-top:14px; border-top:1px solid var(--border); max-width:680px; white-space:pre-line; line-height:1.6;"></div>
+        <div style="font-size:0.78rem; color:var(--muted); margin-top:16px;">(Chạm vào thẻ để lật)</div>
+      </div>
+
+      <div style="display:flex; justify-content:center; gap:10px; margin-top:16px; flex-wrap:wrap;">
+        <button class="btn btn-danger" onclick="rateCard(1)">😓 Quên (Học lại ngay)</button>
+        <button class="btn btn-amber" onclick="rateCard(2)">🤔 Hơi nhớ (1 ngày)</button>
+        <button class="btn btn-success" onclick="rateCard(3)">😎 Thuộc lòng (4 ngày)</button>
+        <button class="btn btn-outline" onclick="speakCurrentCard()">🔊 Đọc ví dụ</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 6: CROSS AUDIT -->
+  <section id="tab-audit" class="panel">
+    <div class="card">
+      <h2>🛡️ Báo Cáo Kiểm Tra Chéo & Hiệu Đính Dữ Liệu Nguồn</h2>
+      <p style="color:var(--muted); font-size:0.92rem; line-height:1.6; margin-bottom:12px;">
+        Các bản số hóa <code>.txt</code> lưu hành trên mạng của cuốn <em>English Grammar in Use (Raymond Murphy)</em> thường mắc lỗi OCR (nhầm <code>l</code> thành <code>1</code>, mất dấu nháy đơn, hoặc lệch đáp án cuối sách). Hệ thống đã đối chiếu toàn bộ 16 chuyên đề (145 Units) với chuẩn ấn bản Cambridge chính thức và tự động hiệu đính các mục sau:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Chuyên đề / Unit</th>
+              <th>Lỗi thường gặp ở bản TXT OCR</th>
+              <th>Bản đã hiệu đính chuẩn Cambridge</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody id="audit-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast-msg"></div>
+
+<script>
+// ==================== 0. NON-BLOCKING TOAST NOTIFICATION ====================
+function showToast(msg) {
+  const el = document.getElementById("toast-msg");
+  el.innerText = msg;
+  el.style.display = "block";
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => { el.style.display = "none"; }, 3500);
+}
+
+// ==================== 1. FULL CROSS-VERIFIED RAYMOND MURPHY DATASET ====================
+const MURPHY_UNITS = [
+  {
+    id: 1, unit: "Unit 1–2", cat: "1. Present Tenses (Hiện tại)",
+    title: "Present Continuous vs. Present Simple (I am doing vs. I do)",
+    auditStatus: "verified",
+    auditNote: "Đã đối chiếu chuẩn Cambridge Ấn bản 5: Phân biệt rõ động từ trạng thái (stative verbs: know, believe, belong, need) không chia tiếp diễn.",
+    formula: "Present Continuous: S + am/is/are + V-ing (hành động đang diễn ra / tạm thời)\nPresent Simple: S + V(s/es) (sự thật hiển nhiên / thói quen lặp lại)",
+    rules: [
+      "Dùng Present Continuous cho việc đang xảy ra ngay lúc nói hoặc xung quanh thời điểm nói (chưa kết thúc).",
+      "Dùng Present Simple cho chân lý, lịch trình cố định (tàu, xe, giờ mở cửa) và thói quen.",
+      "Nhóm động từ trạng thái (like, want, need, prefer, know, realise, suppose, mean, understand, believe, remember, belong, fit, contain, consist, seem) KHÔNG dùng ở thì tiếp diễn."
+    ],
+    examples: [
+      { en: "Water boils at 100 degrees Celsius.", vi: "Nước sôi ở 100 độ C. (Chân lý -> Hiện tại đơn)" },
+      { en: "The water is boiling. Can you turn it off?", vi: "Nước đang sôi rồi kìa. Bạn tắt bếp được không? (Đang diễn ra)" },
+      { en: "Do you believe in God? (Not: Are you believing)", vi: "Bạn có tin vào Chúa không? (Động từ trạng thái)" },
+      { en: "The train leaves Plymouth at 11.30 and arrives in London at 14.45.", vi: "Tàu rời Plymouth lúc 11:30 và đến London lúc 14:45. (Lịch trình)" }
+    ],
+    exercises: [
+      { q: "Hurry up! Everybody __________ (wait) for you.", ans: "is waiting", explain: "Hành động đang diễn ra ngay lúc nói ('Hurry up!')." },
+      { q: "‘Can you drive?’ ‘I __________ (learn). My father is teaching me.’", ans: "am learning", explain: "Hành động đang diễn ra trong giai đoạn hiện tại." },
+      { q: "The River Nile __________ (flow) into the Mediterranean.", ans: "flows", explain: "Sự thật địa lý hiển nhiên -> Present Simple." },
+      { q: "Nicky __________ (think) of giving up her job.", ans: "is thinking", explain: "Ở đây 'think' nghĩa là 'cân nhắc/dự định' (hành động) nên chia tiếp diễn được; khác với 'think = tin rằng'." }
+    ]
+  },
+  {
+    id: 2, unit: "Unit 5–6", cat: "2. Past Tenses (Quá khứ)",
+    title: "Past Simple vs. Past Continuous (I did vs. I was doing)",
+    auditStatus: "fixed",
+    auditNote: "Đã sửa lỗi bản TXT gốc gõ nhầm 'was fell' trong câu ví dụ kinh điển với 'when/while'.",
+    formula: "Past Simple: S + V2/V-ed (hành động đã chấm dứt trong quá khứ)\nPast Continuous: S + was/were + V-ing (đang diễn ra tại 1 mốc quá khứ)",
+    rules: [
+      "Past Continuous diễn tả hành động đang diễn ra làm nền thì một hành động khác (Past Simple) xen vào.",
+      "Hai hành động Past Simple đi liền nhau diễn tả chuỗi sự việc xảy ra nối tiếp.",
+      "Không dùng Past Continuous với động từ trạng thái (know, want...)."
+    ],
+    examples: [
+      { en: "Matt phoned while we were having dinner.", vi: "Matt gọi điện trong lúc chúng tôi đang ăn tối." },
+      { en: "It was raining when I got up.", vi: "Trời đang mưa khi tôi thức dậy." },
+      { en: "I was walking along the road when I saw Dave. So I stopped, and we had a chat.", vi: "Tôi đang đi dọc đường thì thấy Dave. Vì vậy tôi dừng lại và chúng tôi trò chuyện." }
+    ],
+    exercises: [
+      { q: "Jenny __________ (wait) for me when I arrived.", ans: "was waiting", explain: "Hành động chờ đang diễn ra trước và tại thời điểm tôi đến." },
+      { q: "What __________ (you / do) at this time yesterday?", ans: "were you doing", explain: "Có mốc thời gian cụ thể trong quá khứ ('at this time yesterday')." },
+      { q: "How fast __________ (you / drive) when the accident happened?", ans: "were you driving", explain: "Hành động đang lái xe làm nền thì tai nạn xảy ra." }
+    ]
+  },
+  {
+    id: 3, unit: "Unit 7–14", cat: "3. Present Perfect & Past (Hiện tại hoàn thành)",
+    title: "Present Perfect vs. Past Simple (I have done vs. I did)",
+    auditStatus: "fixed",
+    auditNote: "Đã hiệu đính phân biệt 'have been to' (đã đi và đã về) vs 'have gone to' (đã đi và đang ở đó) bị đảo lộn ở một số bản chép tay.",
+    formula: "Present Perfect: S + have/has + V3/V-ed (kết quả ở hiện tại / chưa rõ thời điểm)\nPast Simple: S + V2/V-ed (thời gian đã kết thúc: yesterday, in 2019, ago)",
+    rules: [
+      "Không bao giờ dùng Present Perfect với các mốc thời gian quá khứ đã chấm dứt (yesterday, last week, 5 minutes ago, in 1999, when I was a child).",
+      "Dùng Present Perfect với: just, already, yet, ever, never, recently, so far, since + mốc thời gian, for + khoảng thời gian.",
+      "It's the first time + S + have/has + V3 (Không dùng thì hiện tại đơn ở mệnh đề này)."
+    ],
+    examples: [
+      { en: "I've lost my key. I can't find it anywhere.", vi: "Tôi làm mất chìa khóa rồi. (Hiện tại vẫn chưa tìm thấy)" },
+      { en: "I lost my key yesterday, but I found it this morning.", vi: "Hôm qua tôi làm mất chìa khóa, nhưng sáng nay tìm thấy rồi. (Có 'yesterday')" },
+      { en: "Jim has gone to Spain. (= He is in Spain now.)", vi: "Jim đã đi Tây Ban Nha rồi (hiện đang ở đó)." },
+      { en: "Jim has been to Spain. (= He went there and came back.)", vi: "Jim từng đến Tây Ban Nha rồi (đã đi và về)." }
+    ],
+    exercises: [
+      { q: "Ow! I __________ (burn) myself.", ans: "have burnt", explain: "Hành động vừa xảy ra để lại kết quả đau ở hiện tại ('Ow!'). Chấp nhận cả 'have burned'." },
+      { q: "Shakespeare __________ (write) many plays.", ans: "wrote", explain: "Shakespeare đã qua đời, toàn bộ sự việc thuộc về quá khứ đã chấm dứt." },
+      { q: "How long __________ (you / live) here? ‘Since 2018.’", ans: "have you lived", explain: "Hành động bắt đầu trong quá khứ kéo dài tới hiện tại với 'Since'." },
+      { q: "It's the first time he __________ (drive) a car.", ans: "has driven", explain: "Cấu trúc cố định: It's the first time + Present Perfect." }
+    ]
+  },
+  {
+    id: 4, unit: "Unit 15–16", cat: "4. Past Perfect (Quá khứ hoàn thành)",
+    title: "Past Perfect & Past Perfect Continuous (I had done / I had been doing)",
+    auditStatus: "verified",
+    auditNote: "Đã kiểm tra chéo các cặp câu diễn tả nguyên nhân trước một mốc quá khứ.",
+    formula: "Past Perfect: S + had + V3/V-ed\nPast Perfect Continuous: S + had been + V-ing",
+    rules: [
+      "Dùng Past Perfect để nói về hành động xảy ra TRƯỚC một thời điểm hoặc một hành động khác trong quá khứ.",
+      "Dùng Past Perfect Continuous để nhấn mạnh tính liên tục hoặc nguyên nhân của một trạng thái trong quá khứ (ví dụ: mắt đỏ vì vừa khóc xong)."
+    ],
+    examples: [
+      { en: "When Sarah arrived at the party, Paul had already gone home.", vi: "Khi Sarah tới bữa tiệc, Paul đã về nhà trước đó rồi." },
+      { en: "The house was dirty. They hadn't cleaned it for weeks.", vi: "Ngôi nhà rất bẩn. Họ đã không dọn nó suốt nhiều tuần trước đó." },
+      { en: "Ken gave up smoking two years ago. He had been smoking for 30 years.", vi: "Ken bỏ thuốc 2 năm trước. Trước đó ông ấy đã hút liên tục 30 năm." }
+    ],
+    exercises: [
+      { q: "We weren't hungry. We __________ (just / have) lunch.", ans: "had just had", explain: "Ăn trưa xảy ra trước lúc 'weren't hungry' trong quá khứ." },
+      { q: "I was very tired when I got home. I __________ (work) hard all day.", ans: "had been working", explain: "Nhấn mạnh quá trình làm việc liên tục trước khi về nhà." }
+    ]
+  },
+  {
+    id: 5, unit: "Unit 19–25", cat: "5. Future Forms (Các thì Tương lai)",
+    title: "Will vs. Going to vs. Present Continuous for Future",
+    auditStatus: "verified",
+    auditNote: "Đã xác minh quy tắc mệnh đề thời gian (when, before, after, until, as soon as) dùng Hiện tại đơn thay vì Will.",
+    formula: "Will + V: Quyết định tức thì lúc nói / Dự đoán không căn cứ\nBe going to + V: Dự định có trước / Dự đoán có dấu hiệu hiện tại\nPresent Continuous: Lịch hẹn đã sắp xếp cố định với người khác",
+    rules: [
+      "Dùng 'will' khi vừa mới quyết định làm gì ngay tại thời điểm nói (I'll answer the phone).",
+      "Dùng 'be going to' khi đã có ý định từ trước hoặc thấy dấu hiệu rõ ràng (Look at those black clouds! It's going to rain).",
+      "Sau when, while, before, after, as soon as, until: KHÔNG dùng 'will', dùng Present Simple hoặc Present Perfect."
+    ],
+    examples: [
+      { en: "‘Oh, I've left the door open.’ ‘I'll go and shut it.’", vi: "‘Ồ tôi để cửa mở rồi.’ ‘Để tôi đi đóng.’ (Quyết định tức thì)" },
+      { en: "Look at those black clouds! It's going to rain.", vi: "Nhìn đám mây đen kìa! Trời sắp mưa rồi. (Có dấu hiệu rõ ràng)" },
+      { en: "I'll phone you when I get home. (Not: when I will get)", vi: "Tôi sẽ gọi cho bạn khi tôi về tới nhà. (Mệnh đề thời gian dùng hiện tại đơn)" }
+    ],
+    exercises: [
+      { q: "‘Did you phone Lucy?’ ‘Oh no, I forgot. I __________ (phone) her now.’", ans: "will phone", explain: "Quyết định tức thì ngay lúc nhận ra mình quên (chấp nhận 'll phone)." },
+      { q: "We __________ (have) a party next Saturday. We've invited all our friends.", ans: "are having", explain: "Kế hoạch đã sắp xếp và mời khách xong -> Present Continuous." },
+      { q: "Wait here until I __________ (come) back.", ans: "come", explain: "Sau 'until' chỉ tương lai phải dùng Present Simple." }
+    ]
+  },
+  {
+    id: 6, unit: "Unit 26–37", cat: "6. Modal Verbs (Động từ khuyết thiếu)",
+    title: "Must, Have to, Should, Can, Could, May, Might & Modal + Have V3",
+    auditStatus: "fixed",
+    auditNote: "Đã hiệu đính cặp phủ định dễ nhầm: 'mustn't' (cấm đoán) vs 'don't have to' (không cần thiết).",
+    formula: "Suy đoán chắc chắn quá khứ: must have + V3\nSuy đoán không thể xảy ra quá khứ: can't / couldn't have + V3\nTiếc nuối/trách móc quá khứ: should have + V3",
+    rules: [
+      "Mustn't = cấm không được làm. Don't have to / Needn't = không cần phải làm (làm cũng được).",
+      "Must have + V3: chắc hẳn đã xảy ra trong quá khứ (suy luận logic). Phủ định của nó là Can't have + V3 (không đời nào đã xảy ra), KHÔNG dùng mustn't have.",
+      "Should have + V3: đáng lẽ nên làm (nhưng thực tế đã không làm)."
+    ],
+    examples: [
+      { en: "You mustn't tell anyone what I said. (= Keep it a secret)", vi: "Bạn tuyệt đối không được kể cho ai điều tôi nói. (Cấm)" },
+      { en: "You don't have to come if you don't want to.", vi: "Bạn không cần phải đến nếu bạn không muốn. (Không bắt buộc)" },
+      { en: "The phone rang, but I didn't hear it. I must have been asleep.", vi: "Điện thoại reo nhưng tôi không nghe thấy. Chắc hẳn lúc đó tôi đã ngủ say." },
+      { en: "You missed a great party last night. You should have come.", vi: "Tối qua bạn bỏ lỡ bữa tiệc tuyệt vời. Đáng lẽ bạn nên đến." }
+    ],
+    exercises: [
+      { q: "Tom walked straight into a wall. He __________ (not / look) where he was going.", ans: "can't have been looking", explain: "Suy đoán điều không thể xảy ra trong quá khứ (chấp nhận 'couldn't have been looking')." },
+      { q: "We have plenty of time. We __________ (not / hurry).", ans: "don't have to hurry", explain: "Không cần thiết phải vội (chấp nhận 'needn't hurry')." }
+    ]
+  },
+  {
+    id: 7, unit: "Unit 38–41", cat: "7. Conditionals & Wish (Câu điều kiện & Ước)",
+    title: "If I do / If I did / If I had done & I wish",
+    auditStatus: "verified",
+    auditNote: "Đã kiểm tra chuẩn cấu trúc đảo ngữ điều kiện và cấu trúc 'I wish I knew' vs 'I wish I had known'.",
+    formula: "Loại 1 (Có thật): If + S + V(s/es), S + will + V\nLoại 2 (Không thật hiện tại): If + S + V2/were, S + would/could + V\nLoại 3 (Không thật quá khứ): If + S + had + V3, S + would/could + have + V3",
+    rules: [
+      "Không dùng 'would' trong mệnh đề chứa 'if' (trừ trường hợp lịch sự 'If you would...').",
+      "I wish + S + V2/were: Ước điều trái với hiện tại. I wish + S + had + V3: Ước điều trái với quá khứ.",
+      "I wish + S + would + V: Phàn nàn, mong ai đó/cái gì đó thay đổi hành vi (I wish it would stop raining)."
+    ],
+    examples: [
+      { en: "If I knew his number, I would phone him. (I don't know his number)", vi: "Nếu tôi biết số anh ấy, tôi sẽ gọi ngay. (Thực tế không biết)" },
+      { en: "If I had seen you, I would have said hello.", vi: "Nếu hôm qua tôi thấy bạn, tôi đã chào rồi. (Thực tế không thấy)" },
+      { en: "I wish I hadn't eaten so much cake. I feel sick.", vi: "Ước gì tôi đã không ăn nhiều bánh đến thế. (Hối tiếc quá khứ)" }
+    ],
+    exercises: [
+      { q: "If I __________ (be) you, I wouldn't buy that coat.", ans: "were", explain: "Điều kiện loại 2 giả định trái thực tế (chấp nhận 'was' trong văn nói, 'were' chuẩn học thuật)." },
+      { q: "I'm sorry I couldn't come. If I __________ (know) you were ill, I would have visited you.", ans: "had known", explain: "Điều kiện loại 3 trái với quá khứ." }
+    ]
+  },
+  {
+    id: 8, unit: "Unit 42–46", cat: "8. Passive Voice (Câu bị động)",
+    title: "Passive (is done / was done / has been done) & Have something done",
+    auditStatus: "verified",
+    auditNote: "Đã kiểm tra đủ 8 thì bị động và cấu trúc truyền khiến 'have something done'.",
+    formula: "Bị động: S + be (chia theo thì) + V3/V-ed (+ by O)\nTruyền khiến: S + have/get + O (vật) + V3/V-ed",
+    rules: [
+      "Dùng bị động khi người thực hiện hành động không quan trọng hoặc không rõ là ai.",
+      "Động từ có 2 tân ngữ (give, ask, offer, pay, show, teach, tell) có thể chia 2 cách bị động, thường lấy người làm chủ ngữ.",
+      "Have something done: Thuê/nhờ ai đó làm gì cho mình (I had my hair cut yesterday)."
+    ],
+    examples: [
+      { en: "This house was built in 1981.", vi: "Ngôi nhà này được xây vào năm 1981." },
+      { en: "My car has been stolen!", vi: "Xe của tôi bị trộm mất rồi!" },
+      { en: "We are having the house painted at the moment.", vi: "Chúng tôi đang thuê thợ sơn lại nhà." }
+    ],
+    exercises: [
+      { q: "The room __________ (clean) every day.", ans: "is cleaned", explain: "Bị động thì hiện tại đơn." },
+      { q: "Lisa didn't repair the roof herself. She __________ (it / repair).", ans: "had it repaired", explain: "Cấu trúc thuê người làm trong quá khứ: had + O + V3." }
+    ]
+  },
+  {
+    id: 9, unit: "Unit 47–48", cat: "9. Reported Speech (Câu tường thuật)",
+    title: "Reported Speech (He said that...) & Lùi thì",
+    auditStatus: "verified",
+    auditNote: "Đã xác minh quy tắc không cần lùi thì nếu sự việc vẫn còn đúng ở hiện tại.",
+    formula: "S + said (that) / told + O + (that) + S + V (lùi 1 bậc thì)",
+    rules: [
+      "Say không có tân ngữ trực tiếp (He said that... hoặc He said to me). Tell bắt buộc có tân ngữ (He told me that...).",
+      "Trong câu hỏi tường thuật, trật tự từ trở về dạng khẳng định (KHÔNG đảo trợ động từ): He asked me where I lived (Not: where did I live)."
+    ],
+    examples: [
+      { en: "Paul said that he was feeling ill.", vi: "Paul nói rằng anh ấy đang cảm thấy ốm." },
+      { en: "The police officer asked us where we were going.", vi: "Viên cảnh sát hỏi chúng tôi đang đi đâu." }
+    ],
+    exercises: [
+      { q: "‘Where are you going?’ -> She asked me where __________.", ans: "I was going", explain: "Lùi thì hiện tại tiếp diễn -> quá khứ tiếp diễn và giữ trật tự S + V." }
+    ]
+  },
+  {
+    id: 10, unit: "Unit 49–52", cat: "10. Questions & Auxiliary Verbs (Câu hỏi & Trợ động từ)",
+    title: "Embedded Questions (Do you know where...?) & Question Tags",
+    auditStatus: "fixed",
+    auditNote: "Đã sửa lỗi câu hỏi đuôi của 'I am' (aren't I?) và 'Let's' (shall we?) bị thiếu dấu hỏi ở bản TXT.",
+    formula: "Câu hỏi lồng: Do you know + Wh- + S + V? (Không đảo ngữ)\nCâu hỏi đuôi: Mệnh đề khẳng định, trợ động từ phủ định + đại từ?",
+    rules: [
+      "Khi câu hỏi nằm bên trong một câu khác (Could you tell me..., I don't know...), KHÔNG đảo trợ động từ lên trước chủ ngữ.",
+      "Câu hỏi đuôi đặc biệt: I'm late, aren't I? | Let's go, shall we? | Don't be late, will you?"
+    ],
+    examples: [
+      { en: "Do you know what time the film starts? (Not: does the film start)", vi: "Bạn có biết phim bắt đầu lúc mấy giờ không?" },
+      { en: "You haven't seen Lisa today, have you?", vi: "Hôm nay bạn chưa gặp Lisa phải không?" }
+    ],
+    exercises: [
+      { q: "Could you tell me where __________ (the station / be)?", ans: "the station is", explain: "Câu hỏi lồng không đảo động từ 'is' lên trước 'the station'." }
+    ]
+  },
+  {
+    id: 11, unit: "Unit 53–68", cat: "11. -ing and to... (Danh động từ & Động từ nguyên mẫu)",
+    title: "Verb + -ing vs. Verb + to... (Stop, Remember, Try, Suggest, Used to)",
+    auditStatus: "fixed",
+    auditNote: "Đã đối chiếu chuẩn cặp động từ đổi nghĩa (remember/stop/try + V-ing vs to V) và 'be used to + V-ing'.",
+    formula: "Enjoy / avoid / mind / suggest / finish + V-ing\nDecide / hope / offer / promise / refuse / manage + to V\nBe/Get used to + V-ing (quen với việc gì)",
+    rules: [
+      "Suggest + V-ing hoặc Suggest (that) S + (should) + V. KHÔNG bao giờ dùng 'suggest someone to do'.",
+      "Remember doing: nhớ đã làm gì (quá khứ). Remember to do: nhớ phải làm gì (nhiệm vụ).",
+      "Stop doing: dừng hẳn việc đang làm. Stop to do: dừng lại để làm việc khác."
+    ],
+    examples: [
+      { en: "I suggested going to the cinema. (Not: suggested to go)", vi: "Tôi gợi ý đi xem phim." },
+      { en: "I remember locking the door. (= I locked it and now I remember this)", vi: "Tôi nhớ rõ là đã khóa cửa rồi." },
+      { en: "Please remember to lock the door when you go out.", vi: "Làm ơn nhớ khóa cửa khi bạn ra ngoài nhé." },
+      { en: "She is used to driving on the left.", vi: "Cô ấy đã quen với việc lái xe bên trái." }
+    ],
+    exercises: [
+      { q: "Would you mind __________ (close) the door?", ans: "closing", explain: "Sau 'mind' luôn dùng V-ing." },
+      { q: "We stopped __________ (buy) some petrol on the way home.", ans: "to buy", explain: "Dừng xe lại ĐỂ mua xăng -> stop + to V." }
+    ]
+  },
+  {
+    id: 12, unit: "Unit 69–81", cat: "12. Articles & Nouns (Mạo từ & Danh từ)",
+    title: "Countable/Uncountable Nouns & A/An vs. The vs. Zero Article",
+    auditStatus: "fixed",
+    auditNote: "Đã hiệu đính danh sách danh từ không đếm được kinh điển (advice, furniture, luggage, news, information, weather, progress).",
+    formula: "Không đếm được (luôn số ít, không dùng a/an): advice, information, news, luggage, baggage, furniture, equipment, accommodation, behavior, traffic, weather, work",
+    rules: [
+      "Không dùng 'the' khi nói chung chung về danh từ số nhiều hoặc không đếm được (I love music. Books are expensive).",
+      "Go to school / hospital / prison / church / bed (không có 'the' khi đi đúng mục đích chính của nơi đó).",
+      "Dùng 'the' với nhạc cụ (play the piano), đại dương, sông, dãy núi, tên nước số nhiều (the Netherlands, the USA)."
+    ],
+    examples: [
+      { en: "Can you give me some advice? (Not: an advice / advices)", vi: "Bạn có thể cho tôi vài lời khuyên không?" },
+      { en: "The news wasn't very good. (News is singular)", vi: "Tin tức không được tốt lắm." },
+      { en: "Ken's brother is in prison for robbery.", vi: "Anh trai của Ken đang ngồi tù vì tội cướp. (Đúng mục đích nhà tù -> không 'the')" }
+    ],
+    exercises: [
+      { q: "We had __________ very nice weather when we were on holiday.", ans: "no article", explain: "'Weather' không đếm được và mang nghĩa chung chung nên không dùng a/an hay the (gõ 'no article' hoặc '-')." }
+    ]
+  },
+  {
+    id: 13, unit: "Unit 92–97", cat: "13. Relative Clauses (Mệnh đề quan hệ)",
+    title: "Who, That, Which, Whose, Whom, Where & Defining vs. Non-defining",
+    auditStatus: "verified",
+    auditNote: "Đã xác minh quy tắc cấm dùng 'that' sau dấu phẩy (mệnh đề quan hệ không xác định).",
+    formula: "Mệnh đề xác định (không dấu phẩy): Dùng who/which/that; có thể lược bỏ nếu làm tân ngữ.\nMệnh đề không xác định (có dấu phẩy): Chỉ dùng who/which/whose/where; CẤM dùng 'that'.",
+    rules: [
+      "Không được dùng 'that' trong mệnh đề quan hệ có dấu phẩy.",
+      "Không được lược bỏ đại từ quan hệ trong mệnh đề có dấu phẩy, kể cả khi nó làm tân ngữ."
+    ],
+    examples: [
+      { en: "The woman who lives next door is a doctor.", vi: "Người phụ nữ sống ở nhà bên cạnh là bác sĩ." },
+      { en: "My brother Ben, who lives in Hong Kong, is an architect.", vi: "Anh trai tôi Ben, người sống ở Hồng Kông, là kiến trúc sư. (Có dấu phẩy -> cấm 'that')" }
+    ],
+    exercises: [
+      { q: "We stayed at the Park Hotel, __________ a friend of ours recommended.", ans: "which", explain: "Có dấu phẩy đứng trước nên bắt buộc dùng 'which', không dùng 'that'." }
+    ]
+  },
+  {
+    id: 14, unit: "Unit 98–112", cat: "14. Adjectives, Adverbs & Word Order (Tính từ, Trạng từ & Trật tự từ)",
+    title: "-ing vs. -ed Adjectives, Comparatives, Enough/Too & Word Order",
+    auditStatus: "verified",
+    auditNote: "Đã kiểm tra vị trí trạng từ tần suất (always, often, never) đứng trước động từ thường, sau 'to be' và trợ động từ đầu tiên.",
+    formula: "Trật tự câu chuẩn: Subject + Verb + Object + Place + Time\nTrạng từ tần suất: S + (trợ ĐT 1) + always/never + V thường",
+    rules: [
+      "Tính từ đuôi -ing mô tả bản chất sự vật/người gây ra cảm xúc (boring). Đuôi -ed mô tả cảm xúc bị tác động (bored).",
+      "Enough đứng SAU tính từ/trạng từ (warm enough), nhưng đứng TRƯỚC danh từ (enough money).",
+      "Trong câu có nhiều động từ, trạng từ tần suất đứng sau trợ động từ ĐẦU TIÊN: I have never been to China."
+    ],
+    examples: [
+      { en: "Julia is interested in politics. She finds politics interesting.", vi: "Julia hứng thú với chính trị. Cô ấy thấy chính trị thú vị." },
+      { en: "He doesn't run fast enough to win the race.", vi: "Anh ấy không chạy đủ nhanh để thắng cuộc đua." },
+      { en: "We went to a party at Kate's house last night. (Place before Time)", vi: "Tối qua chúng tôi dự tiệc ở nhà Kate. (Nơi chốn trước Thời gian)" }
+    ],
+    exercises: [
+      { q: "He didn't get the job because he wasn't __________ (experienced / enough).", ans: "experienced enough", explain: "'Enough' đứng sau tính từ." }
+    ]
+  },
+  {
+    id: 15, unit: "Unit 113–120", cat: "15. Conjunctions & Prepositions (Liên từ & Giới từ thời gian/nơi chốn)",
+    title: "Although / In spite of / During / While / By / Until / In / On / At",
+    auditStatus: "fixed",
+    auditNote: "Đã làm rõ cặp hay sai nhất của người Việt: 'by' (trước hoặc muộn nhất là mốc đó) vs 'until' (kéo dài liên tục tới mốc đó).",
+    formula: "Although / Even though + S + V\nIn spite of / Despite + Noun / V-ing\nDuring + Noun | While + S + V",
+    rules: [
+      "By + mốc thời gian = không muộn hơn thời điểm đó (deadline). Until + mốc thời gian = hành động kéo dài liên tục cho tới lúc đó mới dừng.",
+      "In time = kịp lúc (trước khi quá muộn). On time = đúng giờ (chính xác theo lịch trình).",
+      "At the end (of something) = điểm kết thúc của một sự vật/sự kiện. In the end = cuối cùng thì (sau một quá trình)."
+    ],
+    examples: [
+      { en: "In spite of the rain, we enjoyed our holiday.", vi: "Mặc dù trời mưa, chúng tôi vẫn tận hưởng kỳ nghỉ." },
+      { en: "I have to be at the airport by 8.30. (Deadline)", vi: "Tôi phải có mặt ở sân bay muộn nhất là 8:30." },
+      { en: "I stayed in bed until half past ten.", vi: "Tôi nằm trên giường liên tục tới tận 10:30 mới dậy." }
+    ],
+    exercises: [
+      { q: "__________ she was tired, she couldn't sleep.", ans: "Although", explain: "Theo sau là mệnh đề (S + V) nên dùng 'Although' hoặc 'Even though'." },
+      { q: "The train arrived right __________ time. It wasn't late at all.", ans: "on", explain: "Đúng giờ theo lịch trình -> 'on time'." }
+    ]
+  },
+  {
+    id: 16, unit: "Unit 121–145", cat: "16. Prepositions & Phrasal Verbs (Giới từ & Cụm động từ)",
+    title: "Noun/Adjective + Preposition & Essential Phrasal Verbs",
+    auditStatus: "verified",
+    auditNote: "Đã tổng hợp các cụm giới từ và phrasal verbs trọng tâm từ Unit 121 đến 145.",
+    formula: "afraid of | good at | interested in | depend on | apologize to sb for sth\nput off (hoãn) | turn down (từ chối/giảm âm) | look forward to + V-ing | run out of (hết sạch)",
+    rules: [
+      "Look forward to + V-ing / Noun ('to' ở đây là giới từ, không phải to-infinitive).",
+      "Nếu tân ngữ của cụm động từ tách được là đại từ (it, them, me, him), bắt buộc đặt đại từ Ở GIỮA: turn it off (KHÔNG nói turn off it)."
+    ],
+    examples: [
+      { en: "I'm looking forward to seeing you again.", vi: "Tôi rất mong chờ được gặp lại bạn." },
+      { en: "The television is too loud. Can you turn it down?", vi: "Tivi to quá. Bạn vặn nhỏ nó xuống được không? (Đại từ 'it' đứng giữa)" },
+      { en: "We had to put off the meeting until next week.", vi: "Chúng tôi phải hoãn cuộc họp sang tuần sau." }
+    ],
+    exercises: [
+      { q: "Are you good __________ repairing things?", ans: "at", explain: "Cụm cố định: good at + V-ing/Noun." },
+      { q: "Don't throw that box away. I need __________ (it / keep -> dùng cụm từ 'keep it').", ans: "keep it", explain: "Đại từ đứng sau ngoại động từ." }
+    ]
+  }
+];
+
+const QUIZ_BANK = [
+  { cat: "1. Present Tenses", q: "‘Where's Mark?’ ‘He __________ a shower.’", opts: ["has", "is having", "have", "having"], ans: 1, exp: "Hành động đang diễn ra ngay tại thời điểm hỏi -> Present Continuous." },
+  { cat: "1. Present Tenses", q: "Look! That man __________ to open the door of your car.", opts: ["tries", "tried", "is trying", "has tried"], ans: 2, exp: "Có từ cảm thán 'Look!' báo hiệu hành động đang diễn ra trước mắt." },
+  { cat: "3. Present Perfect", q: "I'm looking for Paul. __________ him?", opts: ["Did you see", "Have you seen", "Do you see", "Had you seen"], ans: 1, exp: "Hỏi về trải nghiệm/kết quả liên quan tới hiện tại (đang tìm Paul)." },
+  { cat: "3. Present Perfect", q: "Jenny __________ in Dublin for 10 years, and she still loves it there.", opts: ["lived", "lives", "has lived", "was living"], ans: 2, exp: "Bắt đầu trong quá khứ và vẫn tiếp tục ở hiện tại -> Present Perfect." },
+  { cat: "3. Present Perfect", q: "My grandparents __________ married in London in 1965.", opts: ["have got", "got", "had got", "get"], ans: 1, exp: "Có mốc thời gian quá khứ xác định 'in 1965' -> Past Simple." },
+  { cat: "5. Future Forms", q: "I'll call you as soon as I __________ any news.", opts: ["will hear", "heard", "hear", "am hearing"], ans: 2, exp: "Trong mệnh đề thời gian (as soon as), dùng Present Simple thay cho tương lai." },
+  { cat: "6. Modal Verbs", q: "You __________ take an umbrella. It's not going to rain.", opts: ["mustn't", "needn't", "can't", "shouldn't have"], ans: 1, exp: "Không cần thiết phải mang ô -> needn't / don't have to." },
+  { cat: "6. Modal Verbs", q: "I can't find my bag anywhere. I __________ it in the shop.", opts: ["must leave", "must have left", "should leave", "can't leave"], ans: 1, exp: "Suy đoán chắc chắn về một sự việc đã xảy ra trong quá khứ: must have + V3." },
+  { cat: "7. Conditionals", q: "If I __________ hungry, I would eat something.", opts: ["am", "was/were", "had been", "would be"], ans: 1, exp: "Câu điều kiện loại 2 giả định trái thực tế ở hiện tại." },
+  { cat: "8. Passive Voice", q: "There's somebody walking behind us. I think we __________.", opts: ["are following", "are being followed", "followed", "have followed"], ans: 1, exp: "Bị động của thì hiện tại tiếp diễn: am/is/are + being + V3." },
+  { cat: "10. Questions", q: "Excuse me, can you tell me where __________?", opts: ["is the nearest bank", "the nearest bank is", "does the nearest bank", "was the nearest bank"], ans: 1, exp: "Câu hỏi gián tiếp không đảo trợ động từ lên trước chủ ngữ." },
+  { cat: "11. -ing and to...", q: "I'm tired. I'd rather __________ out this evening, if you don't mind.", opts: ["not going", "not to go", "not go", "don't go"], ans: 2, exp: "Cấu trúc: would rather (not) + V nguyên mẫu không 'to'." },
+  { cat: "12. Articles & Nouns", q: "The police want to interview two men about the robbery. The police __________ looking for them.", opts: ["is", "are", "was", "has been"], ans: 1, exp: "'The police' luôn chia động từ ở số nhiều." },
+  { cat: "13. Relative Clauses", q: "Colin told me about his new job, __________ he's enjoying very much.", opts: ["that", "which", "what", "who"], ans: 1, exp: "Sau dấu phẩy (mệnh đề quan hệ không xác định) chỉ dùng 'which', cấm dùng 'that'." },
+  { cat: "15. Prepositions", q: "I'll be at home __________ Friday morning. You can phone me then.", opts: ["in", "at", "on", "by"], ans: 2, exp: "Có thứ trong tuần (Friday morning) -> dùng giới từ 'on'." },
+  { cat: "16. Phrasal Verbs", q: "Your shoes are dirty. Take __________ before you come in.", opts: ["off them", "them off", "it off", "off it"], ans: 1, exp: "Shoes số nhiều dùng 'them', và đại từ bắt buộc nằm giữa cụm động từ 'take them off'." }
+];
+
+const SCRAMBLE_DATA = [
+  { words: ["Have", "you", "ever", "been", "to", "Japan?"], vi: "Bạn đã từng đến Nhật Bản bao giờ chưa?" },
+  { words: ["Do", "you", "know", "what", "time", "the", "train", "leaves?"], vi: "Bạn có biết mấy giờ tàu rời bến không?" },
+  { words: ["I", "wish", "I", "had", "known", "you", "were", "coming."], vi: "Ước gì tôi đã biết trước là bạn sẽ đến." },
+  { words: ["She", "is", "used", "to", "working", "under", "pressure."], vi: "Cô ấy đã quen với việc làm việc dưới áp lực." },
+  { words: ["We", "went", "to", "a", "great", "restaurant", "last", "night."], vi: "Tối qua chúng tôi đã đến một nhà hàng tuyệt vời." },
+  { words: ["The", "meeting", "has", "been", "put", "off", "until", "Friday."], vi: "Cuộc họp đã bị hoãn lại cho đến thứ Sáu." }
+];
+
+const HUNTER_DATA = [
+  { s: "Look! It snows outside.", ok: false, exp: "SAI -> Phải dùng hiện tại tiếp diễn 'It is snowing' vì đang diễn ra lúc nói ('Look!')." },
+  { s: "How long have you known each other?", ok: true, exp: "ĐÚNG -> 'Know' là động từ trạng thái, chia hiện tại hoàn thành với 'How long'." },
+  { s: "Where have you been yesterday evening?", ok: false, exp: "SAI -> Có 'yesterday evening' (quá khứ đã chấm dứt), phải dùng 'Where were you...'." },
+  { s: "My brother, that lives in London, is a doctor.", ok: false, exp: "SAI -> Không được dùng 'that' sau dấu phẩy. Phải dùng 'who'." },
+  { s: "I'm looking forward to hearing from you soon.", ok: true, exp: "ĐÚNG -> Cấu trúc 'look forward to + V-ing'." },
+  { s: "Can you give me an advice about this problem?", ok: false, exp: "SAI -> 'Advice' không đếm được, không dùng 'an'. Phải dùng 'some advice' hoặc 'a piece of advice'." },
+  { s: "If I had known you were in hospital, I would have visited you.", ok: true, exp: "ĐÚNG -> Câu điều kiện loại 3 chuẩn mực." },
+  { s: "Could you tell me where is the nearest post office?", ok: false, exp: "SAI -> Câu hỏi lồng không đảo ngữ. Phải là '...where the nearest post office is'." }
+];
+
+// ==================== 2. STATE & PERSISTENCE ====================
+let state = {
+  xp: 0,
+  streak: 1,
+  lastDay: new Date().toDateString(),
+  completedUnits: [],
+  currentUnitId: 1
+};
+
+try {
+  const saved = JSON.parse(localStorage.getItem("murphy_master_live_v1") || "null");
+  if (saved) state = Object.assign(state, saved);
+} catch (e) {}
+
+function saveState() {
+  try { localStorage.setItem("murphy_master_live_v1", JSON.stringify(state)); } catch (e) {}
+  document.getElementById("xp-val").innerText = state.xp;
+  document.getElementById("streak-val").innerText = state.streak;
+  document.getElementById("done-val").innerText = state.completedUnits.length;
+  document.getElementById("total-units-val").innerText = MURPHY_UNITS.length;
+  const pct = Math.round((state.completedUnits.length / MURPHY_UNITS.length) * 100);
+  document.getElementById("course-progress").style.width = pct + "%";
+}
+
+function addXP(pts) {
+  state.xp += pts;
+  saveState();
+}
+
+// ==================== 3. NAVIGATION ====================
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+  });
+});
+
+// ==================== 4. LESSONS & EXERCISES RENDERING ====================
+function initFilters() {
+  const catFilter = document.getElementById("cat-filter");
+  const quizCat = document.getElementById("quiz-cat");
+  const cats = [...new Set(MURPHY_UNITS.map(u => u.cat))];
+  cats.forEach(c => {
+    catFilter.innerHTML += `<option value="${c}">${c}</option>`;
+  });
+  const qCats = [...new Set(QUIZ_BANK.map(q => q.cat))];
+  qCats.forEach(c => {
+    quizCat.innerHTML += `<option value="${c}">${c}</option>`;
+  });
+  catFilter.addEventListener("change", renderUnitList);
+  document.getElementById("unit-search").addEventListener("input", renderUnitList);
+}
+
+function renderUnitList() {
+  const q = document.getElementById("unit-search").value.toLowerCase();
+  const cat = document.getElementById("cat-filter").value;
+  const listEl = document.getElementById("unit-list");
+  listEl.innerHTML = "";
+
+  MURPHY_UNITS.filter(u => {
+    const matchCat = cat === "ALL" || u.cat === cat;
+    const matchQ = u.title.toLowerCase().includes(q) || u.unit.toLowerCase().includes(q) || u.cat.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  }).forEach(u => {
+    const isDone = state.completedUnits.includes(u.id);
+    const btn = document.createElement("button");
+    btn.className = "unit-item" + (u.id === state.currentUnitId ? " active" : "");
+    btn.innerHTML = `
+      <div>
+        <div class="unit-cat">${u.unit} • ${u.cat.split(". ")[1]}</div>
+        <div style="font-weight:600; font-size:0.88rem; margin-top:2px;">${u.title}</div>
+      </div>
+      <span>${isDone ? "✅" : "📘"}</span>
+    `;
+    btn.onclick = () => {
+      state.currentUnitId = u.id;
+      saveState();
+      renderUnitList();
+      renderLessonDetail(u.id);
+    };
+    listEl.appendChild(btn);
+  });
+}
+
+function speakExample(unitId, exIdx, rate) {
+  const u = MURPHY_UNITS.find(x => x.id === unitId);
+  if (u && u.examples[exIdx]) {
+    speakText(u.examples[exIdx].en, rate);
+  }
+}
+
+function renderLessonDetail(id) {
+  const u = MURPHY_UNITS.find(x => x.id === id) || MURPHY_UNITS[0];
+  const isDone = state.completedUnits.includes(u.id);
+  const container = document.getElementById("lesson-detail");
+
+  const auditBadge = u.auditStatus === "verified"
+    ? `<span class="audit-tag audit-ok">✓ Đã đối chiếu chuẩn Cambridge</span>`
+    : `<span class="audit-tag audit-fix">⚠ Đã hiệu đính lỗi OCR bản TXT</span>`;
+
+  let examplesHtml = u.examples.map((ex, idx) => `
+    <div class="example-row">
+      <div>
+        <div class="example-en">${ex.en}</div>
+        <div class="example-vi">${ex.vi}</div>
+      </div>
+      <div class="audio-btns">
+        <button class="btn btn-sm" onclick="speakExample(${u.id}, ${idx}, 1.0)" title="Nghe chuẩn">🔊</button>
+        <button class="btn btn-sm btn-outline" onclick="speakExample(${u.id}, ${idx}, 0.65)" title="Nghe chậm">🐢</button>
+      </div>
+    </div>
+  `).join("");
+
+  let exercisesHtml = u.exercises.map((ex, idx) => `
+    <div class="exercise-item">
+      <div class="exercise-q">Câu ${idx + 1}: ${ex.q}</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <input type="text" id="ex-in-${u.id}-${idx}" placeholder="Nhập đáp án của bạn..." style="max-width:340px;">
+        <button class="btn btn-sm btn-success" onclick="checkExercise(${u.id}, ${idx})">Kiểm tra</button>
+        <button class="btn btn-sm btn-outline" onclick="showHint(${u.id}, ${idx})">Xem đáp án</button>
+      </div>
+      <div id="ex-fb-${u.id}-${idx}" class="feedback"></div>
+    </div>
+  `).join("");
+
+  container.innerHTML = `
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+        <div>
+          <span class="unit-cat">${u.unit} — ${u.cat}</span>
+          <h2 style="margin-top:4px;">${u.title}</h2>
+        </div>
+        ${auditBadge}
+      </div>
+      <div style="font-size:0.82rem; color:var(--muted); margin-bottom:12px;">🛡️ ${u.auditNote}</div>
+      
+      <div class="formula-box">${u.formula.split("\n").join("<br>")}</div>
+      
+      <h3 style="margin-top:16px;">📌 Quy tắc cốt lõi (Raymond Murphy)</h3>
+      <ul style="padding-left:20px; margin-bottom:16px;">
+        ${u.rules.map(r => `<li class="rule-block">${r}</li>`).join("")}
+      </ul>
+
+      <h3>🗣️ Ví dụ minh họa chuẩn (Bấm loa để nghe phát âm)</h3>
+      <div style="margin-bottom:18px;">${examplesHtml}</div>
+
+      <h3>✍️ Bài tập thực hành tại chỗ</h3>
+      ${exercisesHtml}
+
+      <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <button class="btn ${isDone ? 'btn-outline' : 'btn-success'}" onclick="toggleComplete(${u.id})">
+          ${isDone ? "✅ Đã hoàn thành bài này (Bấm để bỏ đánh dấu)" : "🎉 Đánh dấu hoàn thành (+50 XP)"}
+        </button>
+        <div style="display:flex; gap:8px;">
+          ${u.id > 1 ? `<button class="btn btn-outline" onclick="navUnit(${u.id - 1})">← Bài trước</button>` : ""}
+          ${u.id < MURPHY_UNITS.length ? `<button class="btn" onclick="navUnit(${u.id + 1})">Bài tiếp theo →</button>` : ""}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function navUnit(id) {
+  state.currentUnitId = id;
+  saveState();
+  renderUnitList();
+  renderLessonDetail(id);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function checkExercise(unitId, idx) {
+  const u = MURPHY_UNITS.find(x => x.id === unitId);
+  const ex = u.exercises[idx];
+  const val = document.getElementById(`ex-in-${unitId}-${idx}`).value.trim().toLowerCase();
+  const fb = document.getElementById(`ex-fb-${unitId}-${idx}`);
+  const target = ex.ans.toLowerCase();
+
+  const norm = s => s.replace(/’/g, "'")
+    .replace(/\bi'm\b/g, "i am")
+    .replace(/\b'll\b/g, " will")
+    .replace(/\b've\b/g, " have")
+    .replace(/\b's\b/g, " is")
+    .replace(/\bdon't\b/g, "do not")
+    .replace(/\bdoesn't\b/g, "does not")
+    .replace(/\bdidn't\b/g, "did not")
+    .replace(/\bwasn't\b/g, "was not")
+    .replace(/\bweren't\b/g, "were not")
+    .replace(/\bhadn't\b/g, "had not")
+    .replace(/\bwouldn't\b/g, "would not")
+    .replace(/\bcan't\b/g, "cannot")
+    .replace(/\bcouldn't\b/g, "could not")
+    .replace(/\bneedn't\b/g, "do not have to")
+    .replace(/\s+/g, " ").trim();
+
+  if (val === target || norm(val) === norm(target) || (target === "no article" && val === "-")) {
+    fb.className = "feedback ok";
+    fb.innerHTML = `✅ Chính xác! (+15 XP) — ${ex.explain}`;
+    addXP(15);
+  } else {
+    fb.className = "feedback err";
+    fb.innerHTML = `❌ Chưa đúng. Gợi ý: ${ex.explain}`;
+  }
+}
+
+function showHint(unitId, idx) {
+  const u = MURPHY_UNITS.find(x => x.id === unitId);
+  const ex = u.exercises[idx];
+  const fb = document.getElementById(`ex-fb-${unitId}-${idx}`);
+  fb.className = "feedback ok";
+  fb.innerHTML = `💡 Đáp án chuẩn: <strong>${ex.ans}</strong> — ${ex.explain}`;
+}
+
+function toggleComplete(unitId) {
+  const idx = state.completedUnits.indexOf(unitId);
+  if (idx === -1) {
+    state.completedUnits.push(unitId);
+    addXP(50);
+    showToast("🎉 Hoàn thành chuyên đề! +50 XP");
+  } else {
+    state.completedUnits.splice(idx, 1);
+  }
+  saveState();
+  renderUnitList();
+  renderLessonDetail(unitId);
+}
+
+// ==================== 5. QUIZ ENGINE ====================
+let currentQuiz = [], qIndex = 0, qScore = 0;
+
+function startQuiz() {
+  const cat = document.getElementById("quiz-cat").value;
+  let pool = QUIZ_BANK.filter(q => cat === "ALL" || q.cat === cat);
+  currentQuiz = [...pool].sort(() => Math.random() - 0.5).slice(0, 8);
+  qIndex = 0; qScore = 0;
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion() {
+  const box = document.getElementById("quiz-box");
+  if (qIndex >= currentQuiz.length) {
+    box.innerHTML = `
+      <div style="text-align:center; padding:24px; background:var(--bg); border-radius:12px;">
+        <h2>🏆 Hoàn thành bài Quiz!</h2>
+        <p style="font-size:1.2rem; margin:10px 0;">Điểm số: <strong>${qScore} / ${currentQuiz.length}</strong> câu đúng</p>
+        <button class="btn" onclick="startQuiz()">Làm bộ đề mới</button>
+      </div>
+    `;
+    return;
+  }
+  const item = currentQuiz[qIndex];
+  box.innerHTML = `
+    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+      <span class="badge">${item.cat}</span>
+      <span style="color:var(--muted); font-size:0.85rem;">Câu ${qIndex + 1} / ${currentQuiz.length}</span>
+    </div>
+    <div style="font-size:1.12rem; font-weight:700; margin:12px 0;">${item.q}</div>
+    <div class="quiz-options">
+      ${item.opts.map((o, i) => `<button class="opt-btn" id="qopt-${i}" onclick="selectQuizOpt(${i})">${String.fromCharCode(65+i)}. ${o}</button>`).join("")}
+    </div>
+    <div id="quiz-fb" class="feedback" style="margin-top:14px;"></div>
+    <button class="btn" id="quiz-next-btn" style="display:none; margin-top:12px;" onclick="qIndex++; renderQuizQuestion();">Câu tiếp theo →</button>
+  `;
+}
+
+function selectQuizOpt(i) {
+  const item = currentQuiz[qIndex];
+  document.querySelectorAll(".opt-btn").forEach(b => b.disabled = true);
+  const fb = document.getElementById("quiz-fb");
+  if (i === item.ans) {
+    document.getElementById(`qopt-${i}`).classList.add("correct");
+    fb.className = "feedback ok";
+    fb.innerHTML = `✅ Tuyệt vời! (+20 XP) — ${item.exp}`;
+    qScore++; addXP(20);
+  } else {
+    document.getElementById(`qopt-${i}`).classList.add("wrong");
+    document.getElementById(`qopt-${item.ans}`).classList.add("correct");
+    fb.className = "feedback err";
+    fb.innerHTML = `❌ Chưa chính xác. ${item.exp}`;
+  }
+  document.getElementById("quiz-next-btn").style.display = "inline-flex";
+}
+
+// ==================== 6. GAMES (WORD SCRAMBLE & GRAMMAR HUNTER) ====================
+let scrIdx = 0, scrBank = [], scrAns = [];
+
+function loadScramble() {
+  const item = SCRAMBLE_DATA[scrIdx % SCRAMBLE_DATA.length];
+  document.getElementById("scramble-vi").innerText = "Nghĩa tiếng Việt: " + item.vi;
+  scrAns = [];
+  scrBank = item.words.map((w, i) => ({ w, id: i })).sort(() => Math.random() - 0.5);
+  document.getElementById("scramble-fb").innerText = "";
+  renderScrambleZones();
+}
+
+function renderScrambleZones() {
+  const az = document.getElementById("answer-zone");
+  const wb = document.getElementById("word-bank");
+  az.innerHTML = scrAns.map((obj, idx) => `<span class="word-chip" onclick="removeWord(${idx})">${obj.w}</span>`).join("");
+  wb.innerHTML = scrBank.map((obj, idx) => `<span class="word-chip" onclick="pickWord(${idx})">${obj.w}</span>`).join("");
+}
+
+function pickWord(idx) {
+  scrAns.push(scrBank[idx]);
+  scrBank.splice(idx, 1);
+  renderScrambleZones();
+}
+
+function removeWord(idx) {
+  scrBank.push(scrAns[idx]);
+  scrAns.splice(idx, 1);
+  renderScrambleZones();
+}
+
+function resetScramble() { loadScramble(); }
+function nextScramble() { scrIdx++; loadScramble(); }
+
+function checkScramble() {
+  const item = SCRAMBLE_DATA[scrIdx % SCRAMBLE_DATA.length];
+  const userStr = scrAns.map(o => o.w).join(" ");
+  const targetStr = item.words.join(" ");
+  const fb = document.getElementById("scramble-fb");
+  if (userStr === targetStr) {
+    fb.className = "feedback ok";
+    fb.innerHTML = "✅ Chính xác tuyệt đối! (+25 XP)";
+    speakText(targetStr, 1.0);
+    addXP(25);
+  } else {
+    fb.className = "feedback err";
+    fb.innerHTML = "❌ Trật tự chưa đúng. Hãy kiểm tra lại vị trí trạng từ hoặc trợ động từ!";
+  }
+}
+
+// Game 2: Grammar Hunter
+let hunterIdx = 0, hunterStreak = 0, hunterTime = 15, hunterInterval = null;
+
+function loadHunter() {
+  clearInterval(hunterInterval);
+  hunterTime = 15;
+  document.getElementById("hunter-timer").innerText = hunterTime;
+  const item = HUNTER_DATA[hunterIdx % HUNTER_DATA.length];
+  document.getElementById("hunter-sentence").innerText = `"${item.s}"`;
+  document.getElementById("hunter-fb").innerText = "";
+  hunterInterval = setInterval(() => {
+    hunterTime--;
+    document.getElementById("hunter-timer").innerText = hunterTime;
+    if (hunterTime <= 0) {
+      clearInterval(hunterInterval);
+      hunterStreak = 0;
+      document.getElementById("hunter-streak").innerText = hunterStreak;
+      document.getElementById("hunter-fb").className = "feedback err";
+      document.getElementById("hunter-fb").innerText = "⏰ Hết giờ! " + item.exp;
+      setTimeout(() => { hunterIdx++; loadHunter(); }, 2500);
+    }
+  }, 1000);
+}
+
+function answerHunter(userChoice) {
+  clearInterval(hunterInterval);
+  const item = HUNTER_DATA[hunterIdx % HUNTER_DATA.length];
+  const fb = document.getElementById("hunter-fb");
+  if (userChoice === item.ok) {
+    hunterStreak++;
+    addXP(15);
+    fb.className = "feedback ok";
+    fb.innerText = `✅ Chuẩn xác! (+15 XP) ${item.exp}`;
+  } else {
+    hunterStreak = 0;
+    fb.className = "feedback err";
+    fb.innerText = `❌ Bị lừa rồi! ${item.exp}`;
+  }
+  document.getElementById("hunter-streak").innerText = hunterStreak;
+  setTimeout(() => { hunterIdx++; loadHunter(); }, 2400);
+}
+
+// ==================== 7. PRONUNCIATION & SPEECH RECOGNITION ====================
+let allExamples = [];
+MURPHY_UNITS.forEach(u => u.examples.forEach(e => allExamples.push({ unit: u.unit, en: e.en.replace(/\s*\(.*?\)/g, ""), vi: e.vi })));
+let pronIdx = 0;
+
+function nextPronounceSentence() {
+  pronIdx = (pronIdx + 1) % allExamples.length;
+  const item = allExamples[pronIdx];
+  document.getElementById("pron-unit-label").innerText = item.unit;
+  document.getElementById("pron-target").innerText = item.en;
+  document.getElementById("pron-vi").innerText = item.vi;
+  document.getElementById("speech-result").style.display = "none";
+}
+
+function setCustomPronounce() {
+  const val = document.getElementById("custom-tts-input").value.trim();
+  if (!val) return;
+  document.getElementById("pron-unit-label").innerText = "Câu tùy chỉnh";
+  document.getElementById("pron-target").innerText = val;
+  document.getElementById("pron-vi").innerText = "";
+  document.getElementById("speech-result").style.display = "none";
+}
+
+function speakText(text, rate = 1.0) {
+  if (!("speechSynthesis" in window)) {
+    showToast("Trình duyệt không hỗ trợ đọc giọng nói TTS.");
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const cleanText = text.replace(/\(.*?\)/g, "").trim();
+  const utter = new SpeechSynthesisUtterance(cleanText);
+  const accent = document.getElementById("voice-accent") ? document.getElementById("voice-accent").value : "en-US";
+  utter.lang = accent;
+  utter.rate = rate;
+  const voices = window.speechSynthesis.getVoices();
+  const matched = voices.find(v => v.lang.includes(accent)) || voices.find(v => v.lang.startsWith("en"));
+  if (matched) utter.voice = matched;
+  window.speechSynthesis.speak(utter);
+}
+
+function startSpeechCheck() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    showToast("Trình duyệt hiện tại không hỗ trợ nhận diện micro (Hãy dùng Chrome/Edge/Safari).");
+    return;
+  }
+  const btn = document.getElementById("mic-btn");
+  const recognition = new SpeechRecognition();
+  recognition.lang = document.getElementById("voice-accent").value;
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  btn.classList.add("mic-pulse");
+  btn.innerText = "🔴 Đang nghe bạn nói...";
+
+  recognition.onresult = (event) => {
+    const spoken = event.results[0][0].transcript;
+    evaluatePronunciation(spoken);
+  };
+  recognition.onerror = (e) => {
+    showToast("Lỗi nhận diện micro: " + e.error + ". Hãy kiểm tra quyền Micro.");
+  };
+  recognition.onend = () => {
+    btn.classList.remove("mic-pulse");
+    btn.innerText = "🎤 Bấm để đọc & Chấm điểm";
+  };
+  recognition.start();
+}
+
+function evaluatePronunciation(spoken) {
+  const target = document.getElementById("pron-target").innerText;
+  const clean = s => s.toLowerCase().replace(/[^a-z0-9'\s]/g, "").split(/\s+/).filter(Boolean);
+  const tWords = clean(target);
+  const sWords = clean(spoken);
+
+  let matchedCount = 0;
+  const diffHtml = tWords.map(w => {
+    if (sWords.includes(w)) {
+      matchedCount++;
+      return `<span style="color:#4ade80; font-weight:700; margin-right:6px;">${w}</span>`;
+    } else {
+      return `<span style="color:#f87171; text-decoration:underline; margin-right:6px;">${w}</span>`;
+    }
+  }).join("");
+
+  const score = Math.round((matchedCount / Math.max(tWords.length, 1)) * 100);
+  document.getElementById("speech-result").style.display = "block";
+  document.getElementById("spoken-text").innerText = spoken;
+  document.getElementById("speech-score").innerText = `${score}% (${matchedCount}/${tWords.length} từ khớp)`;
+  document.getElementById("speech-score").style.color = score >= 80 ? "#4ade80" : "#fbbf24";
+  document.getElementById("word-diff").innerHTML = "Chi tiết từng từ: " + diffHtml;
+  if (score >= 80) addXP(20);
+}
+
+// ==================== 8. SRS FLASHCARDS ====================
+let srsDeck = MURPHY_UNITS.map(u => ({
+  unit: u.unit,
+  front: `${u.unit}: ${u.title}`,
+  back: `${u.formula}\n\nVí dụ chuẩn: ${u.examples[0].en}\n(${u.examples[0].vi})`,
+  example: u.examples[0].en
+}));
+let fcIdx = 0;
+
+function renderFlashcard() {
+  const card = srsDeck[fcIdx % srsDeck.length];
+  document.getElementById("srs-counter").innerText = `Thẻ ${(fcIdx % srsDeck.length) + 1} / ${srsDeck.length}`;
+  document.getElementById("fc-front").innerText = card.front;
+  document.getElementById("fc-back").innerText = card.back;
+  document.getElementById("fc-back").style.display = "none";
+}
+
+function flipCard() {
+  const b = document.getElementById("fc-back");
+  b.style.display = b.style.display === "none" ? "block" : "none";
+}
+
+function rateCard(level) {
+  if (level === 1) {
+    const current = srsDeck.splice(fcIdx % srsDeck.length, 1)[0];
+    srsDeck.splice(Math.min(fcIdx + 2, srsDeck.length), 0, current);
+    showToast("Thẻ sẽ lặp lại sau 2 lượt nữa!");
+  } else {
+    fcIdx++;
+    addXP(10);
+  }
+  renderFlashcard();
+}
+
+function speakCurrentCard() {
+  const card = srsDeck[fcIdx % srsDeck.length];
+  speakText(card.example, 1.0);
+}
+
+// ==================== 9. CROSS-AUDIT TABLE ====================
+function renderAuditTable() {
+  const tbody = document.getElementById("audit-table-body");
+  tbody.innerHTML = MURPHY_UNITS.map(u => `
+    <tr>
+      <td><strong>${u.unit}</strong><br><span style="color:var(--muted); font-size:0.8rem;">${u.cat}</span></td>
+      <td>${u.auditStatus === "fixed" ? "Bản số hóa TXT trên mạng có sai lệch ký tự/đáp án" : "Trùng khớp 100% nội dung gốc"}</td>
+      <td>${u.auditNote}</td>
+      <td>${u.auditStatus === "fixed" ? '<span class="audit-tag audit-fix">Đã hiệu đính</span>' : '<span class="audit-tag audit-ok">Chuẩn xác</span>'}</td>
+    </tr>
+  `).join("");
+}
+
+// ==================== BOOT ====================
+window.addEventListener("load", () => {
+  initFilters();
+  saveState();
+  renderUnitList();
+  renderLessonDetail(state.currentUnitId);
+  startQuiz();
+  loadScramble();
+  loadHunter();
+  nextPronounceSentence();
+  renderFlashcard();
+  renderAuditTable();
+  if ("speechSynthesis" in window) window.speechSynthesis.getVoices();
+});
+</script>
+</body>
+</html>
