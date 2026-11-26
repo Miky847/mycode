@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MurphyMaster Pro — Ngữ Pháp Tiếng Anh Raymond Murphy Toàn Diện</title>
+<title>MurphyMaster Pro — Ngữ Pháp Tiếng Anh Raymond Murphy</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0f172a;
@@ -19,904 +23,815 @@
     --success: #22c55e;
     --danger: #ef4444;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; }
-  body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
-  
-  /* Header */
-  header {
+  * {
+    box-sizing: border-box;
+    font-family: 'Be Vietnam Pro', 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .app-header {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     border-bottom: 1px solid var(--border);
-    padding: 14px 20px;
-    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
-    position: sticky; top: 0; z-index: 100;
+    position: sticky;
+    top: 0;
+    z-index: 50;
   }
-  .brand { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .brand h1 { font-size: 1.25rem; font-weight: 800; background: linear-gradient(90deg, #38bdf8, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .badge { background: rgba(56, 189, 248, 0.15); color: var(--primary); padding: 4px 10px; border-radius: 999px; font-size: 0.74rem; font-weight: 700; border: 1px solid rgba(56, 189, 248, 0.3); }
-  .stats-bar { display: flex; gap: 10px; align-items: center; font-size: 0.85rem; flex-wrap: wrap; }
-  .stat-pill { background: var(--surface); padding: 5px 12px; border-radius: 999px; border: 1px solid var(--border); display: flex; align-items: center; gap: 6px; font-weight: 600; }
-
-  /* Navigation Tabs */
-  nav {
-    display: flex; overflow-x: auto; background: var(--surface); border-bottom: 1px solid var(--border);
-    padding: 0 12px; gap: 4px; scrollbar-width: thin;
+  .brand-gradient {
+    background: linear-gradient(90deg, #38bdf8, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .nav-bar {
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: thin;
   }
   .tab-btn {
-    background: transparent; border: none; color: var(--muted); padding: 13px 16px;
-    font-size: 0.9rem; font-weight: 600; cursor: pointer; white-space: nowrap;
-    border-bottom: 3px solid transparent; transition: all 0.2s;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--muted);
+    padding: 13px 16px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
   }
-  .tab-btn:hover { color: var(--text); }
-  .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: rgba(56,189,248,0.08); }
-
-  /* Layout & Containers */
-  main { flex: 1; max-width: 1180px; width: 100%; margin: 0 auto; padding: 20px 16px 60px; }
-  .panel { display: none; animation: fadeIn 0.25s ease; }
-  .panel.active { display: block; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-  
-  .grid-2 { display: grid; grid-template-columns: 310px 1fr; gap: 20px; }
-  .grid-games { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  @media (max-width: 860px) {
-    .grid-2, .grid-games { grid-template-columns: 1fr; }
+  .tab-btn:hover {
+    color: #fff;
   }
-
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-  .card h2, .card h3 { margin-bottom: 10px; color: #fff; }
-  
-  /* Form Controls */
-  .search-input, select, input[type="text"] {
-    width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text);
-    padding: 10px 12px; border-radius: 10px; font-size: 0.92rem; outline: none; transition: border-color 0.2s;
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: rgba(56, 189, 248, 0.09);
   }
-  .search-input:focus, select:focus, input[type="text"]:focus { border-color: var(--primary); }
-
-  /* Unit List */
-  .unit-list { max-height: 62vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-top: 10px; padding-right: 4px; }
+  .panel {
+    display: none;
+    animation: fadeIn 0.22s ease;
+  }
+  .panel.active {
+    display: block;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .glass-card {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+  }
   .unit-item {
-    text-align: left; background: var(--bg); border: 1px solid var(--border); color: var(--text);
-    padding: 11px 12px; border-radius: 10px; cursor: pointer; transition: 0.15s;
-    display: flex; justify-content: space-between; align-items: center; gap: 8px;
-  }
-  .unit-item:hover { border-color: var(--primary); transform: translateX(2px); }
-  .unit-item.active { background: rgba(56, 189, 248, 0.14); border-color: var(--primary); }
-  .unit-cat { font-size: 0.72rem; color: var(--amber); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
-
-  /* Lesson Content */
-  .formula-box {
-    background: rgba(56, 189, 248, 0.1); border-left: 4px solid var(--primary);
-    padding: 13px 15px; border-radius: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 0.93rem; margin: 12px 0; color: #e0f2fe; line-height: 1.55;
-    transition: all 0.25s ease;
-  }
-  .rule-block { margin-bottom: 12px; line-height: 1.6; color: #e2e8f0; padding: 6px 10px; border-radius: 8px; border: 1px solid transparent; transition: all 0.25s ease; }
-  .example-row {
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    background: var(--bg); padding: 11px 13px; border-radius: 10px; border: 1px solid #334155;
-    margin-bottom: 8px; transition: all 0.25s ease;
-  }
-  .reading-highlight {
-    border-color: var(--primary) !important;
-    background: rgba(56, 189, 248, 0.16) !important;
-    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35), 0 6px 18px rgba(2, 132, 199, 0.25);
-  }
-  .example-en { font-weight: 600; color: #fff; font-size: 0.98rem; }
-  .example-vi { font-size: 0.85rem; color: var(--muted); margin-top: 3px; }
-  .audio-btns { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
-
-  /* Lesson Audio Reader Bar */
-  .reader-toolbar {
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
-    border: 1px solid rgba(56, 189, 248, 0.4);
-    border-radius: 12px;
-    padding: 12px 14px;
-    margin-bottom: 14px;
+    width: 100%;
+    text-align: left;
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 11px 13px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .reader-main-row {
-    display: flex;
-    align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
   }
-  .reader-controls-group {
+  .unit-item:hover {
+    border-color: var(--primary);
+  }
+  .unit-item.active {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: var(--primary);
+  }
+  .formula-box {
+    background: rgba(56, 189, 248, 0.1);
+    border-left: 4px solid var(--primary);
+    border-top: 1px solid rgba(56, 189, 248, 0.25);
+    border-right: 1px solid rgba(56, 189, 248, 0.25);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.25);
+    padding: 14px 16px;
+    border-radius: 10px;
+    color: #e0f2fe;
+    line-height: 1.65;
+    transition: all 0.25s ease;
+  }
+  .rule-card {
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid #334155;
+    padding: 11px 14px;
+    border-radius: 10px;
+    line-height: 1.6;
+    transition: all 0.25s ease;
+  }
+  .example-card {
+    background-color: var(--bg);
+    border: 1px solid #334155;
+    padding: 12px 14px;
+    border-radius: 10px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
+    gap: 12px;
+    transition: all 0.25s ease;
+  }
+  .reading-highlight {
+    border-color: #38bdf8 !important;
+    background: rgba(56, 189, 248, 0.18) !important;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.4), 0 8px 20px rgba(2, 132, 199, 0.25);
   }
   .speaker-hero-btn {
     background: linear-gradient(135deg, #0284c7, #7e22ce);
-    color: #fff;
+    color: #ffffff;
     border: none;
-    padding: 9px 15px;
+    padding: 10px 16px;
     border-radius: 10px;
     font-weight: 700;
     cursor: pointer;
     font-size: 0.9rem;
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
-    transition: 0.15s;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.38);
+    transition: transform 0.15s, filter 0.15s;
   }
-  .speaker-hero-btn:hover { filter: brightness(1.12); }
+  .speaker-hero-btn:hover {
+    filter: brightness(1.1);
+  }
   .speaker-hero-btn.playing {
     background: linear-gradient(135deg, #d97706, #dc2626);
-    animation: pulse-soft 1.8s infinite;
+    animation: pulseGlow 1.8s infinite;
   }
-  @keyframes pulse-soft {
-    0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.55); }
-    70% { box-shadow: 0 0 0 8px rgba(56, 189, 248, 0); }
+  @keyframes pulseGlow {
+    0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.6); }
+    70% { box-shadow: 0 0 0 9px rgba(56, 189, 248, 0); }
     100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
   }
-  .reader-settings-panel {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    gap: 10px;
-    padding-top: 10px;
-    border-top: 1px dashed var(--border);
-  }
-  .slider-box {
-    background: var(--bg);
-    padding: 8px 10px;
-    border-radius: 8px;
-    border: 1px solid #334155;
-    font-size: 0.8rem;
-  }
-  .slider-box label {
-    display: flex;
-    justify-content: space-between;
-    color: var(--muted);
+  .btn-action {
+    background-color: var(--primary-dark);
+    color: #fff;
+    border: none;
+    padding: 8px 13px;
+    border-radius: 9px;
     font-weight: 600;
-    margin-bottom: 4px;
-  }
-  .slider-box input[type="range"] {
-    width: 100%;
-    accent-color: var(--primary);
+    font-size: 0.85rem;
     cursor: pointer;
-  }
-  .toggle-pill {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: var(--bg);
+    transition: all 0.15s ease;
+  }
+  .btn-action:hover {
+    filter: brightness(1.12);
+  }
+  .btn-ghost {
+    background-color: rgba(15, 23, 42, 0.7);
+    color: var(--text);
     border: 1px solid var(--border);
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-size: 0.8rem;
+    padding: 7px 12px;
+    border-radius: 9px;
     font-weight: 600;
+    font-size: 0.83rem;
     cursor: pointer;
-    user-select: none;
-  }
-  .toggle-pill input { accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer; }
-  .resume-banner {
-    background: rgba(168, 85, 247, 0.14);
-    border: 1px solid rgba(168, 85, 247, 0.45);
-    border-radius: 10px;
-    padding: 9px 12px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 8px;
-    font-size: 0.84rem;
+    gap: 6px;
+    transition: all 0.15s ease;
   }
-  .rule-block { margin-bottom: 12px; line-height: 1.6; color: #e2e8f0; }
-  .example-row {
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    background: var(--bg); padding: 11px 13px; border-radius: 10px; border: 1px solid #334155;
-    margin-bottom: 8px;
-  }
-  .example-en { font-weight: 600; color: #fff; font-size: 0.98rem; }
-  .example-vi { font-size: 0.85rem; color: var(--muted); margin-top: 3px; }
-  .audio-btns { display: flex; gap: 6px; flex-shrink: 0; }
-
-  /* Buttons */
-  .btn {
-    background: var(--primary-dark); color: #fff; border: none; padding: 9px 14px;
-    border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.88rem; transition: 0.15s;
-    display: inline-flex; align-items: center; gap: 6px;
-  }
-  .btn:hover { filter: brightness(1.12); }
-  .btn:active { transform: scale(0.98); }
-  .btn-sm { padding: 6px 10px; font-size: 0.8rem; border-radius: 8px; }
-  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
-  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
-  .btn-success { background: #16a34a; }
-  .btn-amber { background: #d97706; }
-  .btn-purple { background: #7e22ce; }
-  .btn-danger { background: #dc2626; }
-
-  /* Audit Tags */
-  .audit-tag {
-    display: inline-flex; align-items: center; gap: 5px; font-size: 0.76rem;
-    padding: 4px 10px; border-radius: 8px; font-weight: 700;
-  }
-  .audit-ok { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35); }
-  .audit-fix { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
-
-  /* Exercises & Quiz */
-  .exercise-item { background: var(--bg); padding: 14px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; }
-  .exercise-q { font-weight: 600; margin-bottom: 10px; line-height: 1.5; }
-  .feedback { margin-top: 9px; font-size: 0.88rem; font-weight: 600; line-height: 1.45; }
-  .feedback.ok { color: #4ade80; }
-  .feedback.err { color: #f87171; }
-
-  .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
-  @media (max-width: 600px) { .quiz-options { grid-template-columns: 1fr; } }
-  .opt-btn {
-    background: var(--bg); border: 1px solid var(--border); color: var(--text);
-    padding: 13px 14px; border-radius: 10px; text-align: left; cursor: pointer;
-    font-size: 0.95rem; font-weight: 500; transition: 0.15s;
-  }
-  .opt-btn:hover:not(:disabled) { border-color: var(--primary); background: rgba(56,189,248,0.08); }
-  .opt-btn.correct { background: rgba(34,197,94,0.2); border-color: #22c55e; color: #86efac; }
-  .opt-btn.wrong { background: rgba(239,68,68,0.2); border-color: #ef4444; color: #fca5a5; }
-
-  /* Games */
-  .word-bank, .answer-zone {
-    display: flex; flex-wrap: wrap; gap: 8px; min-height: 52px; padding: 10px;
-    background: var(--bg); border: 1px dashed var(--border); border-radius: 10px; margin: 10px 0;
+  .btn-ghost:hover {
+    border-color: var(--primary);
+    color: var(--primary);
   }
   .word-chip {
-    background: var(--surface2); color: #fff; border: 1px solid var(--border);
-    padding: 8px 13px; border-radius: 8px; cursor: pointer; font-weight: 600; user-select: none;
-    transition: 0.15s;
+    background-color: var(--surface2);
+    color: #fff;
+    border: 1px solid var(--border);
+    padding: 8px 13px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.92rem;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
   }
-  .word-chip:hover { border-color: var(--primary); background: rgba(56,189,248,0.18); }
-
-  /* Flashcard */
-  .flashcard {
+  .word-chip:hover {
+    border-color: var(--primary);
+    background: rgba(56, 189, 248, 0.2);
+  }
+  .flashcard-box {
     background: linear-gradient(145deg, #1e293b, #0f172a);
-    border: 2px solid var(--border); border-radius: 16px; padding: 32px 20px;
-    text-align: center; cursor: pointer; min-height: 220px;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    transition: transform 0.2s, border-color 0.2s;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    min-height: 230px;
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
   }
-  .flashcard:hover { border-color: var(--primary); }
-
-  /* Table */
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.88rem; min-width: 620px; }
-  th, td { border: 1px solid var(--border); padding: 10px; text-align: left; vertical-align: top; line-height: 1.5; }
-  th { background: var(--bg); color: var(--primary); }
-
-  /* Progress & Toast */
-  .progress-bar { height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; margin: 10px 0; }
-  .progress-fill { height: 100%; background: linear-gradient(90deg, #38bdf8, #a855f7); transition: width 0.3s; }
-  .mic-pulse { animation: pulse 1.2s infinite; background: #dc2626 !important; }
-  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); } 70% { box-shadow: 0 0 0 12px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
-  
-  /* Lesson Audio Player & Active Reading Highlight */
-  .audio-player-bar {
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
-    border: 1px solid rgba(56, 189, 248, 0.45);
+  .flashcard-box:hover {
+    border-color: var(--primary);
+  }
+  #toast-banner {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #1e293b;
+    color: #f8fafc;
+    border: 1px solid #38bdf8;
+    padding: 12px 16px;
     border-radius: 12px;
-    padding: 14px;
-    margin: 14px 0 18px;
-    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.15);
-  }
-  .audio-player-top {
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 8px; margin-bottom: 10px;
-  }
-  .audio-status-pill {
-    font-size: 0.8rem; font-weight: 700; color: var(--primary);
-    background: rgba(56, 189, 248, 0.12); padding: 4px 10px; border-radius: 999px;
-    display: inline-flex; align-items: center; gap: 6px;
-  }
-  .audio-controls-row {
-    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
-  }
-  .audio-controls-row select {
-    width: auto; padding: 6px 10px; font-size: 0.82rem; border-radius: 8px;
-  }
-  .rule-item-card {
-    display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
-    background: rgba(15, 23, 42, 0.55); border: 1px solid #334155;
-    padding: 10px 12px; border-radius: 10px; margin-bottom: 8px; transition: all 0.25s ease;
-  }
-  .active-reading {
-    border-color: #38bdf8 !important;
-    background: rgba(56, 189, 248, 0.16) !important;
-    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35), 0 6px 18px rgba(56, 189, 248, 0.18);
-    transform: translateX(3px);
-  }
-
-  #toast-msg {
-    position: fixed; bottom: 20px; right: 20px; background: var(--surface2); color: #fff;
-    border: 1px solid var(--primary); padding: 12px 16px; border-radius: 12px;
-    font-size: 0.88rem; font-weight: 600; z-index: 999; display: none;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4); max-width: 340px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    z-index: 9999;
+    display: none;
+    max-width: 350px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
   }
 </style>
 </head>
-<body>
+<body class="bg-slate-900 text-slate-50">
 
-<header>
-  <div class="brand">
-    <h1>MurphyMaster Pro</h1>
-    <span class="badge">English Grammar in Use • Cross-Verified</span>
-  </div>
-  <div class="stats-bar">
-    <div class="stat-pill" title="Điểm kinh nghiệm">⚡ <span id="xp-val">0</span> XP</div>
-    <div class="stat-pill" title="Chuỗi ngày học">🔥 <span id="streak-val">1</span> ngày</div>
-    <div class="stat-pill" title="Bài đã hoàn thành">✅ <span id="done-val">0</span>/<span id="total-units-val">16</span></div>
+<!-- HEADER & STATS BAR -->
+<header class="app-header px-4 py-3.5">
+  <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-3 flex-wrap">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-purple-600 flex items-center justify-center font-extrabold text-white shadow-lg">M</div>
+      <div>
+        <h1 class="text-lg sm:text-xl font-extrabold brand-gradient leading-tight">MurphyMaster Pro</h1>
+        <p class="text-xs text-slate-400">English Grammar in Use • Raymond Murphy Interactive</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 sm:gap-3 flex-wrap text-xs sm:text-sm font-semibold">
+      <div class="bg-slate-800 border border-slate-600 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+        <span>⚡</span><span id="stat-xp">0</span> XP
+      </div>
+      <div class="bg-slate-800 border border-slate-600 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+        <span>🔥</span><span id="stat-streak">1</span> ngày
+      </div>
+      <div class="bg-slate-800 border border-slate-600 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+        <span>✅</span><span id="stat-done">0</span>/16
+      </div>
+      <button onclick="switchTab('lessons'); setTimeout(openVoiceSettingsFromHeader, 60);" class="btn-ghost text-xs py-1.5 px-3 rounded-full" title="Cài đặt giọng đọc Anh/Việt">
+        ⚙️ Giọng đọc
+      </button>
+    </div>
   </div>
 </header>
 
-<nav id="main-nav">
-  <button class="tab-btn active" data-tab="lessons">📖 Bài học & Bài tập Murphy</button>
-  <button class="tab-btn" data-tab="quiz">🎯 Quiz Trắc nghiệm</button>
-  <button class="tab-btn" data-tab="games">🎮 Game Sắp xếp & Sửa lỗi</button>
-  <button class="tab-btn" data-tab="pronounce">🎙️ Luyện Phát âm (US/UK + Mic)</button>
-  <button class="tab-btn" data-tab="srs">🧠 Flashcard SRS</button>
-  <button class="tab-btn" data-tab="audit">🛡️ Kiểm tra chéo (Cross-Audit)</button>
+<!-- 6 NAVIGATION TABS -->
+<nav class="nav-bar px-3" id="top-nav">
+  <div class="max-w-6xl mx-auto flex w-full">
+    <button class="tab-btn active" data-tab="lessons" onclick="switchTab('lessons')">📖 Bài học</button>
+    <button class="tab-btn" data-tab="quiz" onclick="switchTab('quiz')">🎯 Luyện tập</button>
+    <button class="tab-btn" data-tab="games" onclick="switchTab('games')">🎮 Trò chơi</button>
+    <button class="tab-btn" data-tab="pronounce" onclick="switchTab('pronounce')">🎙️ Phát âm US/UK</button>
+    <button class="tab-btn" data-tab="srs" onclick="switchTab('srs')">🧠 Ôn thẻ SRS</button>
+    <button class="tab-btn" data-tab="progress" onclick="switchTab('progress')">📊 Tiến độ</button>
+  </div>
 </nav>
 
-<main>
-  <!-- TAB 1: LESSONS & EXERCISES -->
-  <section id="tab-lessons" class="panel active">
-    <div class="grid-2">
-      <div>
-        <div class="card">
-          <h3>Mục lục Raymond Murphy</h3>
-          <input type="text" id="unit-search" class="search-input" placeholder="Tìm bài học (VD: Present Perfect, Passive, If...)">
-          <select id="cat-filter" style="margin-top:8px;">
-            <option value="ALL">Tất cả chuyên đề ngữ pháp (16 nhóm)</option>
-          </select>
-          <div class="progress-bar"><div class="progress-fill" id="course-progress" style="width:0%"></div></div>
-          <div class="unit-list" id="unit-list"></div>
+<main class="max-w-6xl mx-auto px-4 py-5 pb-20">
+  <!-- TAB 1: LESSONS -->
+  <section id="panel-lessons" class="panel active">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <!-- Left Unit Index -->
+      <div class="lg:col-span-4">
+        <div class="glass-card p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="font-bold text-base text-white">📚 Mục lục 16 Chuyên đề</h2>
+            <span class="text-xs text-sky-400 font-semibold" id="sidebar-pct">0%</span>
+          </div>
+          <input type="text" id="unit-search-input" oninput="renderUnitSidebar()" placeholder="Tìm Unit (VD: Present Perfect, Passive, If...)" class="w-full bg-slate-950 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-sky-400 mb-3">
+          <div class="w-full h-2 bg-slate-950 rounded-full overflow-hidden mb-3">
+            <div id="sidebar-progress-fill" class="h-full bg-gradient-to-r from-sky-400 to-purple-500 transition-all duration-300" style="width: 0%"></div>
+          </div>
+          <div id="unit-sidebar-list" class="space-y-2 max-h-[64vh] overflow-y-auto pr-1"></div>
         </div>
       </div>
-      <div id="lesson-detail"></div>
+
+      <!-- Right Lesson Content & Audio Reader -->
+      <div class="lg:col-span-8" id="lesson-detail-container"></div>
     </div>
   </section>
 
-  <!-- TAB 2: QUIZ -->
-  <section id="tab-quiz" class="panel">
-    <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+  <!-- TAB 2: PRACTICE QUIZ -->
+  <section id="panel-quiz" class="panel">
+    <div class="glass-card p-5">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-700">
         <div>
-          <h2>🎯 Thử thách Ngữ pháp Toàn diện</h2>
-          <p style="color:var(--muted); font-size:0.9rem;">Tổng hợp 16 câu hỏi bẫy kinh điển từ toàn bộ các chuyên đề của Raymond Murphy.</p>
+          <h2 class="text-lg font-bold text-white">🎯 Luyện Tập Ngữ Pháp Tổng Hợp</h2>
+          <p class="text-xs sm:text-sm text-slate-400">Trắc nghiệm & Điền từ chuẩn Raymond Murphy kèm giải thích tiếng Việt và phát âm câu chuẩn.</p>
         </div>
-        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-          <select id="quiz-cat" style="width:auto;">
-            <option value="ALL">Tất cả chuyên đề</option>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="quiz-unit-filter" onchange="startNewQuiz()" class="bg-slate-950 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-sky-400">
+            <option value="ALL">Tất cả 16 Units</option>
           </select>
-          <button class="btn" onclick="startQuiz()">Làm mới bộ đề</button>
+          <button onclick="startNewQuiz()" class="btn-action">🔄 Đề mới</button>
         </div>
       </div>
-      <div id="quiz-box" style="margin-top:18px;"></div>
+      <div id="quiz-stage"></div>
     </div>
   </section>
 
-  <!-- TAB 3: GAMES -->
-  <section id="tab-games" class="panel">
-    <div class="grid-games">
-      <div class="card">
-        <h2>🧩 Game 1: Ghép Câu Chuẩn Murphy (Word Order)</h2>
-        <p style="color:var(--muted); font-size:0.88rem; margin-bottom:10px;">Chạm vào các từ bên dưới để sắp xếp thành câu tiếng Anh đúng trật tự ngữ pháp (trạng từ tần suất, đảo ngữ, câu hỏi gián tiếp...).</p>
-        <div id="scramble-vi" style="color:var(--amber); font-weight:600; margin-bottom:6px;"></div>
-        <div class="answer-zone" id="answer-zone"></div>
-        <div class="word-bank" id="word-bank"></div>
-        <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
-          <button class="btn btn-success" onclick="checkScramble()">Kiểm tra câu</button>
-          <button class="btn btn-outline" onclick="resetScramble()">Xóa xếp lại</button>
-          <button class="btn btn-outline" onclick="nextScramble()">Câu khác ➔</button>
+  <!-- TAB 3: GRAMMAR GAMES -->
+  <section id="panel-games" class="panel">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <!-- Game 1: Sentence Builder -->
+      <div class="glass-card p-5">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-base sm:text-lg font-bold text-white">🧩 Sắp Xếp Câu Chuẩn (Sentence Builder)</h2>
+          <span class="text-xs bg-sky-500/20 text-sky-300 border border-sky-500/40 px-2.5 py-1 rounded-full font-bold" id="sb-counter">Câu 1</span>
         </div>
-        <div id="scramble-fb" class="feedback"></div>
+        <p class="text-xs text-slate-400 mb-3">Chạm vào các thẻ từ bên dưới để ghép thành câu tiếng Anh đúng trật tự ngữ pháp Murphy.</p>
+        <div id="sb-vi-prompt" class="text-sm font-semibold text-amber-400 mb-2"></div>
+        <div id="sb-answer-zone" class="min-h-[54px] bg-slate-950 border border-dashed border-slate-500 rounded-xl p-2.5 flex flex-wrap gap-2 mb-3"></div>
+        <div id="sb-bank-zone" class="min-h-[54px] bg-slate-950/60 border border-slate-700 rounded-xl p-2.5 flex flex-wrap gap-2 mb-3"></div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="checkSentenceBuilder()" class="btn-action bg-emerald-600">✅ Kiểm tra</button>
+          <button onclick="resetSentenceBuilder()" class="btn-ghost">↺ Xếp lại</button>
+          <button onclick="nextSentenceBuilder()" class="btn-ghost">Câu tiếp ➔</button>
+        </div>
+        <div id="sb-feedback" class="mt-3 text-sm font-semibold"></div>
       </div>
 
-      <div class="card">
-        <h2>⚡ Game 2: Săn Lỗi Sai Trong 15 Giây (Grammar Hunter)</h2>
-        <p style="color:var(--muted); font-size:0.88rem; margin-bottom:10px;">Xác định nhanh câu sau ĐÚNG (Right) hay SAI (Wrong) theo chuẩn Cambridge English Grammar in Use.</p>
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-          <span class="badge">Chuỗi thắng: <strong id="hunter-streak">0</strong></span>
-          <span class="badge" style="color:#fbbf24;">Thời gian: <strong id="hunter-timer">15</strong>s</span>
+      <!-- Game 2: Speed Match -->
+      <div class="glass-card p-5">
+        <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+          <h2 class="text-base sm:text-lg font-bold text-white">⚡ Ghép Cặp Công Thức – Ví Dụ (Speed Match)</h2>
+          <div class="flex items-center gap-2 text-xs font-bold">
+            <span class="bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2.5 py-1 rounded-full">Combo: <span id="sm-combo">0</span>x</span>
+            <span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-full">⏱ <span id="sm-timer">45</span>s</span>
+          </div>
         </div>
-        <div id="hunter-sentence" style="background:var(--bg); padding:18px; border-radius:10px; font-size:1.08rem; font-weight:600; border:1px solid var(--border); margin:10px 0;"></div>
-        <div style="display:flex; gap:10px;">
-          <button class="btn btn-success" style="flex:1; justify-content:center;" onclick="answerHunter(true)">✅ RIGHT (Chuẩn)</button>
-          <button class="btn btn-danger" style="flex:1; justify-content:center;" onclick="answerHunter(false)">❌ WRONG (Có lỗi)</button>
+        <p class="text-xs text-slate-400 mb-3">Chọn 1 thẻ Công thức (bên trái) và 1 thẻ Ví dụ tương ứng (bên phải) trước khi hết giờ.</p>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div id="sm-left-col" class="space-y-2"></div>
+          <div id="sm-right-col" class="space-y-2"></div>
         </div>
-        <div id="hunter-fb" class="feedback" style="margin-top:10px;"></div>
+        <div class="flex items-center justify-between">
+          <button onclick="initSpeedMatch()" class="btn-action">🔄 Chơi ván mới</button>
+          <span id="sm-status" class="text-xs sm:text-sm font-bold text-emerald-400"></span>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- TAB 4: PRONUNCIATION -->
-  <section id="tab-pronounce" class="panel">
-    <div class="card">
-      <h2>🎙️ Phòng Luyện Nghe & Phát Âm Chuẩn Bản Xứ (US / UK)</h2>
-      <p style="color:var(--muted); font-size:0.9rem; margin-bottom:14px;">Tích hợp Web Speech TTS (tốc độ 1.0x chuẩn & 0.65x chậm tách âm) và nhận diện giọng nói Speech-to-Text chấm điểm độ khớp từng từ.</p>
-      
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
-        <select id="voice-accent" style="width:auto;">
-          <option value="en-US">🇺🇸 Giọng Mỹ (en-US)</option>
-          <option value="en-GB">🇬🇧 Giọng Anh (en-GB)</option>
-        </select>
-        <button class="btn btn-outline" onclick="nextPronounceSentence()">🔄 Đổi câu mẫu Murphy</button>
-      </div>
+  <!-- TAB 4: PRONUNCIATION LAB -->
+  <section id="panel-pronounce" class="panel">
+    <div class="glass-card p-5 mb-5">
+      <h2 class="text-lg font-bold text-white mb-1">🎙️ Phòng Luyện Phát Âm Chuẩn Bản Xứ (US vs UK)</h2>
+      <p class="text-xs sm:text-sm text-slate-400 mb-4">So sánh trực tiếp giọng Mỹ (en-US) và giọng Anh (en-GB) ở tốc độ chuẩn (1.0x) và chậm tách âm (0.65x) cho các cấu trúc ngữ pháp trọng tâm.</p>
+      <div id="pronounce-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </div>
 
-      <div style="background:var(--bg); padding:18px; border-radius:12px; border:1px solid var(--border);">
-        <div style="font-size:0.8rem; color:var(--primary); font-weight:700; margin-bottom:4px;" id="pron-unit-label"></div>
-        <div style="font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:6px;" id="pron-target"></div>
-        <div style="font-size:0.92rem; color:var(--muted); margin-bottom:14px;" id="pron-vi"></div>
-        
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn" onclick="speakText(document.getElementById('pron-target').innerText, 1.0)">🔊 Nghe chuẩn (1.0x)</button>
-          <button class="btn btn-outline" onclick="speakText(document.getElementById('pron-target').innerText, 0.65)">🐢 Nghe chậm (0.65x)</button>
-          <button class="btn btn-purple" id="mic-btn" onclick="startSpeechCheck()">🎤 Bấm để đọc & Chấm điểm</button>
-        </div>
-      </div>
-
-      <div id="speech-result" style="margin-top:14px; display:none;" class="card">
-        <div><strong>Bạn đã đọc:</strong> <span id="spoken-text" style="color:var(--primary);"></span></div>
-        <div style="margin-top:6px;"><strong>Độ chính xác:</strong> <span id="speech-score" style="font-size:1.1rem; font-weight:800;"></span></div>
-        <div id="word-diff" style="margin-top:8px; line-height:1.8;"></div>
-      </div>
-
-      <div style="margin-top:18px;">
-        <h3>Hoặc nhập bất kỳ câu tiếng Anh nào để luyện đọc:</h3>
-        <div style="display:flex; gap:8px; margin-top:8px;">
-          <input type="text" id="custom-tts-input" placeholder="Nhập câu tiếng Anh bạn muốn nghe và luyện phát âm...">
-          <button class="btn" onclick="setCustomPronounce()">Nạp câu</button>
-        </div>
+    <div class="glass-card p-5">
+      <h3 class="text-base font-bold text-white mb-2">🗣️ Bộ Đọc Song Ngữ Tùy Chỉnh (Smart Bilingual Reader)</h3>
+      <p class="text-xs text-slate-400 mb-3">Nhập bất kỳ công thức hoặc câu tiếng Anh kèm giải thích tiếng Việt trong ngoặc <code class="text-sky-300">(...)</code>. Hệ thống tự động bỏ đọc dấu <code class="text-sky-300">/</code> và tự chuyển giọng Anh–Việt mượt mà.</p>
+      <textarea id="custom-bilingual-input" rows="3" class="w-full bg-slate-950 border border-slate-600 rounded-xl p-3 text-sm text-white outline-none focus:border-sky-400 mb-3">Present Continuous: S + am/is/are + V-ing (hành động đang diễn ra / tạm thời)
+Present Simple: S + V(s/es) (sự thật hiển nhiên / thói quen lặp lại)</textarea>
+      <div class="flex flex-wrap gap-2">
+        <button onclick="speakSmartSequence(document.getElementById('custom-bilingual-input').value, 1.0, 'en-US')" class="btn-action">🔊 Đọc chuẩn (1.0x)</button>
+        <button onclick="speakSmartSequence(document.getElementById('custom-bilingual-input').value, 0.65, 'en-US')" class="btn-ghost">🐢 Đọc chậm (0.65x)</button>
+        <button onclick="stopAllSpeech()" class="btn-ghost text-rose-400 border-rose-500/40">⏹ Dừng đọc</button>
       </div>
     </div>
   </section>
 
   <!-- TAB 5: SRS FLASHCARDS -->
-  <section id="tab-srs" class="panel">
-    <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+  <section id="panel-srs" class="panel">
+    <div class="glass-card p-5 max-w-3xl mx-auto">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
         <div>
-          <h2>🧠 Thẻ Ghi Nhớ Thông Minh (Spaced Repetition - Anki Style)</h2>
-          <p style="color:var(--muted); font-size:0.9rem;">Ôn tập công thức cốt lõi và cặp câu dễ nhầm lẫn của Raymond Murphy. Chạm vào thẻ để lật mặt.</p>
+          <h2 class="text-lg font-bold text-white">🧠 Ôn Thẻ Ghi Nhớ Thông Minh (SRS)</h2>
+          <p class="text-xs text-slate-400">Chạm vào thẻ để lật mặt sau xem cách dùng, ví dụ song ngữ và nghe phát âm.</p>
         </div>
-        <span class="badge" id="srs-counter">Thẻ 1 / 16</span>
+        <span class="text-xs bg-sky-500/20 text-sky-300 border border-sky-500/40 px-3 py-1 rounded-full font-bold" id="srs-status-badge">Thẻ 1 / 16</span>
       </div>
 
-      <div class="flashcard" id="flashcard" onclick="flipCard()">
-        <div id="fc-front" style="font-size:1.25rem; font-weight:700; max-width:680px;"></div>
-        <div id="fc-back" style="display:none; margin-top:14px; padding-top:14px; border-top:1px solid var(--border); max-width:680px; white-space:pre-line; line-height:1.6;"></div>
-        <div style="font-size:0.78rem; color:var(--muted); margin-top:16px;">(Chạm vào thẻ để lật)</div>
+      <div id="srs-card-box" class="flashcard-box" onclick="flipSrsCard()">
+        <div id="srs-card-unit" class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-2"></div>
+        <div id="srs-card-front" class="text-lg sm:text-xl font-extrabold text-white max-w-xl"></div>
+        <div id="srs-card-back" class="hidden mt-4 pt-4 border-t border-slate-700 text-sm sm:text-base text-slate-200 max-w-xl space-y-2"></div>
+        <div class="text-xs text-slate-400 mt-5">(Chạm vào thẻ để lật)</div>
       </div>
 
-      <div style="display:flex; justify-content:center; gap:10px; margin-top:16px; flex-wrap:wrap;">
-        <button class="btn btn-danger" onclick="rateCard(1)">😓 Quên (Học lại ngay)</button>
-        <button class="btn btn-amber" onclick="rateCard(2)">🤔 Hơi nhớ (1 ngày)</button>
-        <button class="btn btn-success" onclick="rateCard(3)">😎 Thuộc lòng (4 ngày)</button>
-        <button class="btn btn-outline" onclick="speakCurrentCard()">🔊 Đọc ví dụ</button>
+      <div class="flex flex-wrap items-center justify-center gap-2 mt-4">
+        <button onclick="rateSrsCard('again')" class="btn-action bg-rose-600">😓 Quên (1p)</button>
+        <button onclick="rateSrsCard('hard')" class="btn-action bg-amber-600">🤔 Khó (10p)</button>
+        <button onclick="rateSrsCard('good')" class="btn-action bg-sky-600">👍 Tốt (1 ngày)</button>
+        <button onclick="rateSrsCard('easy')" class="btn-action bg-emerald-600">😎 Dễ (4 ngày)</button>
+        <button onclick="speakCurrentSrsCard()" class="btn-ghost">🔊 Nghe ví dụ</button>
       </div>
     </div>
   </section>
 
-  <!-- TAB 6: CROSS AUDIT -->
-  <section id="tab-audit" class="panel">
-    <div class="card">
-      <h2>🛡️ Báo Cáo Kiểm Tra Chéo & Hiệu Đính Dữ Liệu Nguồn</h2>
-      <p style="color:var(--muted); font-size:0.92rem; line-height:1.6; margin-bottom:12px;">
-        Các bản số hóa <code>.txt</code> lưu hành trên mạng của cuốn <em>English Grammar in Use (Raymond Murphy)</em> thường mắc lỗi OCR (nhầm <code>l</code> thành <code>1</code>, mất dấu nháy đơn, hoặc lệch đáp án cuối sách). Hệ thống đã đối chiếu toàn bộ 16 chuyên đề (145 Units) với chuẩn ấn bản Cambridge chính thức và tự động hiệu đính các mục sau:
-      </p>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Chuyên đề / Unit</th>
-              <th>Lỗi thường gặp ở bản TXT OCR</th>
-              <th>Bản đã hiệu đính chuẩn Cambridge</th>
-              <th>Trạng thái</th>
-            </tr>
-          </thead>
-          <tbody id="audit-table-body"></tbody>
-        </table>
+  <!-- TAB 6: PROGRESS DASHBOARD -->
+  <section id="panel-progress" class="panel">
+    <div class="glass-card p-5 mb-5">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-5 pb-4 border-b border-slate-700">
+        <div>
+          <h2 class="text-lg font-bold text-white">📊 Bảng Tổng Hợp Tiến Độ Học Tập</h2>
+          <p class="text-xs sm:text-sm text-slate-400">Theo dõi mức độ hoàn thành 16 chuyên đề cốt lõi Raymond Murphy và cấp bậc hiện tại.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="exportProgressReport()" class="btn-action">📋 Sao chép báo cáo</button>
+          <button onclick="resetAllProgress()" class="btn-ghost text-rose-400 border-rose-500/40">🗑️ Đặt lại tiến độ</button>
+        </div>
       </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-slate-950 border border-slate-700 rounded-xl p-4">
+          <div class="text-xs text-slate-400 font-semibold">CẤP BẬC HIỆN TẠI</div>
+          <div id="prog-rank" class="text-xl font-extrabold text-sky-400 mt-1">Học viên Khởi đầu</div>
+          <div id="prog-xp-sub" class="text-xs text-slate-400 mt-1">0 XP tích lũy</div>
+        </div>
+        <div class="bg-slate-950 border border-slate-700 rounded-xl p-4">
+          <div class="text-xs text-slate-400 font-semibold">HOÀN THÀNH CHƯƠNG TRÌNH</div>
+          <div id="prog-units-count" class="text-xl font-extrabold text-emerald-400 mt-1">0 / 16 Units</div>
+          <div id="prog-units-pct" class="text-xs text-slate-400 mt-1">0% tổng khối lượng</div>
+        </div>
+        <div class="bg-slate-950 border border-slate-700 rounded-xl p-4">
+          <div class="text-xs text-slate-400 font-semibold">THẺ SRS ĐÃ THUỘC</div>
+          <div id="prog-srs-mastered" class="text-xl font-extrabold text-purple-400 mt-1">0 / 16 thẻ</div>
+          <div class="text-xs text-slate-400 mt-1">Lịch ôn tập lưu tự động</div>
+        </div>
+      </div>
+
+      <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3">Chi tiết trạng thái từng Unit</h3>
+      <div id="prog-units-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
     </div>
   </section>
 </main>
 
-<div id="toast-msg"></div>
+<div id="toast-banner"></div>
 
 <script>
-// ==================== 0. NON-BLOCKING TOAST NOTIFICATION ====================
-function showToast(msg) {
-  const el = document.getElementById("toast-msg");
-  el.innerText = msg;
+/* ==========================================================================
+   1. TOAST NOTIFICATION UTILITY (NON-BLOCKING)
+   ========================================================================== */
+function showToast(message) {
+  var el = document.getElementById("toast-banner");
+  if (!el) return;
+  el.textContent = message;
   el.style.display = "block";
-  clearTimeout(window._toastTimer);
-  window._toastTimer = setTimeout(() => { el.style.display = "none"; }, 3500);
+  clearTimeout(window._murphyToastTimer);
+  window._murphyToastTimer = setTimeout(function() {
+    el.style.display = "none";
+  }, 3400);
 }
 
-// ==================== 1. FULL CROSS-VERIFIED RAYMOND MURPHY DATASET ====================
-const MURPHY_UNITS = [
+/* ==========================================================================
+   2. 16 CORE RAYMOND MURPHY UNITS DATASET (VERIFIED & BILINGUAL)
+   ========================================================================== */
+var MURPHY_UNITS = [
   {
-    id: 1, unit: "Unit 1–2", cat: "1. Present Tenses (Hiện tại)",
-    title: "Present Continuous vs. Present Simple (I am doing vs. I do)",
-    auditStatus: "verified",
-    auditNote: "Đã đối chiếu chuẩn Cambridge Ấn bản 5: Phân biệt rõ động từ trạng thái (stative verbs: know, believe, belong, need) không chia tiếp diễn.",
-    formula: "Present Continuous: S + am/is/are + V-ing (hành động đang diễn ra / tạm thời)\nPresent Simple: S + V(s/es) (sự thật hiển nhiên / thói quen lặp lại)",
+    id: 1,
+    code: "Unit 1",
+    title: "Present Continuous (I am doing)",
+    viTitle: "Thì Hiện tại tiếp diễn",
+    formula: "Khẳng định: S + am/is/are + V-ing (hành động đang diễn ra / tạm thời)\nPhủ định & Nghi vấn: S + am/is/are + not + V-ing | Am/Is/Are + S + V-ing?",
     rules: [
-      "Dùng Present Continuous cho việc đang xảy ra ngay lúc nói hoặc xung quanh thời điểm nói (chưa kết thúc).",
-      "Dùng Present Simple cho chân lý, lịch trình cố định (tàu, xe, giờ mở cửa) và thói quen.",
-      "Nhóm động từ trạng thái (like, want, need, prefer, know, realise, suppose, mean, understand, believe, remember, belong, fit, contain, consist, seem) KHÔNG dùng ở thì tiếp diễn."
+      "Dùng cho hành động đang xảy ra ngay tại thời điểm nói (Please don't make so much noise. I'm trying to work).",
+      "Dùng cho hành động đang diễn ra trong giai đoạn hiện tại nhưng không nhất thiết ngay giây phút nói (Kate wants to work in Italy, so she's learning Italian).",
+      "Dùng với today, this week, this year để chỉ sự thay đổi hoặc tình huống tạm thời."
     ],
     examples: [
-      { en: "Water boils at 100 degrees Celsius.", vi: "Nước sôi ở 100 độ C. (Chân lý -> Hiện tại đơn)" },
-      { en: "The water is boiling. Can you turn it off?", vi: "Nước đang sôi rồi kìa. Bạn tắt bếp được không? (Đang diễn ra)" },
-      { en: "Do you believe in God? (Not: Are you believing)", vi: "Bạn có tin vào Chúa không? (Động từ trạng thái)" },
-      { en: "The train leaves Plymouth at 11.30 and arrives in London at 14.45.", vi: "Tàu rời Plymouth lúc 11:30 và đến London lúc 14:45. (Lịch trình)" }
-    ],
-    exercises: [
-      { q: "Hurry up! Everybody __________ (wait) for you.", ans: "is waiting", explain: "Hành động đang diễn ra ngay lúc nói ('Hurry up!')." },
-      { q: "‘Can you drive?’ ‘I __________ (learn). My father is teaching me.’", ans: "am learning", explain: "Hành động đang diễn ra trong giai đoạn hiện tại." },
-      { q: "The River Nile __________ (flow) into the Mediterranean.", ans: "flows", explain: "Sự thật địa lý hiển nhiên -> Present Simple." },
-      { q: "Nicky __________ (think) of giving up her job.", ans: "is thinking", explain: "Ở đây 'think' nghĩa là 'cân nhắc/dự định' (hành động) nên chia tiếp diễn được; khác với 'think = tin rằng'." }
+      { en: "The water is boiling. Can you turn it off?", vi: "Nước đang sôi rồi kìa. Bạn tắt bếp được không?" },
+      { en: "Let's go out. It isn't raining now.", vi: "Chúng ta ra ngoài đi. Bây giờ trời không mưa nữa." },
+      { en: "The population of the world is increasing very fast.", vi: "Dân số thế giới đang tăng lên rất nhanh." }
     ]
   },
   {
-    id: 2, unit: "Unit 5–6", cat: "2. Past Tenses (Quá khứ)",
-    title: "Past Simple vs. Past Continuous (I did vs. I was doing)",
-    auditStatus: "fixed",
-    auditNote: "Đã sửa lỗi bản TXT gốc gõ nhầm 'was fell' trong câu ví dụ kinh điển với 'when/while'.",
-    formula: "Past Simple: S + V2/V-ed (hành động đã chấm dứt trong quá khứ)\nPast Continuous: S + was/were + V-ing (đang diễn ra tại 1 mốc quá khứ)",
+    id: 2,
+    code: "Unit 2",
+    title: "Present Simple (I do)",
+    viTitle: "Thì Hiện tại đơn",
+    formula: "Khẳng định: S + V(s/es) (sự thật hiển nhiên / thói quen lặp lại)\nPhủ định & Nghi vấn: S + do/does + not + V | Do/Does + S + V?",
     rules: [
-      "Past Continuous diễn tả hành động đang diễn ra làm nền thì một hành động khác (Past Simple) xen vào.",
-      "Hai hành động Past Simple đi liền nhau diễn tả chuỗi sự việc xảy ra nối tiếp.",
-      "Không dùng Past Continuous với động từ trạng thái (know, want...)."
+      "Dùng để diễn tả sự thật hiển nhiên, chân lý khoa học hoặc điều luôn đúng.",
+      "Dùng cho thói quen, hành động lặp đi lặp lại với always, usually, often, sometimes, never.",
+      "Dùng cho thời gian biểu, lịch tàu xe, giờ mở cửa cố định."
+    ],
+    examples: [
+      { en: "Water boils at 100 degrees Celsius.", vi: "Nước sôi ở 100 độ C." },
+      { en: "Nurses look after patients in hospitals.", vi: "Y tá chăm sóc bệnh nhân trong bệnh viện." },
+      { en: "The cafe opens at 7.30 in the morning.", vi: "Quán cà phê mở cửa lúc 7 giờ 30 sáng." }
+    ]
+  },
+  {
+    id: 3,
+    code: "Unit 3–4",
+    title: "Present Continuous vs. Present Simple",
+    viTitle: "Phân biệt Hiện tại tiếp diễn & Hiện tại đơn",
+    formula: "Hành động tạm thời / đang diễn ra: S + am/is/are + V-ing\nĐộng từ trạng thái (stative verbs): S + V(s/es) (Not: am/is/are + V-ing)",
+    rules: [
+      "Nhóm động từ trạng thái (like, want, need, prefer, know, realise, suppose, mean, understand, believe, remember, belong, fit, contain, consist, seem) KHÔNG chia tiếp diễn.",
+      "Think mang nghĩa 'tin rằng / cho rằng' dùng Present Simple; mang nghĩa 'đang cân nhắc' dùng Present Continuous.",
+      "He is selfish (bản chất ích kỷ) khác với He is being selfish (hôm nay cư xử ích kỷ tạm thời)."
+    ],
+    examples: [
+      { en: "Do you believe in God? (Not: Are you believing)", vi: "Bạn có tin vào Chúa không?" },
+      { en: "I'm hungry. I want something to eat. (Not: I'm wanting)", vi: "Tôi đói rồi. Tôi muốn ăn thứ gì đó." },
+      { en: "Nicky is thinking of giving up her job.", vi: "Nicky đang cân nhắc việc nghỉ việc." }
+    ]
+  },
+  {
+    id: 4,
+    code: "Unit 5",
+    title: "Past Simple (I did)",
+    viTitle: "Thì Quá khứ đơn",
+    formula: "Khẳng định: S + V2/V-ed (hành động đã kết thúc hoàn toàn trong quá khứ)\nPhủ định & Nghi vấn: S + did not (didn't) + V | Did + S + V?",
+    rules: [
+      "Dùng cho sự việc đã xảy ra và chấm dứt hẳn trong quá khứ, thường đi kèm yesterday, last night, in 2018, two days ago.",
+      "Động từ 'to be' ở quá khứ chia là was (I/he/she/it) và were (we/you/they), không dùng trợ động từ did.",
+      "Dùng kể chuỗi hành động xảy ra nối tiếp nhau trong quá khứ."
+    ],
+    examples: [
+      { en: "Mozart wrote more than 600 pieces of music.", vi: "Mozart đã sáng tác hơn 600 bản nhạc." },
+      { en: "We saw Rose in town a few days ago.", vi: "Chúng tôi gặp Rose ở thị trấn cách đây vài ngày." },
+      { en: "I was angry because they were late.", vi: "Tôi đã giận vì họ đến muộn." }
+    ]
+  },
+  {
+    id: 5,
+    code: "Unit 6",
+    title: "Past Continuous (I was doing)",
+    viTitle: "Thì Quá khứ tiếp diễn",
+    formula: "Khẳng định: S + was/were + V-ing (đang diễn ra tại một mốc quá khứ)\nKết hợp: S + was/were + V-ing + when/while + S + V2/V-ed",
+    rules: [
+      "Diễn tả hành động đang diễn ra ở giữa quá trình tại một thời điểm cụ thể trong quá khứ (This time last year I was living in Brazil).",
+      "Dùng kết hợp với Past Simple: hành động dài đang diễn ra (Past Continuous) thì hành động ngắn xen vào (Past Simple).",
+      "Không dùng Past Continuous với các động từ trạng thái như know hoặc want."
     ],
     examples: [
       { en: "Matt phoned while we were having dinner.", vi: "Matt gọi điện trong lúc chúng tôi đang ăn tối." },
       { en: "It was raining when I got up.", vi: "Trời đang mưa khi tôi thức dậy." },
-      { en: "I was walking along the road when I saw Dave. So I stopped, and we had a chat.", vi: "Tôi đang đi dọc đường thì thấy Dave. Vì vậy tôi dừng lại và chúng tôi trò chuyện." }
-    ],
-    exercises: [
-      { q: "Jenny __________ (wait) for me when I arrived.", ans: "was waiting", explain: "Hành động chờ đang diễn ra trước và tại thời điểm tôi đến." },
-      { q: "What __________ (you / do) at this time yesterday?", ans: "were you doing", explain: "Có mốc thời gian cụ thể trong quá khứ ('at this time yesterday')." },
-      { q: "How fast __________ (you / drive) when the accident happened?", ans: "were you driving", explain: "Hành động đang lái xe làm nền thì tai nạn xảy ra." }
+      { en: "I was walking along the road when I saw Dave.", vi: "Tôi đang đi dọc đường thì nhìn thấy Dave." }
     ]
   },
   {
-    id: 3, unit: "Unit 7–14", cat: "3. Present Perfect & Past (Hiện tại hoàn thành)",
-    title: "Present Perfect vs. Past Simple (I have done vs. I did)",
-    auditStatus: "fixed",
-    auditNote: "Đã hiệu đính phân biệt 'have been to' (đã đi và đã về) vs 'have gone to' (đã đi và đang ở đó) bị đảo lộn ở một số bản chép tay.",
-    formula: "Present Perfect: S + have/has + V3/V-ed (kết quả ở hiện tại / chưa rõ thời điểm)\nPast Simple: S + V2/V-ed (thời gian đã kết thúc: yesterday, in 2019, ago)",
+    id: 6,
+    code: "Unit 7–8",
+    title: "Present Perfect 1 & 2 (I have done)",
+    viTitle: "Thì Hiện tại hoàn thành (Phần 1 & 2)",
+    formula: "Cấu trúc: S + have/has + V3/V-ed (kết quả ở hiện tại / trải nghiệm tới nay)\nDấu hiệu: just, already, yet, ever, never, recently, so far, since, for",
     rules: [
-      "Không bao giờ dùng Present Perfect với các mốc thời gian quá khứ đã chấm dứt (yesterday, last week, 5 minutes ago, in 1999, when I was a child).",
-      "Dùng Present Perfect với: just, already, yet, ever, never, recently, so far, since + mốc thời gian, for + khoảng thời gian.",
-      "It's the first time + S + have/has + V3 (Không dùng thì hiện tại đơn ở mệnh đề này)."
+      "Dùng khi hành động trong quá khứ có kết quả rõ rệt ở hiện tại (I've lost my key = bây giờ tôi không có chìa khóa).",
+      "Phân biệt: gone to (đã đi và đang ở đó) vs. been to (đã từng đến và đã quay về).",
+      "Cấu trúc cố định: It's the first time + S + have/has + V3 (Lần đầu tiên ai đó làm gì)."
     ],
     examples: [
-      { en: "I've lost my key. I can't find it anywhere.", vi: "Tôi làm mất chìa khóa rồi. (Hiện tại vẫn chưa tìm thấy)" },
-      { en: "I lost my key yesterday, but I found it this morning.", vi: "Hôm qua tôi làm mất chìa khóa, nhưng sáng nay tìm thấy rồi. (Có 'yesterday')" },
+      { en: "I've cut my finger! It's bleeding.", vi: "Tôi vừa bị đứt tay! Nó đang chảy máu kìa." },
       { en: "Jim has gone to Spain. (= He is in Spain now.)", vi: "Jim đã đi Tây Ban Nha rồi (hiện đang ở đó)." },
-      { en: "Jim has been to Spain. (= He went there and came back.)", vi: "Jim từng đến Tây Ban Nha rồi (đã đi và về)." }
-    ],
-    exercises: [
-      { q: "Ow! I __________ (burn) myself.", ans: "have burnt", explain: "Hành động vừa xảy ra để lại kết quả đau ở hiện tại ('Ow!'). Chấp nhận cả 'have burned'." },
-      { q: "Shakespeare __________ (write) many plays.", ans: "wrote", explain: "Shakespeare đã qua đời, toàn bộ sự việc thuộc về quá khứ đã chấm dứt." },
-      { q: "How long __________ (you / live) here? ‘Since 2018.’", ans: "have you lived", explain: "Hành động bắt đầu trong quá khứ kéo dài tới hiện tại với 'Since'." },
-      { q: "It's the first time he __________ (drive) a car.", ans: "has driven", explain: "Cấu trúc cố định: It's the first time + Present Perfect." }
+      { en: "It's the first time he has driven a car.", vi: "Đây là lần đầu tiên anh ấy lái ô tô." }
     ]
   },
   {
-    id: 4, unit: "Unit 15–16", cat: "4. Past Perfect (Quá khứ hoàn thành)",
-    title: "Past Perfect & Past Perfect Continuous (I had done / I had been doing)",
-    auditStatus: "verified",
-    auditNote: "Đã kiểm tra chéo các cặp câu diễn tả nguyên nhân trước một mốc quá khứ.",
-    formula: "Past Perfect: S + had + V3/V-ed\nPast Perfect Continuous: S + had been + V-ing",
+    id: 7,
+    code: "Unit 9–10",
+    title: "Present Perfect Continuous (I have been doing)",
+    viTitle: "Thì Hiện tại hoàn thành tiếp diễn",
+    formula: "Cấu trúc: S + have/has + been + V-ing (nhấn mạnh tính liên tục kéo dài)\nCâu hỏi thời lượng: How long + have/has + S + been + V-ing?",
     rules: [
-      "Dùng Past Perfect để nói về hành động xảy ra TRƯỚC một thời điểm hoặc một hành động khác trong quá khứ.",
-      "Dùng Past Perfect Continuous để nhấn mạnh tính liên tục hoặc nguyên nhân của một trạng thái trong quá khứ (ví dụ: mắt đỏ vì vừa khóc xong)."
+      "Dùng cho hành động vừa mới dừng lại và để lại dấu hiệu ở hiện tại (You're out of breath. Have you been running?).",
+      "Dùng với How long, for, since cho hành động bắt đầu trong quá khứ và vẫn đang tiếp tục.",
+      "Nhấn mạnh quá trình liên tục (I have been reading), khác với Present Perfect nhấn mạnh kết quả/số lượng (I have read 50 pages)."
+    ],
+    examples: [
+      { en: "It has been raining for two hours.", vi: "Trời đã mưa liên tục suốt hai tiếng đồng hồ rồi." },
+      { en: "How long have you been learning English?", vi: "Bạn đã học tiếng Anh được bao lâu rồi?" },
+      { en: "She has been playing tennis since she was eight.", vi: "Cô ấy đã chơi quần vợt từ khi lên tám tuổi." }
+    ]
+  },
+  {
+    id: 8,
+    code: "Unit 15",
+    title: "Past Perfect (I had done)",
+    viTitle: "Thì Quá khứ hoàn thành",
+    formula: "Cấu trúc: S + had + V3/V-ed (xảy ra trước một mốc / hành động quá khứ khác)\nPhủ định: S + had not (hadn't) + V3/V-ed",
+    rules: [
+      "Khi nói về một mốc trong quá khứ (When Sarah arrived), dùng Past Perfect để nhắc tới việc đã xảy ra TRƯỚC mốc đó (Paul had already gone home).",
+      "Nếu hai hành động xảy ra nối tiếp theo đúng trình tự thời gian, chỉ cần dùng Past Simple.",
+      "Thường dùng để giải thích nguyên nhân của một trạng thái trong quá khứ."
     ],
     examples: [
       { en: "When Sarah arrived at the party, Paul had already gone home.", vi: "Khi Sarah tới bữa tiệc, Paul đã về nhà trước đó rồi." },
-      { en: "The house was dirty. They hadn't cleaned it for weeks.", vi: "Ngôi nhà rất bẩn. Họ đã không dọn nó suốt nhiều tuần trước đó." },
-      { en: "Ken gave up smoking two years ago. He had been smoking for 30 years.", vi: "Ken bỏ thuốc 2 năm trước. Trước đó ông ấy đã hút liên tục 30 năm." }
-    ],
-    exercises: [
-      { q: "We weren't hungry. We __________ (just / have) lunch.", ans: "had just had", explain: "Ăn trưa xảy ra trước lúc 'weren't hungry' trong quá khứ." },
-      { q: "I was very tired when I got home. I __________ (work) hard all day.", ans: "had been working", explain: "Nhấn mạnh quá trình làm việc liên tục trước khi về nhà." }
+      { en: "The house was dirty. They hadn't cleaned it for weeks.", vi: "Ngôi nhà rất bẩn. Họ đã không dọn nó suốt nhiều tuần." },
+      { en: "I didn't know who she was. I had never seen her before.", vi: "Tôi không biết cô ấy là ai. Trước đó tôi chưa từng gặp cô ấy." }
     ]
   },
   {
-    id: 5, unit: "Unit 19–25", cat: "5. Future Forms (Các thì Tương lai)",
-    title: "Will vs. Going to vs. Present Continuous for Future",
-    auditStatus: "verified",
-    auditNote: "Đã xác minh quy tắc mệnh đề thời gian (when, before, after, until, as soon as) dùng Hiện tại đơn thay vì Will.",
-    formula: "Will + V: Quyết định tức thì lúc nói / Dự đoán không căn cứ\nBe going to + V: Dự định có trước / Dự đoán có dấu hiệu hiện tại\nPresent Continuous: Lịch hẹn đã sắp xếp cố định với người khác",
+    id: 9,
+    code: "Unit 19–23",
+    title: "Future: Will vs. Going to",
+    viTitle: "Tương lai: Will và Be going to",
+    formula: "Will: S + will ('ll) + V (quyết định tức thì lúc nói / lời hứa)\nGoing to: S + am/is/are + going to + V (dự định có trước / dự đoán có căn cứ)",
     rules: [
-      "Dùng 'will' khi vừa mới quyết định làm gì ngay tại thời điểm nói (I'll answer the phone).",
-      "Dùng 'be going to' khi đã có ý định từ trước hoặc thấy dấu hiệu rõ ràng (Look at those black clouds! It's going to rain).",
-      "Sau when, while, before, after, as soon as, until: KHÔNG dùng 'will', dùng Present Simple hoặc Present Perfect."
+      "Dùng 'will' khi vừa quyết định làm gì ngay tại khoảnh khắc nói (Oh, I've left the door open. I'll go and shut it).",
+      "Dùng 'be going to' khi bạn đã có kế hoạch từ trước hoặc nhìn thấy dấu hiệu rõ ràng sắp xảy ra.",
+      "Trong mệnh đề chỉ thời gian (when, after, before, until, as soon as), dùng Present Simple thay vì will."
     ],
     examples: [
-      { en: "‘Oh, I've left the door open.’ ‘I'll go and shut it.’", vi: "‘Ồ tôi để cửa mở rồi.’ ‘Để tôi đi đóng.’ (Quyết định tức thì)" },
-      { en: "Look at those black clouds! It's going to rain.", vi: "Nhìn đám mây đen kìa! Trời sắp mưa rồi. (Có dấu hiệu rõ ràng)" },
-      { en: "I'll phone you when I get home. (Not: when I will get)", vi: "Tôi sẽ gọi cho bạn khi tôi về tới nhà. (Mệnh đề thời gian dùng hiện tại đơn)" }
-    ],
-    exercises: [
-      { q: "‘Did you phone Lucy?’ ‘Oh no, I forgot. I __________ (phone) her now.’", ans: "will phone", explain: "Quyết định tức thì ngay lúc nhận ra mình quên (chấp nhận 'll phone)." },
-      { q: "We __________ (have) a party next Saturday. We've invited all our friends.", ans: "are having", explain: "Kế hoạch đã sắp xếp và mời khách xong -> Present Continuous." },
-      { q: "Wait here until I __________ (come) back.", ans: "come", explain: "Sau 'until' chỉ tương lai phải dùng Present Simple." }
+      { en: "Look at those black clouds! It's going to rain.", vi: "Nhìn những đám mây đen kìa! Trời sắp mưa rồi." },
+      { en: "‘Did you phone Lucy?’ ‘Oh no, I forgot. I'll phone her now.’", vi: "‘Bạn gọi Lucy chưa?’ ‘Ồ tôi quên mất. Để tôi gọi ngay đây.’" },
+      { en: "I'll phone you when I get home. (Not: when I will get)", vi: "Tôi sẽ gọi cho bạn khi tôi về tới nhà." }
     ]
   },
   {
-    id: 6, unit: "Unit 26–37", cat: "6. Modal Verbs (Động từ khuyết thiếu)",
-    title: "Must, Have to, Should, Can, Could, May, Might & Modal + Have V3",
-    auditStatus: "fixed",
-    auditNote: "Đã hiệu đính cặp phủ định dễ nhầm: 'mustn't' (cấm đoán) vs 'don't have to' (không cần thiết).",
-    formula: "Suy đoán chắc chắn quá khứ: must have + V3\nSuy đoán không thể xảy ra quá khứ: can't / couldn't have + V3\nTiếc nuối/trách móc quá khứ: should have + V3",
+    id: 10,
+    code: "Unit 26–32",
+    title: "Modal Verbs: Can, Could, Must, Have to",
+    viTitle: "Động từ khuyết thiếu: Can, Could, Must, Have to",
+    formula: "Khả năng / Xin phép: S + can/could + V (nguyên mẫu không to)\nBắt buộc & Cấm đoán: must / have to (bắt buộc) | mustn't (cấm) | don't have to (không cần)",
     rules: [
-      "Mustn't = cấm không được làm. Don't have to / Needn't = không cần phải làm (làm cũng được).",
-      "Must have + V3: chắc hẳn đã xảy ra trong quá khứ (suy luận logic). Phủ định của nó là Can't have + V3 (không đời nào đã xảy ra), KHÔNG dùng mustn't have.",
-      "Should have + V3: đáng lẽ nên làm (nhưng thực tế đã không làm)."
+      "Mustn't nghĩa là cấm tuyệt đối không được làm; Don't have to nghĩa là không cần thiết phải làm (làm cũng được).",
+      "Must dùng khi người nói tự thấy cần thiết; Have to dùng khi quy định/hoàn cảnh bên ngoài bắt buộc.",
+      "Suy đoán chắc chắn trong quá khứ dùng: must have + V3; không thể xảy ra dùng: can't have + V3."
     ],
     examples: [
-      { en: "You mustn't tell anyone what I said. (= Keep it a secret)", vi: "Bạn tuyệt đối không được kể cho ai điều tôi nói. (Cấm)" },
-      { en: "You don't have to come if you don't want to.", vi: "Bạn không cần phải đến nếu bạn không muốn. (Không bắt buộc)" },
-      { en: "The phone rang, but I didn't hear it. I must have been asleep.", vi: "Điện thoại reo nhưng tôi không nghe thấy. Chắc hẳn lúc đó tôi đã ngủ say." },
-      { en: "You missed a great party last night. You should have come.", vi: "Tối qua bạn bỏ lỡ bữa tiệc tuyệt vời. Đáng lẽ bạn nên đến." }
-    ],
-    exercises: [
-      { q: "Tom walked straight into a wall. He __________ (not / look) where he was going.", ans: "can't have been looking", explain: "Suy đoán điều không thể xảy ra trong quá khứ (chấp nhận 'couldn't have been looking')." },
-      { q: "We have plenty of time. We __________ (not / hurry).", ans: "don't have to hurry", explain: "Không cần thiết phải vội (chấp nhận 'needn't hurry')." }
+      { en: "You mustn't tell anyone what I said. (= Keep it a secret)", vi: "Bạn tuyệt đối không được kể cho ai điều tôi nói." },
+      { en: "You don't have to come if you don't want to.", vi: "Bạn không cần phải đến nếu bạn không muốn." },
+      { en: "The phone rang, but I didn't hear it. I must have been asleep.", vi: "Điện thoại reo nhưng tôi không nghe thấy. Chắc hẳn lúc đó tôi đã ngủ say." }
     ]
   },
   {
-    id: 7, unit: "Unit 38–41", cat: "7. Conditionals & Wish (Câu điều kiện & Ước)",
-    title: "If I do / If I did / If I had done & I wish",
-    auditStatus: "verified",
-    auditNote: "Đã kiểm tra chuẩn cấu trúc đảo ngữ điều kiện và cấu trúc 'I wish I knew' vs 'I wish I had known'.",
-    formula: "Loại 1 (Có thật): If + S + V(s/es), S + will + V\nLoại 2 (Không thật hiện tại): If + S + V2/were, S + would/could + V\nLoại 3 (Không thật quá khứ): If + S + had + V3, S + would/could + have + V3",
+    id: 11,
+    code: "Unit 38–39",
+    title: "Conditionals 1 & 2 (If I do vs. If I did)",
+    viTitle: "Câu điều kiện Loại 1 & Loại 2",
+    formula: "Loại 1 (Có thật): If + S + V(s/es), S + will/can + V\nLoại 2 (Giả định trái hiện tại): If + S + V2/were, S + would/could + V",
     rules: [
-      "Không dùng 'would' trong mệnh đề chứa 'if' (trừ trường hợp lịch sự 'If you would...').",
-      "I wish + S + V2/were: Ước điều trái với hiện tại. I wish + S + had + V3: Ước điều trái với quá khứ.",
-      "I wish + S + would + V: Phàn nàn, mong ai đó/cái gì đó thay đổi hành vi (I wish it would stop raining)."
+      "Câu điều kiện loại 1 diễn tả tình huống có thật hoặc có khả năng xảy ra ở hiện tại/tương lai.",
+      "Câu điều kiện loại 2 dùng thì quá khứ sau 'If' để nói về tình huống tưởng tượng, không có thật ở hiện tại.",
+      "Không dùng 'would' trong mệnh đề chứa 'If' (If I knew his number, I would phone him)."
     ],
     examples: [
-      { en: "If I knew his number, I would phone him. (I don't know his number)", vi: "Nếu tôi biết số anh ấy, tôi sẽ gọi ngay. (Thực tế không biết)" },
-      { en: "If I had seen you, I would have said hello.", vi: "Nếu hôm qua tôi thấy bạn, tôi đã chào rồi. (Thực tế không thấy)" },
-      { en: "I wish I hadn't eaten so much cake. I feel sick.", vi: "Ước gì tôi đã không ăn nhiều bánh đến thế. (Hối tiếc quá khứ)" }
-    ],
-    exercises: [
-      { q: "If I __________ (be) you, I wouldn't buy that coat.", ans: "were", explain: "Điều kiện loại 2 giả định trái thực tế (chấp nhận 'was' trong văn nói, 'were' chuẩn học thuật)." },
-      { q: "I'm sorry I couldn't come. If I __________ (know) you were ill, I would have visited you.", ans: "had known", explain: "Điều kiện loại 3 trái với quá khứ." }
+      { en: "If I find your wallet, I'll let you know.", vi: "Nếu tôi tìm thấy ví của bạn, tôi sẽ báo cho bạn biết." },
+      { en: "If I knew his number, I would phone him.", vi: "Nếu tôi biết số điện thoại của anh ấy, tôi sẽ gọi ngay." },
+      { en: "If I were you, I wouldn't buy that coat.", vi: "Nếu tôi là bạn, tôi sẽ không mua chiếc áo khoác đó." }
     ]
   },
   {
-    id: 8, unit: "Unit 42–46", cat: "8. Passive Voice (Câu bị động)",
-    title: "Passive (is done / was done / has been done) & Have something done",
-    auditStatus: "verified",
-    auditNote: "Đã kiểm tra đủ 8 thì bị động và cấu trúc truyền khiến 'have something done'.",
-    formula: "Bị động: S + be (chia theo thì) + V3/V-ed (+ by O)\nTruyền khiến: S + have/get + O (vật) + V3/V-ed",
+    id: 12,
+    code: "Unit 42–44",
+    title: "Passive Voice (is done / was done)",
+    viTitle: "Câu bị động",
+    formula: "Công thức chung: S + be (chia theo thì) + V3/V-ed (+ by O)\nHiện tại tiếp diễn bị động: S + am/is/are + being + V3/V-ed",
     rules: [
-      "Dùng bị động khi người thực hiện hành động không quan trọng hoặc không rõ là ai.",
-      "Động từ có 2 tân ngữ (give, ask, offer, pay, show, teach, tell) có thể chia 2 cách bị động, thường lấy người làm chủ ngữ.",
-      "Have something done: Thuê/nhờ ai đó làm gì cho mình (I had my hair cut yesterday)."
+      "Dùng câu bị động khi hành động quan trọng hơn người thực hiện, hoặc không rõ ai là người làm.",
+      "Thì hiện tại hoàn thành bị động: S + have/has + been + V3/V-ed (My car has been stolen).",
+      "Cấu trúc truyền khiến (nhờ/thuê ai làm): S + have/get + O (vật) + V3/V-ed (I had my hair cut)."
     ],
     examples: [
-      { en: "This house was built in 1981.", vi: "Ngôi nhà này được xây vào năm 1981." },
-      { en: "My car has been stolen!", vi: "Xe của tôi bị trộm mất rồi!" },
-      { en: "We are having the house painted at the moment.", vi: "Chúng tôi đang thuê thợ sơn lại nhà." }
-    ],
-    exercises: [
-      { q: "The room __________ (clean) every day.", ans: "is cleaned", explain: "Bị động thì hiện tại đơn." },
-      { q: "Lisa didn't repair the roof herself. She __________ (it / repair).", ans: "had it repaired", explain: "Cấu trúc thuê người làm trong quá khứ: had + O + V3." }
+      { en: "This house was built in 1981.", vi: "Ngôi nhà này được xây dựng vào năm 1981." },
+      { en: "My car has been stolen!", vi: "Xe ô tô của tôi bị trộm mất rồi!" },
+      { en: "There's somebody walking behind us. I think we are being followed.", vi: "Có ai đó đang đi sau chúng ta. Tôi nghĩ chúng ta đang bị theo dõi." }
     ]
   },
   {
-    id: 9, unit: "Unit 47–48", cat: "9. Reported Speech (Câu tường thuật)",
-    title: "Reported Speech (He said that...) & Lùi thì",
-    auditStatus: "verified",
-    auditNote: "Đã xác minh quy tắc không cần lùi thì nếu sự việc vẫn còn đúng ở hiện tại.",
-    formula: "S + said (that) / told + O + (that) + S + V (lùi 1 bậc thì)",
+    id: 13,
+    code: "Unit 47–48",
+    title: "Reported Speech (He said that...)",
+    viTitle: "Câu tường thuật",
+    formula: "Tường thuật trần thuật: S + said (that) / told + O + S + V (lùi 1 bậc thì)\nCâu hỏi tường thuật: S + asked (+ O) + Wh-/if + S + V (không đảo ngữ)",
     rules: [
-      "Say không có tân ngữ trực tiếp (He said that... hoặc He said to me). Tell bắt buộc có tân ngữ (He told me that...).",
-      "Trong câu hỏi tường thuật, trật tự từ trở về dạng khẳng định (KHÔNG đảo trợ động từ): He asked me where I lived (Not: where did I live)."
+      "Động từ trong câu tường thuật thường lùi một bậc về quá khứ (am/is -> was, are -> were, do/does -> did, will -> would, can -> could).",
+      "Say không đi trực tiếp với tân ngữ người (He said that...); Tell bắt buộc có tân ngữ (He told me that...).",
+      "Trong câu hỏi tường thuật, giữ nguyên trật tự S + V, không đảo trợ động từ lên trước chủ ngữ."
     ],
     examples: [
-      { en: "Paul said that he was feeling ill.", vi: "Paul nói rằng anh ấy đang cảm thấy ốm." },
+      { en: "Paul said that he was feeling ill.", vi: "Paul nói rằng anh ấy đang cảm thấy bị ốm." },
+      { en: "She told me that she couldn't come to the party.", vi: "Cô ấy nói với tôi rằng cô ấy không thể đến dự tiệc." },
       { en: "The police officer asked us where we were going.", vi: "Viên cảnh sát hỏi chúng tôi đang đi đâu." }
-    ],
-    exercises: [
-      { q: "‘Where are you going?’ -> She asked me where __________.", ans: "I was going", explain: "Lùi thì hiện tại tiếp diễn -> quá khứ tiếp diễn và giữ trật tự S + V." }
     ]
   },
   {
-    id: 10, unit: "Unit 49–52", cat: "10. Questions & Auxiliary Verbs (Câu hỏi & Trợ động từ)",
-    title: "Embedded Questions (Do you know where...?) & Question Tags",
-    auditStatus: "fixed",
-    auditNote: "Đã sửa lỗi câu hỏi đuôi của 'I am' (aren't I?) và 'Let's' (shall we?) bị thiếu dấu hỏi ở bản TXT.",
-    formula: "Câu hỏi lồng: Do you know + Wh- + S + V? (Không đảo ngữ)\nCâu hỏi đuôi: Mệnh đề khẳng định, trợ động từ phủ định + đại từ?",
+    id: 14,
+    code: "Unit 92–95",
+    title: "Relative Clauses (who / that / which)",
+    viTitle: "Mệnh đề quan hệ",
+    formula: "Xác định (không dấu phẩy): who (người) / which (vật) / that (người & vật)\nKhông xác định (có dấu phẩy): who / which / whose / where (CẤM dùng 'that')",
     rules: [
-      "Khi câu hỏi nằm bên trong một câu khác (Could you tell me..., I don't know...), KHÔNG đảo trợ động từ lên trước chủ ngữ.",
-      "Câu hỏi đuôi đặc biệt: I'm late, aren't I? | Let's go, shall we? | Don't be late, will you?"
-    ],
-    examples: [
-      { en: "Do you know what time the film starts? (Not: does the film start)", vi: "Bạn có biết phim bắt đầu lúc mấy giờ không?" },
-      { en: "You haven't seen Lisa today, have you?", vi: "Hôm nay bạn chưa gặp Lisa phải không?" }
-    ],
-    exercises: [
-      { q: "Could you tell me where __________ (the station / be)?", ans: "the station is", explain: "Câu hỏi lồng không đảo động từ 'is' lên trước 'the station'." }
-    ]
-  },
-  {
-    id: 11, unit: "Unit 53–68", cat: "11. -ing and to... (Danh động từ & Động từ nguyên mẫu)",
-    title: "Verb + -ing vs. Verb + to... (Stop, Remember, Try, Suggest, Used to)",
-    auditStatus: "fixed",
-    auditNote: "Đã đối chiếu chuẩn cặp động từ đổi nghĩa (remember/stop/try + V-ing vs to V) và 'be used to + V-ing'.",
-    formula: "Enjoy / avoid / mind / suggest / finish + V-ing\nDecide / hope / offer / promise / refuse / manage + to V\nBe/Get used to + V-ing (quen với việc gì)",
-    rules: [
-      "Suggest + V-ing hoặc Suggest (that) S + (should) + V. KHÔNG bao giờ dùng 'suggest someone to do'.",
-      "Remember doing: nhớ đã làm gì (quá khứ). Remember to do: nhớ phải làm gì (nhiệm vụ).",
-      "Stop doing: dừng hẳn việc đang làm. Stop to do: dừng lại để làm việc khác."
-    ],
-    examples: [
-      { en: "I suggested going to the cinema. (Not: suggested to go)", vi: "Tôi gợi ý đi xem phim." },
-      { en: "I remember locking the door. (= I locked it and now I remember this)", vi: "Tôi nhớ rõ là đã khóa cửa rồi." },
-      { en: "Please remember to lock the door when you go out.", vi: "Làm ơn nhớ khóa cửa khi bạn ra ngoài nhé." },
-      { en: "She is used to driving on the left.", vi: "Cô ấy đã quen với việc lái xe bên trái." }
-    ],
-    exercises: [
-      { q: "Would you mind __________ (close) the door?", ans: "closing", explain: "Sau 'mind' luôn dùng V-ing." },
-      { q: "We stopped __________ (buy) some petrol on the way home.", ans: "to buy", explain: "Dừng xe lại ĐỂ mua xăng -> stop + to V." }
-    ]
-  },
-  {
-    id: 12, unit: "Unit 69–81", cat: "12. Articles & Nouns (Mạo từ & Danh từ)",
-    title: "Countable/Uncountable Nouns & A/An vs. The vs. Zero Article",
-    auditStatus: "fixed",
-    auditNote: "Đã hiệu đính danh sách danh từ không đếm được kinh điển (advice, furniture, luggage, news, information, weather, progress).",
-    formula: "Không đếm được (luôn số ít, không dùng a/an): advice, information, news, luggage, baggage, furniture, equipment, accommodation, behavior, traffic, weather, work",
-    rules: [
-      "Không dùng 'the' khi nói chung chung về danh từ số nhiều hoặc không đếm được (I love music. Books are expensive).",
-      "Go to school / hospital / prison / church / bed (không có 'the' khi đi đúng mục đích chính của nơi đó).",
-      "Dùng 'the' với nhạc cụ (play the piano), đại dương, sông, dãy núi, tên nước số nhiều (the Netherlands, the USA)."
-    ],
-    examples: [
-      { en: "Can you give me some advice? (Not: an advice / advices)", vi: "Bạn có thể cho tôi vài lời khuyên không?" },
-      { en: "The news wasn't very good. (News is singular)", vi: "Tin tức không được tốt lắm." },
-      { en: "Ken's brother is in prison for robbery.", vi: "Anh trai của Ken đang ngồi tù vì tội cướp. (Đúng mục đích nhà tù -> không 'the')" }
-    ],
-    exercises: [
-      { q: "We had __________ very nice weather when we were on holiday.", ans: "no article", explain: "'Weather' không đếm được và mang nghĩa chung chung nên không dùng a/an hay the (gõ 'no article' hoặc '-')." }
-    ]
-  },
-  {
-    id: 13, unit: "Unit 92–97", cat: "13. Relative Clauses (Mệnh đề quan hệ)",
-    title: "Who, That, Which, Whose, Whom, Where & Defining vs. Non-defining",
-    auditStatus: "verified",
-    auditNote: "Đã xác minh quy tắc cấm dùng 'that' sau dấu phẩy (mệnh đề quan hệ không xác định).",
-    formula: "Mệnh đề xác định (không dấu phẩy): Dùng who/which/that; có thể lược bỏ nếu làm tân ngữ.\nMệnh đề không xác định (có dấu phẩy): Chỉ dùng who/which/whose/where; CẤM dùng 'that'.",
-    rules: [
-      "Không được dùng 'that' trong mệnh đề quan hệ có dấu phẩy.",
-      "Không được lược bỏ đại từ quan hệ trong mệnh đề có dấu phẩy, kể cả khi nó làm tân ngữ."
+      "Trong mệnh đề quan hệ xác định, có thể lược bỏ who/which/that khi nó đóng vai trò làm tân ngữ (The woman I wanted to see was away).",
+      "Trong mệnh đề quan hệ không xác định (có dấu phẩy ngăn cách thông tin bổ sung), tuyệt đối KHÔNG dùng 'that' và không được lược bỏ đại từ quan hệ.",
+      "Whose dùng để chỉ sự sở hữu cho cả người và vật."
     ],
     examples: [
       { en: "The woman who lives next door is a doctor.", vi: "Người phụ nữ sống ở nhà bên cạnh là bác sĩ." },
-      { en: "My brother Ben, who lives in Hong Kong, is an architect.", vi: "Anh trai tôi Ben, người sống ở Hồng Kông, là kiến trúc sư. (Có dấu phẩy -> cấm 'that')" }
-    ],
-    exercises: [
-      { q: "We stayed at the Park Hotel, __________ a friend of ours recommended.", ans: "which", explain: "Có dấu phẩy đứng trước nên bắt buộc dùng 'which', không dùng 'that'." }
+      { en: "My brother Ben, who lives in Hong Kong, is an architect.", vi: "Anh trai tôi Ben, người sống ở Hồng Kông, là kiến trúc sư." },
+      { en: "We stayed at the Park Hotel, which a friend of ours recommended.", vi: "Chúng tôi ở tại khách sạn Park, nơi mà một người bạn của chúng tôi giới thiệu." }
     ]
   },
   {
-    id: 14, unit: "Unit 98–112", cat: "14. Adjectives, Adverbs & Word Order (Tính từ, Trạng từ & Trật tự từ)",
-    title: "-ing vs. -ed Adjectives, Comparatives, Enough/Too & Word Order",
-    auditStatus: "verified",
-    auditNote: "Đã kiểm tra vị trí trạng từ tần suất (always, often, never) đứng trước động từ thường, sau 'to be' và trợ động từ đầu tiên.",
-    formula: "Trật tự câu chuẩn: Subject + Verb + Object + Place + Time\nTrạng từ tần suất: S + (trợ ĐT 1) + always/never + V thường",
+    id: 15,
+    code: "Unit 69–72",
+    title: "Articles: a / an and the (Part 1)",
+    viTitle: "Mạo từ a / an và the (Phần 1)",
+    formula: "a/an + danh từ đếm được số ít (nhắc tới lần đầu / chưa xác định)\nthe + danh từ đã xác định (người nghe và người nói đều biết rõ)",
     rules: [
-      "Tính từ đuôi -ing mô tả bản chất sự vật/người gây ra cảm xúc (boring). Đuôi -ed mô tả cảm xúc bị tác động (bored).",
-      "Enough đứng SAU tính từ/trạng từ (warm enough), nhưng đứng TRƯỚC danh từ (enough money).",
-      "Trong câu có nhiều động từ, trạng từ tần suất đứng sau trợ động từ ĐẦU TIÊN: I have never been to China."
+      "Dùng 'a' trước phụ âm phát âm (a university, a European country) và 'an' trước nguyên âm phát âm (an hour, an umbrella).",
+      "Không bao giờ dùng a/an với danh từ không đếm được (advice, information, news, furniture, weather, luggage).",
+      "Dùng 'the' khi vật thể là duy nhất (the sun, the moon, the internet, the capital)."
     ],
     examples: [
-      { en: "Julia is interested in politics. She finds politics interesting.", vi: "Julia hứng thú với chính trị. Cô ấy thấy chính trị thú vị." },
-      { en: "He doesn't run fast enough to win the race.", vi: "Anh ấy không chạy đủ nhanh để thắng cuộc đua." },
-      { en: "We went to a party at Kate's house last night. (Place before Time)", vi: "Tối qua chúng tôi dự tiệc ở nhà Kate. (Nơi chốn trước Thời gian)" }
-    ],
-    exercises: [
-      { q: "He didn't get the job because he wasn't __________ (experienced / enough).", ans: "experienced enough", explain: "'Enough' đứng sau tính từ." }
+      { en: "I bought a jacket and a shirt. The jacket was cheap, but the shirt was expensive.", vi: "Tôi mua một chiếc áo khoác và một chiếc áo sơ mi. Chiếc áo khoác thì rẻ, còn chiếc áo sơ mi thì đắt." },
+      { en: "Can you give me some advice? (Not: an advice)", vi: "Bạn có thể cho tôi vài lời khuyên không?" },
+      { en: "What is the longest river in the world?", vi: "Con sông dài nhất trên thế giới là sông nào?" }
     ]
   },
   {
-    id: 15, unit: "Unit 113–120", cat: "15. Conjunctions & Prepositions (Liên từ & Giới từ thời gian/nơi chốn)",
-    title: "Although / In spite of / During / While / By / Until / In / On / At",
-    auditStatus: "fixed",
-    auditNote: "Đã làm rõ cặp hay sai nhất của người Việt: 'by' (trước hoặc muộn nhất là mốc đó) vs 'until' (kéo dài liên tục tới mốc đó).",
-    formula: "Although / Even though + S + V\nIn spite of / Despite + Noun / V-ing\nDuring + Noun | While + S + V",
+    id: 16,
+    code: "Unit 73–78",
+    title: "Articles: the vs. Zero Article (Part 2)",
+    viTitle: "Mạo từ the và Trường hợp không dùng mạo từ",
+    formula: "Nói chung chung: Zero article + danh từ số nhiều / không đếm được\nCụm địa điểm đặc biệt: go to school / hospital / prison / bed (không 'the')",
     rules: [
-      "By + mốc thời gian = không muộn hơn thời điểm đó (deadline). Until + mốc thời gian = hành động kéo dài liên tục cho tới lúc đó mới dừng.",
-      "In time = kịp lúc (trước khi quá muộn). On time = đúng giờ (chính xác theo lịch trình).",
-      "At the end (of something) = điểm kết thúc của một sự vật/sự kiện. In the end = cuối cùng thì (sau một quá trình)."
+      "Không dùng 'the' khi nói về sự vật nói chung (I love music. Books are expensive. Life has changed a lot).",
+      "Không dùng 'the' với go to school / hospital / prison / church / bed khi đến đúng mục đích chính của nơi đó.",
+      "Dùng 'the' với tên đại dương, sông, dãy núi, nhạc cụ (play the piano) và tên quốc gia dạng số nhiều hoặc có từ Republic/Kingdom/States (the USA, the UK)."
     ],
     examples: [
-      { en: "In spite of the rain, we enjoyed our holiday.", vi: "Mặc dù trời mưa, chúng tôi vẫn tận hưởng kỳ nghỉ." },
-      { en: "I have to be at the airport by 8.30. (Deadline)", vi: "Tôi phải có mặt ở sân bay muộn nhất là 8:30." },
-      { en: "I stayed in bed until half past ten.", vi: "Tôi nằm trên giường liên tục tới tận 10:30 mới dậy." }
-    ],
-    exercises: [
-      { q: "__________ she was tired, she couldn't sleep.", ans: "Although", explain: "Theo sau là mệnh đề (S + V) nên dùng 'Although' hoặc 'Even though'." },
-      { q: "The train arrived right __________ time. It wasn't late at all.", ans: "on", explain: "Đúng giờ theo lịch trình -> 'on time'." }
-    ]
-  },
-  {
-    id: 16, unit: "Unit 121–145", cat: "16. Prepositions & Phrasal Verbs (Giới từ & Cụm động từ)",
-    title: "Noun/Adjective + Preposition & Essential Phrasal Verbs",
-    auditStatus: "verified",
-    auditNote: "Đã tổng hợp các cụm giới từ và phrasal verbs trọng tâm từ Unit 121 đến 145.",
-    formula: "afraid of | good at | interested in | depend on | apologize to sb for sth\nput off (hoãn) | turn down (từ chối/giảm âm) | look forward to + V-ing | run out of (hết sạch)",
-    rules: [
-      "Look forward to + V-ing / Noun ('to' ở đây là giới từ, không phải to-infinitive).",
-      "Nếu tân ngữ của cụm động từ tách được là đại từ (it, them, me, him), bắt buộc đặt đại từ Ở GIỮA: turn it off (KHÔNG nói turn off it)."
-    ],
-    examples: [
-      { en: "I'm looking forward to seeing you again.", vi: "Tôi rất mong chờ được gặp lại bạn." },
-      { en: "The television is too loud. Can you turn it down?", vi: "Tivi to quá. Bạn vặn nhỏ nó xuống được không? (Đại từ 'it' đứng giữa)" },
-      { en: "We had to put off the meeting until next week.", vi: "Chúng tôi phải hoãn cuộc họp sang tuần sau." }
-    ],
-    exercises: [
-      { q: "Are you good __________ repairing things?", ans: "at", explain: "Cụm cố định: good at + V-ing/Noun." },
-      { q: "Don't throw that box away. I need __________ (it / keep -> dùng cụm từ 'keep it').", ans: "keep it", explain: "Đại từ đứng sau ngoại động từ." }
+      { en: "I'm afraid of dogs. (Dogs in general -> no 'the')", vi: "Tôi sợ loài chó nói chung." },
+      { en: "Ken's brother is in prison for robbery.", vi: "Anh trai của Ken đang ngồi tù vì tội cướp." },
+      { en: "She plays the piano very well.", vi: "Cô ấy chơi đàn piano rất giỏi." }
     ]
   }
 ];
 
-const QUIZ_BANK = [
-  { cat: "1. Present Tenses", q: "‘Where's Mark?’ ‘He __________ a shower.’", opts: ["has", "is having", "have", "having"], ans: 1, exp: "Hành động đang diễn ra ngay tại thời điểm hỏi -> Present Continuous." },
-  { cat: "1. Present Tenses", q: "Look! That man __________ to open the door of your car.", opts: ["tries", "tried", "is trying", "has tried"], ans: 2, exp: "Có từ cảm thán 'Look!' báo hiệu hành động đang diễn ra trước mắt." },
-  { cat: "3. Present Perfect", q: "I'm looking for Paul. __________ him?", opts: ["Did you see", "Have you seen", "Do you see", "Had you seen"], ans: 1, exp: "Hỏi về trải nghiệm/kết quả liên quan tới hiện tại (đang tìm Paul)." },
-  { cat: "3. Present Perfect", q: "Jenny __________ in Dublin for 10 years, and she still loves it there.", opts: ["lived", "lives", "has lived", "was living"], ans: 2, exp: "Bắt đầu trong quá khứ và vẫn tiếp tục ở hiện tại -> Present Perfect." },
-  { cat: "3. Present Perfect", q: "My grandparents __________ married in London in 1965.", opts: ["have got", "got", "had got", "get"], ans: 1, exp: "Có mốc thời gian quá khứ xác định 'in 1965' -> Past Simple." },
-  { cat: "5. Future Forms", q: "I'll call you as soon as I __________ any news.", opts: ["will hear", "heard", "hear", "am hearing"], ans: 2, exp: "Trong mệnh đề thời gian (as soon as), dùng Present Simple thay cho tương lai." },
-  { cat: "6. Modal Verbs", q: "You __________ take an umbrella. It's not going to rain.", opts: ["mustn't", "needn't", "can't", "shouldn't have"], ans: 1, exp: "Không cần thiết phải mang ô -> needn't / don't have to." },
-  { cat: "6. Modal Verbs", q: "I can't find my bag anywhere. I __________ it in the shop.", opts: ["must leave", "must have left", "should leave", "can't leave"], ans: 1, exp: "Suy đoán chắc chắn về một sự việc đã xảy ra trong quá khứ: must have + V3." },
-  { cat: "7. Conditionals", q: "If I __________ hungry, I would eat something.", opts: ["am", "was/were", "had been", "would be"], ans: 1, exp: "Câu điều kiện loại 2 giả định trái thực tế ở hiện tại." },
-  { cat: "8. Passive Voice", q: "There's somebody walking behind us. I think we __________.", opts: ["are following", "are being followed", "followed", "have followed"], ans: 1, exp: "Bị động của thì hiện tại tiếp diễn: am/is/are + being + V3." },
-  { cat: "10. Questions", q: "Excuse me, can you tell me where __________?", opts: ["is the nearest bank", "the nearest bank is", "does the nearest bank", "was the nearest bank"], ans: 1, exp: "Câu hỏi gián tiếp không đảo trợ động từ lên trước chủ ngữ." },
-  { cat: "11. -ing and to...", q: "I'm tired. I'd rather __________ out this evening, if you don't mind.", opts: ["not going", "not to go", "not go", "don't go"], ans: 2, exp: "Cấu trúc: would rather (not) + V nguyên mẫu không 'to'." },
-  { cat: "12. Articles & Nouns", q: "The police want to interview two men about the robbery. The police __________ looking for them.", opts: ["is", "are", "was", "has been"], ans: 1, exp: "'The police' luôn chia động từ ở số nhiều." },
-  { cat: "13. Relative Clauses", q: "Colin told me about his new job, __________ he's enjoying very much.", opts: ["that", "which", "what", "who"], ans: 1, exp: "Sau dấu phẩy (mệnh đề quan hệ không xác định) chỉ dùng 'which', cấm dùng 'that'." },
-  { cat: "15. Prepositions", q: "I'll be at home __________ Friday morning. You can phone me then.", opts: ["in", "at", "on", "by"], ans: 2, exp: "Có thứ trong tuần (Friday morning) -> dùng giới từ 'on'." },
-  { cat: "16. Phrasal Verbs", q: "Your shoes are dirty. Take __________ before you come in.", opts: ["off them", "them off", "it off", "off it"], ans: 1, exp: "Shoes số nhiều dùng 'them', và đại từ bắt buộc nằm giữa cụm động từ 'take them off'." }
+/* ==========================================================================
+   3. QUIZ, GAMES & PRONUNCIATION DATASETS
+   ========================================================================== */
+var QUIZ_QUESTIONS = [
+  { unitId: 1, q: "Please be quiet. I __________ (try) to concentrate.", opts: ["try", "am trying", "tried", "have tried"], ans: 1, exp: "Hành động đang diễn ra ngay tại lúc nói ('Please be quiet') -> dùng Present Continuous (am trying)." },
+  { unitId: 2, q: "The River Nile __________ (flow) into the Mediterranean.", opts: ["is flowing", "flowed", "flows", "has flowed"], ans: 2, exp: "Sự thật địa lý hiển nhiên luôn đúng -> dùng Present Simple (flows)." },
+  { unitId: 3, q: "I'm hungry. I __________ something to eat.", opts: ["want", "am wanting", "wanted", "have wanted"], ans: 0, exp: "'Want' là động từ trạng thái (stative verb), không chia ở thì tiếp diễn." },
+  { unitId: 4, q: "Mozart __________ more than 600 pieces of music.", opts: ["has written", "was writing", "wrote", "writes"], ans: 2, exp: "Mozart đã qua đời, toàn bộ sự việc đã chấm dứt trong quá khứ -> dùng Past Simple (wrote)." },
+  { unitId: 5, q: "Matt phoned while we __________ dinner.", opts: ["had", "were having", "have had", "are having"], ans: 1, exp: "Hành động ăn tối đang diễn ra làm nền thì Matt gọi điện xen vào -> dùng Past Continuous (were having)." },
+  { unitId: 6, q: "‘Where's Jim?’ ‘He __________ to Spain. He'll be back next week.’", opts: ["has been", "went", "has gone", "was going"], ans: 2, exp: "'Has gone to' nghĩa là đã đi và hiện vẫn đang ở Tây Ban Nha." },
+  { unitId: 7, q: "You're out of breath. __________?", opts: ["Have you run", "Have you been running", "Did you run", "Are you running"], ans: 1, exp: "Nhấn mạnh hành động liên tục vừa kết thúc để lại dấu hiệu thở dốc ở hiện tại -> Present Perfect Continuous." },
+  { unitId: 8, q: "When Sarah arrived at the party, Paul __________ already __________ home.", opts: ["has / gone", "had / gone", "was / going", "did / go"], ans: 1, exp: "Paul về nhà trước thời điểm Sarah tới trong quá khứ -> dùng Past Perfect (had gone)." },
+  { unitId: 9, q: "I'll phone you as soon as I __________ home.", opts: ["will get", "got", "get", "am getting"], ans: 2, exp: "Sau liên từ chỉ thời gian 'as soon as', dùng Present Simple (get) thay cho tương lai." },
+  { unitId: 10, q: "You __________ tell anyone what I said. It's a secret.", opts: ["don't have to", "needn't", "mustn't", "haven't to"], ans: 2, exp: "'Mustn't' diễn tả sự cấm đoán tuyệt đối không được làm." },
+  { unitId: 11, q: "If I __________ his number, I would phone him.", opts: ["know", "knew", "would know", "had known"], ans: 1, exp: "Câu điều kiện loại 2 giả định trái thực tế ở hiện tại -> dùng quá khứ đơn (knew) trong mệnh đề If." },
+  { unitId: 12, q: "There's somebody walking behind us. I think we __________.", opts: ["are following", "are being followed", "followed", "have followed"], ans: 1, exp: "Bị động thì hiện tại tiếp diễn: am/is/are + being + V3 (are being followed)." },
+  { unitId: 13, q: "The police officer asked us where __________.", opts: ["were we going", "we were going", "are we going", "did we go"], ans: 1, exp: "Trong câu hỏi tường thuật, giữ trật tự chủ ngữ + động từ (we were going), không đảo ngữ." },
+  { unitId: 14, q: "My brother Ben, __________ lives in Hong Kong, is an architect.", opts: ["that", "which", "who", "whom"], ans: 2, exp: "Sau dấu phẩy (mệnh đề quan hệ không xác định) chỉ dùng 'who' cho người, cấm dùng 'that'." },
+  { unitId: 15, q: "Can you give me __________ about this problem?", opts: ["an advice", "some advice", "advices", "a advice"], ans: 1, exp: "'Advice' là danh từ không đếm được, không dùng 'an' hay số nhiều, dùng 'some advice'." },
+  { unitId: 16, q: "I'm afraid of __________, especially big ones.", opts: ["the dogs", "a dog", "dogs", "dog"], ans: 2, exp: "Nói về loài chó nói chung -> dùng danh từ số nhiều không mạo từ (dogs)." }
 ];
 
-const SCRAMBLE_DATA = [
-  { words: ["Have", "you", "ever", "been", "to", "Japan?"], vi: "Bạn đã từng đến Nhật Bản bao giờ chưa?" },
-  { words: ["Do", "you", "know", "what", "time", "the", "train", "leaves?"], vi: "Bạn có biết mấy giờ tàu rời bến không?" },
-  { words: ["I", "wish", "I", "had", "known", "you", "were", "coming."], vi: "Ước gì tôi đã biết trước là bạn sẽ đến." },
-  { words: ["She", "is", "used", "to", "working", "under", "pressure."], vi: "Cô ấy đã quen với việc làm việc dưới áp lực." },
-  { words: ["We", "went", "to", "a", "great", "restaurant", "last", "night."], vi: "Tối qua chúng tôi đã đến một nhà hàng tuyệt vời." },
-  { words: ["The", "meeting", "has", "been", "put", "off", "until", "Friday."], vi: "Cuộc họp đã bị hoãn lại cho đến thứ Sáu." }
+var SENTENCE_BUILDER_LIST = [
+  { words: ["The", "water", "is", "boiling", "right", "now."], vi: "Nước đang sôi ngay lúc này." },
+  { words: ["Do", "you", "believe", "in", "what", "he", "said?"], vi: "Bạn có tin vào những gì anh ấy nói không?" },
+  { words: ["It's", "the", "first", "time", "he", "has", "driven", "a", "car."], vi: "Đây là lần đầu tiên anh ấy lái ô tô." },
+  { words: ["I'll", "phone", "you", "when", "I", "get", "home."], vi: "Tôi sẽ gọi cho bạn khi tôi về tới nhà." },
+  { words: ["If", "I", "were", "you,", "I", "wouldn't", "buy", "that", "coat."], vi: "Nếu tôi là bạn, tôi sẽ không mua chiếc áo khoác đó." },
+  { words: ["My", "brother", "Ben,", "who", "lives", "in", "Hong", "Kong,", "is", "an", "architect."], vi: "Anh trai tôi Ben, người sống ở Hồng Kông, là kiến trúc sư." }
 ];
 
-const HUNTER_DATA = [
-  { s: "Look! It snows outside.", ok: false, exp: "SAI -> Phải dùng hiện tại tiếp diễn 'It is snowing' vì đang diễn ra lúc nói ('Look!')." },
-  { s: "How long have you known each other?", ok: true, exp: "ĐÚNG -> 'Know' là động từ trạng thái, chia hiện tại hoàn thành với 'How long'." },
-  { s: "Where have you been yesterday evening?", ok: false, exp: "SAI -> Có 'yesterday evening' (quá khứ đã chấm dứt), phải dùng 'Where were you...'." },
-  { s: "My brother, that lives in London, is a doctor.", ok: false, exp: "SAI -> Không được dùng 'that' sau dấu phẩy. Phải dùng 'who'." },
-  { s: "I'm looking forward to hearing from you soon.", ok: true, exp: "ĐÚNG -> Cấu trúc 'look forward to + V-ing'." },
-  { s: "Can you give me an advice about this problem?", ok: false, exp: "SAI -> 'Advice' không đếm được, không dùng 'an'. Phải dùng 'some advice' hoặc 'a piece of advice'." },
-  { s: "If I had known you were in hospital, I would have visited you.", ok: true, exp: "ĐÚNG -> Câu điều kiện loại 3 chuẩn mực." },
-  { s: "Could you tell me where is the nearest post office?", ok: false, exp: "SAI -> Câu hỏi lồng không đảo ngữ. Phải là '...where the nearest post office is'." }
+var SPEED_MATCH_PAIRS = [
+  { id: "m1", left: "S + am/is/are + V-ing", right: "Look! It is snowing outside." },
+  { id: "m2", left: "S + have/has + V3", right: "Jim has gone to Spain." },
+  { id: "m3", left: "S + had + V3", right: "Paul had already gone home." },
+  { id: "m4", left: "If + S + V2/were, S + would + V", right: "If I knew his number, I would phone him." },
+  { id: "m5", left: "S + am/is/are + being + V3", right: "I think we are being followed." },
+  { id: "m6", left: "Mustn't + V (Cấm đoán)", right: "You mustn't tell anyone what I said." }
 ];
 
-// ==================== 2. STATE & PERSISTENCE ====================
-let state = {
+var PRONUNCIATION_DRILLS = [
+  { tag: "Present Continuous vs Simple", en: "The water is boiling, while water normally boils at 100 degrees.", vi: "Nước đang sôi, trong khi thông thường nước sôi ở 100 độ." },
+  { tag: "Contractions ('ve / 'll / 'd)", en: "I've lost my key, so I'll look for it everywhere.", vi: "Tôi làm mất chìa khóa rồi, nên tôi sẽ tìm khắp nơi." },
+  { tag: "-ed Endings (/t/, /d/, /ɪd/)", en: "She worked hard, played tennis, and visited London.", vi: "Cô ấy làm việc chăm chỉ, chơi quần vợt và thăm London." },
+  { tag: "Modal Past (must have / should have)", en: "You missed a great party. You should have come!", vi: "Bạn bỏ lỡ bữa tiệc tuyệt vời. Đáng lẽ bạn nên đến!" },
+  { tag: "Conditionals Type 2", en: "If I were you, I wouldn't worry about that.", vi: "Nếu tôi là bạn, tôi sẽ không lo lắng về chuyện đó." },
+  { tag: "Passive Voice", en: "This historic bridge was built over two hundred years ago.", vi: "Cây cầu lịch sử này được xây dựng cách đây hơn hai trăm năm." }
+];
+
+/* ==========================================================================
+   4. PERSISTENT APPLICATION STATE (localStorage: murphy_master_live_v2)
+   ========================================================================== */
+var STORAGE_KEY = "murphy_master_live_v2";
+
+var appState = {
   xp: 0,
   streak: 1,
-  lastDay: new Date().toDateString(),
-  completedUnits: [],
+  lastActiveDate: new Date().toDateString(),
   currentUnitId: 1,
+  completedUnits: [],
+  srsRecords: {},
   audioPrefs: {
     enVoiceURI: "",
     viVoiceURI: "",
@@ -924,310 +839,480 @@ let state = {
     pitch: 1.0,
     volume: 1.0,
     autoNext: true,
+    keepWakeLock: true,
     showSettings: false
   },
-  audioBookmark: null // { unitId, stepIndex, label }
+  audioBookmark: null
 };
 
-try {
-  const saved = JSON.parse(localStorage.getItem("murphy_master_live_v1") || "null");
-  if (saved) {
-    state = Object.assign(state, saved);
-    if (saved.audioPrefs) state.audioPrefs = Object.assign(state.audioPrefs, saved.audioPrefs);
+function loadSavedState() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        appState.xp = Number(parsed.xp) || 0;
+        appState.streak = Number(parsed.streak) || 1;
+        appState.lastActiveDate = parsed.lastActiveDate || appState.lastActiveDate;
+        appState.currentUnitId = Number(parsed.currentUnitId) || 1;
+        appState.completedUnits = Array.isArray(parsed.completedUnits) ? parsed.completedUnits : [];
+        appState.srsRecords = parsed.srsRecords || {};
+        if (parsed.audioPrefs) {
+          appState.audioPrefs = Object.assign(appState.audioPrefs, parsed.audioPrefs);
+        }
+        appState.audioBookmark = parsed.audioBookmark || null;
+      }
+    }
+  } catch (err) {}
+}
+
+function saveAppState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+  } catch (err) {}
+  updateHeaderAndProgressUI();
+}
+
+function addXP(points) {
+  appState.xp += points;
+  saveAppState();
+}
+
+function updateHeaderAndProgressUI() {
+  var xpEl = document.getElementById("stat-xp");
+  var streakEl = document.getElementById("stat-streak");
+  var doneEl = document.getElementById("stat-done");
+  var pctEl = document.getElementById("sidebar-pct");
+  var fillEl = document.getElementById("sidebar-progress-fill");
+
+  if (xpEl) xpEl.textContent = appState.xp;
+  if (streakEl) streakEl.textContent = appState.streak;
+  if (doneEl) doneEl.textContent = appState.completedUnits.length;
+
+  var pct = Math.round((appState.completedUnits.length / MURPHY_UNITS.length) * 100);
+  if (pctEl) pctEl.textContent = pct + "%";
+  if (fillEl) fillEl.style.width = pct + "%";
+}
+
+/* ==========================================================================
+   5. MOBILE BACKGROUND AUDIO ENGINE (SILENT WEB AUDIO + MEDIA SESSION + WAKE LOCK)
+   ========================================================================== */
+var mobileBgEngine = {
+  audioCtx: null,
+  keepAliveOsc: null,
+  keepAliveGain: null,
+  watchdogTimer: null,
+  wakeLockSentinel: null,
+  isKeepAliveActive: false
+};
+
+function startSilentAudioKeepAlive() {
+  try {
+    var AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!mobileBgEngine.audioCtx) {
+      mobileBgEngine.audioCtx = new AudioCtx();
+    }
+    if (mobileBgEngine.audioCtx.state === "suspended") {
+      mobileBgEngine.audioCtx.resume();
+    }
+    if (!mobileBgEngine.isKeepAliveActive) {
+      var osc = mobileBgEngine.audioCtx.createOscillator();
+      var gain = mobileBgEngine.audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = 240;
+      gain.gain.value = 0.0001;
+      osc.connect(gain);
+      gain.connect(mobileBgEngine.audioCtx.destination);
+      osc.start();
+      mobileBgEngine.keepAliveOsc = osc;
+      mobileBgEngine.keepAliveGain = gain;
+      mobileBgEngine.isKeepAliveActive = true;
+    }
+    clearInterval(mobileBgEngine.watchdogTimer);
+    mobileBgEngine.watchdogTimer = setInterval(function() {
+      if (readerState.status === "playing") {
+        if (mobileBgEngine.audioCtx && mobileBgEngine.audioCtx.state === "suspended") {
+          mobileBgEngine.audioCtx.resume();
+        }
+        if ("speechSynthesis" in window && window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+      }
+    }, 2000);
+  } catch (err) {}
+}
+
+function stopSilentAudioKeepAlive() {
+  clearInterval(mobileBgEngine.watchdogTimer);
+  try {
+    if (mobileBgEngine.keepAliveOsc) {
+      mobileBgEngine.keepAliveOsc.stop();
+      mobileBgEngine.keepAliveOsc.disconnect();
+      mobileBgEngine.keepAliveOsc = null;
+    }
+    if (mobileBgEngine.keepAliveGain) {
+      mobileBgEngine.keepAliveGain.disconnect();
+      mobileBgEngine.keepAliveGain = null;
+    }
+  } catch (err) {}
+  mobileBgEngine.isKeepAliveActive = false;
+}
+
+function updateMediaSessionMetadata(unitObj, stepLabel, playbackStateStr) {
+  if (!("mediaSession" in navigator)) return;
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: unitObj ? (unitObj.code + ": " + unitObj.title) : "MurphyMaster Pro",
+      artist: "Raymond Murphy • English Grammar in Use",
+      album: stepLabel || "Bài giảng song ngữ Anh - Việt"
+    });
+    navigator.mediaSession.playbackState = playbackStateStr || "none";
+    navigator.mediaSession.setActionHandler("play", function() {
+      if (readerState.status === "paused") {
+        resumeLessonReader();
+      } else {
+        toggleLessonReader(appState.currentUnitId);
+      }
+    });
+    navigator.mediaSession.setActionHandler("pause", function() {
+      pauseLessonReader();
+    });
+    navigator.mediaSession.setActionHandler("stop", function() {
+      stopLessonReader(true);
+    });
+    navigator.mediaSession.setActionHandler("previoustrack", function() {
+      stepLessonReader(-1);
+    });
+    navigator.mediaSession.setActionHandler("nexttrack", function() {
+      stepLessonReader(1);
+    });
+  } catch (err) {}
+}
+
+async function applyWakeLockPreference() {
+  var badgeEl = document.getElementById("wakelock-status-badge");
+  if (!appState.audioPrefs.keepWakeLock) {
+    if (mobileBgEngine.wakeLockSentinel) {
+      try {
+        await mobileBgEngine.wakeLockSentinel.release();
+      } catch (e) {}
+      mobileBgEngine.wakeLockSentinel = null;
+    }
+    if (badgeEl) {
+      badgeEl.textContent = "Tắt";
+      badgeEl.className = "text-xs px-1.5 py-0.5 rounded bg-slate-800 text-slate-400";
+    }
+    return;
   }
-} catch (e) {}
 
-function saveState() {
-  try { localStorage.setItem("murphy_master_live_v1", JSON.stringify(state)); } catch (e) {}
-  document.getElementById("xp-val").innerText = state.xp;
-  document.getElementById("streak-val").innerText = state.streak;
-  document.getElementById("done-val").innerText = state.completedUnits.length;
-  document.getElementById("total-units-val").innerText = MURPHY_UNITS.length;
-  const pct = Math.round((state.completedUnits.length / MURPHY_UNITS.length) * 100);
-  document.getElementById("course-progress").style.width = pct + "%";
+  if (!("wakeLock" in navigator)) {
+    if (badgeEl) {
+      badgeEl.textContent = "Không hỗ trợ";
+      badgeEl.className = "text-xs px-1.5 py-0.5 rounded bg-slate-800 text-slate-400";
+    }
+    return;
+  }
+
+  try {
+    if (!mobileBgEngine.wakeLockSentinel) {
+      mobileBgEngine.wakeLockSentinel = await navigator.wakeLock.request("screen");
+      mobileBgEngine.wakeLockSentinel.addEventListener("release", function() {
+        mobileBgEngine.wakeLockSentinel = null;
+        var b = document.getElementById("wakelock-status-badge");
+        if (b && !appState.audioPrefs.keepWakeLock) {
+          b.textContent = "Tắt";
+          b.className = "text-xs px-1.5 py-0.5 rounded bg-slate-800 text-slate-400";
+        }
+      });
+    }
+    if (badgeEl) {
+      badgeEl.textContent = "Đang bật";
+      badgeEl.className = "text-xs px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300";
+    }
+  } catch (err) {
+    if (badgeEl) {
+      badgeEl.textContent = "Chờ chạm";
+      badgeEl.className = "text-xs px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300";
+    }
+  }
 }
 
-function addXP(pts) {
-  state.xp += pts;
-  saveState();
+function toggleWakeLockSetting() {
+  appState.audioPrefs.keepWakeLock = !appState.audioPrefs.keepWakeLock;
+  saveAppState();
+  applyWakeLockPreference();
+  showToast(appState.audioPrefs.keepWakeLock ? "☀️ Đã bật giữ sáng màn hình khi học." : "🌙 Đã tắt giữ sáng màn hình.");
 }
 
-// ==================== 2B. LESSON BILINGUAL AUDIO READER ENGINE ====================
-const readerState = {
-  status: "idle", // 'idle' | 'playing' | 'paused'
+document.addEventListener("visibilitychange", function() {
+  if (document.visibilityState === "visible" && appState.audioPrefs.keepWakeLock) {
+    applyWakeLockPreference();
+  }
+});
+
+/* ==========================================================================
+   6. SMART BILINGUAL TTS PARSER & LESSON AUDIO READER ENGINE
+   ========================================================================== */
+var readerState = {
+  status: "idle",
   unitId: null,
   queue: [],
   stepIndex: 0,
-  subIndex: 0, // 0 = first utterance in step, 1 = second (e.g. Vietnamese translation)
+  subIndex: 0,
   sessionToken: 0
 };
 
-function getAvailableVoices() {
+var _standaloneSpeechToken = 0;
+
+function getSystemVoices() {
   if (!("speechSynthesis" in window)) return [];
   return window.speechSynthesis.getVoices() || [];
 }
 
 function populateVoiceSelectors() {
-  const voices = getAvailableVoices();
-  const enSel = document.getElementById("reader-en-voice");
-  const viSel = document.getElementById("reader-vi-voice");
+  var voices = getSystemVoices();
+  var enSel = document.getElementById("reader-en-voice");
+  var viSel = document.getElementById("reader-vi-voice");
   if (!enSel || !viSel) return;
 
-  const enVoices = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith("en"));
-  const viVoices = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith("vi"));
+  var enVoices = voices.filter(function(v) {
+    return v.lang && v.lang.toLowerCase().indexOf("en") === 0;
+  });
+  var viVoices = voices.filter(function(v) {
+    return v.lang && v.lang.toLowerCase().indexOf("vi") === 0;
+  });
 
-  enSel.innerHTML = `<option value="">Mặc định tiếng Anh (${enVoices.length ? enVoices[0].lang : "en-US"})</option>` +
-    enVoices.map(v => `<option value="${v.voiceURI}" ${state.audioPrefs.enVoiceURI === v.voiceURI ? "selected" : ""}>${v.name} (${v.lang})</option>`).join("");
+  var enHtml = '<option value="">Mặc định Tiếng Anh (' + (enVoices.length ? enVoices[0].lang : "en-US") + ')</option>';
+  enVoices.forEach(function(v) {
+    var sel = appState.audioPrefs.enVoiceURI === v.voiceURI ? " selected" : "";
+    enHtml += '<option value="' + v.voiceURI.replace(/"/g, "&quot;") + '"' + sel + '>' + v.name + ' (' + v.lang + ')</option>';
+  });
+  enSel.innerHTML = enHtml;
 
   if (viVoices.length > 0) {
-    viSel.innerHTML = `<option value="">Mặc định tiếng Việt (${viVoices[0].name})</option>` +
-      viVoices.map(v => `<option value="${v.voiceURI}" ${state.audioPrefs.viVoiceURI === v.voiceURI ? "selected" : ""}>${v.name} (${v.lang})</option>`).join("");
+    var viHtml = '<option value="">Mặc định Tiếng Việt (' + viVoices[0].name + ')</option>';
+    viVoices.forEach(function(v) {
+      var sel = appState.audioPrefs.viVoiceURI === v.voiceURI ? " selected" : "";
+      viHtml += '<option value="' + v.voiceURI.replace(/"/g, "&quot;") + '"' + sel + '>' + v.name + ' (' + v.lang + ')</option>';
+    });
+    viSel.innerHTML = viHtml;
   } else {
-    viSel.innerHTML = `<option value="">Tự động vi-VN (Dự phòng thiết bị)</option>`;
+    viSel.innerHTML = '<option value="">Tự động vi-VN (Dự phòng thiết bị)</option>';
   }
 }
 
 if ("speechSynthesis" in window) {
-  window.speechSynthesis.onvoiceschanged = () => {
+  window.speechSynthesis.onvoiceschanged = function() {
     populateVoiceSelectors();
   };
 }
 
-function buildLessonPlaylist(u) {
-  const steps = [];
-  // Step 0: Title
-  steps.push({
-    domId: `read-title-${u.id}`,
-    label: "Tiêu đề bài học",
-    parts: [
-      { text: `${u.unit}.`, lang: "en-US", pauseAfter: 160 },
-      ...parseSmartBilingualChunks(u.title, "en-US")
-    ]
-  });
-  // Step 1: Core Formula
-  const formulaLines = u.formula.split("\n").map(l => l.trim()).filter(Boolean);
-  const formulaParts = [{ text: "Công thức cốt lõi.", lang: "vi-VN", pauseAfter: 220 }];
-  formulaLines.forEach(line => {
-    formulaParts.push(...parseSmartBilingualChunks(line, "en-US"));
-  });
-  steps.push({
-    domId: `read-formula-${u.id}`,
-    label: "Công thức cốt lõi",
-    parts: formulaParts
-  });
-  // Rules
-  u.rules.forEach((rule, rIdx) => {
-    steps.push({
-      domId: `read-rule-${u.id}-${rIdx}`,
-      label: `Quy tắc ${rIdx + 1}`,
-      parts: [
-        { text: `Quy tắc ${rIdx + 1}.`, lang: "vi-VN", pauseAfter: 150 },
-        ...parseSmartBilingualChunks(rule, "vi-VN")
-      ]
-    });
-  });
-  // Examples (English then Vietnamese)
-  u.examples.forEach((ex, eIdx) => {
-    steps.push({
-      domId: `read-ex-${u.id}-${eIdx}`,
-      label: `Ví dụ ${eIdx + 1}`,
-      parts: [
-        { text: `Ví dụ ${eIdx + 1}.`, lang: "vi-VN", pauseAfter: 150 },
-        ...parseSmartBilingualChunks(ex.en, "en-US"),
-        ...parseSmartBilingualChunks(ex.vi, "vi-VN")
-      ]
-    });
-  });
-  return steps;
-}
-
-// Smart bilingual & slash-pause parser:
-// - Never vocalizes '/' (replaces with natural pause)
-// - Auto-detects Vietnamese vs English inside (...) and mixed prose
-function isVietnameseText(str) {
+function isVietnameseSegment(str) {
   if (!str) return false;
-  // Check Vietnamese diacritics
   if (/[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(str)) {
     return true;
   }
-  // Check common unaccented Vietnamese function words
-  return /\b(khong|nhung|hoac|khi|neu|thi|cua|cho|voi|trong|ngoai|sau|truoc|hanh dong|su that|thoi quen|hien tai|qua khu|tuong lai|vi du|dung|sai|cam)\b/i.test(str);
+  return /\b(khong|nhung|hoac|khi|neu|thi|cua|cho|voi|trong|ngoai|sau|truoc|hanh dong|su that|thoi quen|hien tai|qua khu|tuong lai|vi du|dung|sai|cam|khac|nguoi|vat)\b/i.test(str);
 }
 
-function sanitizeSegmentForTTS(text, lang) {
-  let s = text.trim();
+function cleanTextForSpeech(text, lang) {
+  var s = String(text || "").trim();
   if (!s) return "";
-  // Normalize grammar notation cleanly without reading slashes
   s = s.replace(/\bV\(s\/es\)/gi, "V, s, es");
   s = s.replace(/\bV2\/V-ed\b/gi, "V2, V-ed");
   s = s.replace(/\bV3\/V-ed\b/gi, "V3, V-ed");
   s = s.replace(/\bV2\/were\b/gi, "V2, were");
-  s = s.replace(/\bS\s*\+\s*/g, (lang === "vi-VN" ? "S cộng " : "S plus "));
-  s = s.replace(/\s*\+\s*/g, (lang === "vi-VN" ? " cộng " : " plus "));
-  s = s.replace(/^=\s*/, (lang === "vi-VN" ? "tức là " : "meaning "));
-  s = s.replace(/^Not:\s*/i, "Not: ");
-  // Remove stray brackets/quotes that cause awkward pauses
+  s = s.replace(/\bS\s*\+\s*/g, lang === "vi-VN" ? "S cộng " : "S plus ");
+  s = s.replace(/\s*\+\s*/g, lang === "vi-VN" ? " cộng " : " plus ");
+  s = s.replace(/^=\s*/, lang === "vi-VN" ? "tức là " : "meaning ");
   s = s.replace(/[()[\]“”"‘’]/g, " ").replace(/\s+/g, " ").trim();
   return s;
 }
 
-function splitBySlashWithPauses(text, lang) {
-  // Split at '/' so TTS pauses naturally instead of saying "slash" or "gạch chéo"
-  const rawPieces = text.split(/\s*\/\s*/g).map(p => sanitizeSegmentForTTS(p, lang)).filter(Boolean);
-  return rawPieces.map((piece, idx) => ({
-    text: piece,
-    lang: lang,
-    pauseAfter: idx < rawPieces.length - 1 ? 190 : 260
-  }));
+function splitSlashWithShortPauses(text, lang) {
+  var pieces = text.split(/\s*\/\s*/g).map(function(p) {
+    return cleanTextForSpeech(p, lang);
+  }).filter(Boolean);
+
+  return pieces.map(function(piece, idx) {
+    return {
+      text: piece,
+      lang: lang,
+      pauseAfter: idx < pieces.length - 1 ? 185 : 240
+    };
+  });
 }
 
-function splitMixedVietnameseAndEnglish(vnText) {
-  // Split out parenthetical English phrases or long embedded English clauses inside Vietnamese rules
-  const chunks = [];
-  // Match parentheticals or quoted English examples inside Vietnamese sentences
-  const regex = /(\([^)]+\))/g;
-  let lastIdx = 0;
-  let match;
-  while ((match = regex.exec(vnText)) !== null) {
-    const before = vnText.slice(lastIdx, match.index).trim();
-    if (before) {
-      chunks.push(...splitBySlashWithPauses(before, "vi-VN"));
+function parseSmartBilingualChunks(rawLine, defaultLang) {
+  if (!defaultLang) defaultLang = "en-US";
+  if (!rawLine) return [];
+  var chunks = [];
+  var parenRegex = /(\([^)]+\))/g;
+  var lastIdx = 0;
+  var match;
+
+  while ((match = parenRegex.exec(rawLine)) !== null) {
+    var outside = rawLine.slice(lastIdx, match.index).trim();
+    if (outside) {
+      var outLang = isVietnameseSegment(outside) ? "vi-VN" : defaultLang;
+      chunks.push.apply(chunks, splitSlashWithShortPauses(outside, outLang));
     }
-    const inner = match[1].slice(1, -1).trim();
-    if (inner) {
-      const innerLang = isVietnameseText(inner) ? "vi-VN" : "en-US";
-      chunks.push(...splitBySlashWithPauses(inner, innerLang));
+
+    var inside = match[1].slice(1, -1).trim();
+    if (inside) {
+      if (/^s\/es$/i.test(inside)) {
+        chunks.push.apply(chunks, splitSlashWithShortPauses("s / es", "en-US"));
+      } else {
+        var inLang = isVietnameseSegment(inside) ? "vi-VN" : "en-US";
+        chunks.push.apply(chunks, splitSlashWithShortPauses(inside, inLang));
+      }
     }
-    lastIdx = regex.lastIndex;
+    lastIdx = parenRegex.lastIndex;
   }
-  const tail = vnText.slice(lastIdx).trim();
+
+  var tail = rawLine.slice(lastIdx).trim();
   if (tail) {
-    chunks.push(...splitBySlashWithPauses(tail, "vi-VN"));
+    var tailLang = isVietnameseSegment(tail) ? "vi-VN" : defaultLang;
+    chunks.push.apply(chunks, splitSlashWithShortPauses(tail, tailLang));
   }
+
   return chunks;
 }
 
-function parseSmartBilingualChunks(rawLine, defaultLang = "en-US") {
-  if (!rawLine) return [];
-  const results = [];
-  // Separate parenthetical segments (...) from outer text
-  const parenRegex = /(\([^)]+\))/g;
-  let lastIndex = 0;
-  let m;
+function createUtteranceForPart(part, rateOverride, accentOverride) {
+  var utter = new SpeechSynthesisUtterance(part.text);
+  var voices = getSystemVoices();
 
-  while ((m = parenRegex.exec(rawLine)) !== null) {
-    const outside = rawLine.slice(lastIndex, m.index).trim();
-    if (outside) {
-      const outLang = isVietnameseText(outside) ? "vi-VN" : defaultLang;
-      if (outLang === "vi-VN") {
-        results.push(...splitMixedVietnameseAndEnglish(outside));
-      } else {
-        results.push(...splitBySlashWithPauses(outside, "en-US"));
-      }
-    }
-
-    const inside = m[1].slice(1, -1).trim();
-    if (inside) {
-      // Special case: V(s/es) should stay English
-      if (/^s\/es$/i.test(inside)) {
-        results.push(...splitBySlashWithPauses("s / es", "en-US"));
-      } else {
-        const inLang = isVietnameseText(inside) ? "vi-VN" : "en-US";
-        results.push(...splitBySlashWithPauses(inside, inLang));
-      }
-    }
-    lastIndex = parenRegex.lastIndex;
+  if (part.lang && part.lang.indexOf("vi") === 0) {
+    utter.lang = "vi-VN";
+    var chosenVi = voices.find(function(v) { return v.voiceURI === appState.audioPrefs.viVoiceURI; }) ||
+                   voices.find(function(v) { return v.lang && v.lang.toLowerCase().indexOf("vi") === 0; });
+    if (chosenVi) utter.voice = chosenVi;
+  } else {
+    var targetAccent = accentOverride || "en-US";
+    utter.lang = targetAccent;
+    var chosenEn = voices.find(function(v) { return v.voiceURI === appState.audioPrefs.enVoiceURI; }) ||
+                   voices.find(function(v) { return v.lang && v.lang.indexOf(targetAccent) !== -1; }) ||
+                   voices.find(function(v) { return v.lang && v.lang.toLowerCase().indexOf("en") === 0; });
+    if (chosenEn) utter.voice = chosenEn;
   }
 
-  const remaining = rawLine.slice(lastIndex).trim();
-  if (remaining) {
-    const remLang = isVietnameseText(remaining) ? "vi-VN" : defaultLang;
-    if (remLang === "vi-VN") {
-      results.push(...splitMixedVietnameseAndEnglish(remaining));
-    } else {
-      results.push(...splitBySlashWithPauses(remaining, "en-US"));
-    }
-  }
-
-  return results;
+  utter.rate = rateOverride !== null && rateOverride !== undefined ? rateOverride : (parseFloat(appState.audioPrefs.rate) || 1.0);
+  utter.pitch = parseFloat(appState.audioPrefs.pitch) || 1.0;
+  utter.volume = appState.audioPrefs.volume !== undefined ? parseFloat(appState.audioPrefs.volume) : 1.0;
+  return utter;
 }
 
-let _standaloneSpeechToken = 0;
-
-function speakSmartSequence(rawText, rateOverride = null, defaultLang = "en-US") {
+function speakSmartSequence(rawText, rateOverride, defaultLang, accentOverride) {
   if (!("speechSynthesis" in window)) {
     showToast("Trình duyệt không hỗ trợ đọc giọng nói TTS.");
     return;
   }
+  if (readerState.status === "playing") {
+    pauseLessonReader();
+  }
   window.speechSynthesis.cancel();
   _standaloneSpeechToken++;
-  const token = _standaloneSpeechToken;
+  var token = _standaloneSpeechToken;
 
-  const lines = String(rawText).split("\n").map(l => l.trim()).filter(Boolean);
-  let chunks = [];
-  lines.forEach(line => {
-    chunks.push(...parseSmartBilingualChunks(line, defaultLang));
+  var lines = String(rawText || "").split("\n").map(function(l) { return l.trim(); }).filter(Boolean);
+  var chunks = [];
+  lines.forEach(function(line) {
+    chunks.push.apply(chunks, parseSmartBilingualChunks(line, defaultLang || "en-US"));
   });
   if (!chunks.length) return;
 
-  const voices = getAvailableVoices();
-  const baseRate = rateOverride !== null ? rateOverride : (parseFloat(state.audioPrefs.rate) || 1.0);
-  const pitch = parseFloat(state.audioPrefs.pitch) || 1.0;
-  const volume = parseFloat(state.audioPrefs.volume) ?? 1.0;
-
-  let idx = 0;
-  function nextChunk() {
+  var idx = 0;
+  function speakNextChunk() {
     if (token !== _standaloneSpeechToken || idx >= chunks.length) return;
-    const part = chunks[idx];
-    const utter = new SpeechSynthesisUtterance(part.text);
+    var part = chunks[idx];
+    var utter = createUtteranceForPart(part, rateOverride, accentOverride);
+    var pauseMs = part.pauseAfter || 180;
 
-    if (part.lang.startsWith("vi")) {
-      utter.lang = "vi-VN";
-      const chosenVi = voices.find(v => v.voiceURI === state.audioPrefs.viVoiceURI) ||
-                       voices.find(v => v.lang && v.lang.toLowerCase().startsWith("vi"));
-      if (chosenVi) utter.voice = chosenVi;
-    } else {
-      const accent = document.getElementById("voice-accent") ? document.getElementById("voice-accent").value : "en-US";
-      utter.lang = accent;
-      const chosenEn = voices.find(v => v.voiceURI === state.audioPrefs.enVoiceURI) ||
-                       voices.find(v => v.lang && v.lang.includes(accent)) ||
-                       voices.find(v => v.lang && v.lang.toLowerCase().startsWith("en"));
-      if (chosenEn) utter.voice = chosenEn;
-    }
-
-    utter.rate = baseRate;
-    utter.pitch = pitch;
-    utter.volume = volume;
-
-    const pauseMs = part.pauseAfter || 180;
-    utter.onend = () => {
+    utter.onend = function() {
       if (token !== _standaloneSpeechToken) return;
       idx++;
-      setTimeout(nextChunk, pauseMs);
+      setTimeout(speakNextChunk, pauseMs);
     };
-    utter.onerror = (e) => {
+    utter.onerror = function(e) {
       if (token !== _standaloneSpeechToken) return;
-      if (e.error === "interrupted" || e.error === "canceled") return;
+      if (e && (e.error === "interrupted" || e.error === "canceled")) return;
       idx++;
-      setTimeout(nextChunk, 120);
+      setTimeout(speakNextChunk, 120);
     };
-
     window.speechSynthesis.speak(utter);
   }
 
-  nextChunk();
+  speakNextChunk();
+}
+
+function stopAllSpeech() {
+  _standaloneSpeechToken++;
+  stopLessonReader(true);
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
+}
+
+function buildLessonPlaylist(u) {
+  var steps = [];
+  steps.push({
+    domId: "read-title-" + u.id,
+    label: "Tiêu đề bài học",
+    parts: [
+      { text: u.code + ".", lang: "en-US", pauseAfter: 160 }
+    ].concat(parseSmartBilingualChunks(u.title, "en-US")).concat([
+      { text: u.viTitle + ".", lang: "vi-VN", pauseAfter: 240 }
+    ])
+  });
+
+  var formulaLines = u.formula.split("\n").map(function(l) { return l.trim(); }).filter(Boolean);
+  var formulaParts = [{ text: "Công thức cốt lõi.", lang: "vi-VN", pauseAfter: 200 }];
+  formulaLines.forEach(function(line) {
+    formulaParts.push.apply(formulaParts, parseSmartBilingualChunks(line, "en-US"));
+  });
+  steps.push({
+    domId: "read-formula-" + u.id,
+    label: "Công thức cốt lõi",
+    parts: formulaParts
+  });
+
+  u.rules.forEach(function(rule, rIdx) {
+    steps.push({
+      domId: "read-rule-" + u.id + "-" + rIdx,
+      label: "Quy tắc " + (rIdx + 1),
+      parts: [
+        { text: "Quy tắc " + (rIdx + 1) + ".", lang: "vi-VN", pauseAfter: 150 }
+      ].concat(parseSmartBilingualChunks(rule, "vi-VN"))
+    });
+  });
+
+  u.examples.forEach(function(ex, eIdx) {
+    steps.push({
+      domId: "read-ex-" + u.id + "-" + eIdx,
+      label: "Ví dụ " + (eIdx + 1),
+      parts: [
+        { text: "Ví dụ " + (eIdx + 1) + ".", lang: "vi-VN", pauseAfter: 150 }
+      ].concat(parseSmartBilingualChunks(ex.en, "en-US")).concat(parseSmartBilingualChunks(ex.vi, "vi-VN"))
+    });
+  });
+
+  return steps;
 }
 
 function clearReadingHighlights() {
-  document.querySelectorAll(".reading-highlight").forEach(el => el.classList.remove("reading-highlight"));
+  document.querySelectorAll(".reading-highlight").forEach(function(el) {
+    el.classList.remove("reading-highlight");
+  });
 }
 
-function highlightCurrentStep() {
+function highlightActiveStep() {
   clearReadingHighlights();
   if (readerState.status === "idle") return;
-  const step = readerState.queue[readerState.stepIndex];
+  var step = readerState.queue[readerState.stepIndex];
   if (!step) return;
-  const el = document.getElementById(step.domId);
+  var el = document.getElementById(step.domId);
   if (el) {
     el.classList.add("reading-highlight");
     el.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -1236,58 +1321,56 @@ function highlightCurrentStep() {
 
 function saveAudioBookmark() {
   if (!readerState.unitId || !readerState.queue.length) return;
-  const step = readerState.queue[readerState.stepIndex] || readerState.queue[0];
-  state.audioBookmark = {
+  var step = readerState.queue[readerState.stepIndex] || readerState.queue[0];
+  appState.audioBookmark = {
     unitId: readerState.unitId,
     stepIndex: readerState.stepIndex,
     label: step ? step.label : "Đầu bài"
   };
-  saveState();
+  saveAppState();
 }
 
-function updateReaderUI() {
-  const mainBtn = document.getElementById("reader-main-btn");
-  const statusTxt = document.getElementById("reader-status-text");
-  if (!mainBtn) return;
+function updateReaderControlsUI() {
+  var mainBtn = document.getElementById("reader-main-btn");
+  var statusEl = document.getElementById("reader-status-text");
+  if (!mainBtn || !statusEl) return;
 
-  const isThisUnit = readerState.unitId === state.currentUnitId;
-  if (isThisUnit && readerState.status === "playing") {
+  var isCurrent = readerState.unitId === appState.currentUnitId;
+  if (isCurrent && readerState.status === "playing") {
     mainBtn.className = "speaker-hero-btn playing";
-    mainBtn.innerHTML = "⏸ Tạm dừng đọc";
-    const step = readerState.queue[readerState.stepIndex];
-    statusTxt.innerText = step ? `Đang đọc: ${step.label} (${readerState.stepIndex + 1}/${readerState.queue.length})` : "Đang đọc...";
-  } else if (isThisUnit && readerState.status === "paused") {
+    mainBtn.innerHTML = "⏸ Tạm dừng";
+    var step = readerState.queue[readerState.stepIndex];
+    statusEl.textContent = step ? ("Đang đọc: " + step.label + " (" + (readerState.stepIndex + 1) + "/" + readerState.queue.length + ")") : "Đang đọc...";
+  } else if (isCurrent && readerState.status === "paused") {
     mainBtn.className = "speaker-hero-btn";
-    mainBtn.innerHTML = "▶️ Tiếp tục đọc";
-    const step = readerState.queue[readerState.stepIndex];
-    statusTxt.innerText = step ? `Đã tạm dừng tại: ${step.label} (${readerState.stepIndex + 1}/${readerState.queue.length})` : "Đã tạm dừng";
+    mainBtn.innerHTML = "▶️ Tiếp tục";
+    var pStep = readerState.queue[readerState.stepIndex];
+    statusEl.textContent = pStep ? ("Đã tạm dừng tại: " + pStep.label + " (" + (readerState.stepIndex + 1) + "/" + readerState.queue.length + ")") : "Đã tạm dừng";
   } else {
     mainBtn.className = "speaker-hero-btn";
     mainBtn.innerHTML = "🔊 Đọc toàn bộ bài học";
-    statusTxt.innerText = "Sẵn sàng đọc tự động lý thuyết & ví dụ song ngữ";
+    statusEl.textContent = "Sẵn sàng đọc tự động lý thuyết & ví dụ song ngữ (hỗ trợ chạy nền)";
   }
 }
 
-function toggleLessonReader(unitId, startStepIdx = null) {
+function toggleLessonReader(unitId, startStepIdx) {
+  if (startStepIdx === undefined) startStepIdx = null;
   if (!("speechSynthesis" in window)) {
-    showToast("Trình duyệt của bạn không hỗ trợ đọc giọng nói TTS.");
+    showToast("Trình duyệt không hỗ trợ đọc giọng nói TTS.");
     return;
   }
 
-  // If currently playing this unit -> Pause
   if (readerState.status === "playing" && readerState.unitId === unitId && startStepIdx === null) {
     pauseLessonReader();
     return;
   }
 
-  // If paused on this unit and no explicit jump -> Resume
   if (readerState.status === "paused" && readerState.unitId === unitId && startStepIdx === null) {
     resumeLessonReader();
     return;
   }
 
-  // Start fresh or from bookmark/step
-  const u = MURPHY_UNITS.find(x => x.id === unitId) || MURPHY_UNITS[0];
+  var u = MURPHY_UNITS.find(function(x) { return x.id === unitId; }) || MURPHY_UNITS[0];
   _standaloneSpeechToken++;
   window.speechSynthesis.cancel();
   readerState.sessionToken++;
@@ -1296,15 +1379,18 @@ function toggleLessonReader(unitId, startStepIdx = null) {
 
   if (startStepIdx !== null && startStepIdx >= 0 && startStepIdx < readerState.queue.length) {
     readerState.stepIndex = startStepIdx;
-  } else if (state.audioBookmark && state.audioBookmark.unitId === u.id && state.audioBookmark.stepIndex < readerState.queue.length) {
-    readerState.stepIndex = state.audioBookmark.stepIndex;
+  } else if (appState.audioBookmark && appState.audioBookmark.unitId === u.id && appState.audioBookmark.stepIndex < readerState.queue.length) {
+    readerState.stepIndex = appState.audioBookmark.stepIndex;
   } else {
     readerState.stepIndex = 0;
   }
+
   readerState.subIndex = 0;
   readerState.status = "playing";
+  startSilentAudioKeepAlive();
+  if (appState.audioPrefs.keepWakeLock) applyWakeLockPreference();
   saveAudioBookmark();
-  updateReaderUI();
+  updateReaderControlsUI();
   playCurrentReaderChunk(readerState.sessionToken);
 }
 
@@ -1314,8 +1400,11 @@ function pauseLessonReader() {
   window.speechSynthesis.cancel();
   readerState.status = "paused";
   readerState.subIndex = 0;
+  stopSilentAudioKeepAlive();
+  var u = MURPHY_UNITS.find(function(x) { return x.id === readerState.unitId; });
+  updateMediaSessionMetadata(u, "Đã tạm dừng", "paused");
   saveAudioBookmark();
-  updateReaderUI();
+  updateReaderControlsUI();
   showToast("⏸ Đã tạm dừng và ghi nhớ vị trí đọc.");
 }
 
@@ -1323,11 +1412,14 @@ function resumeLessonReader() {
   if (readerState.status !== "paused") return;
   readerState.status = "playing";
   readerState.sessionToken++;
-  updateReaderUI();
+  startSilentAudioKeepAlive();
+  if (appState.audioPrefs.keepWakeLock) applyWakeLockPreference();
+  updateReaderControlsUI();
   playCurrentReaderChunk(readerState.sessionToken);
 }
 
-function stopLessonReader(keepBookmark = true) {
+function stopLessonReader(keepBookmark) {
+  if (keepBookmark === undefined) keepBookmark = true;
   readerState.sessionToken++;
   if ("speechSynthesis" in window) window.speechSynthesis.cancel();
   if (keepBookmark && readerState.status !== "idle") {
@@ -1335,31 +1427,33 @@ function stopLessonReader(keepBookmark = true) {
   }
   readerState.status = "idle";
   readerState.subIndex = 0;
+  stopSilentAudioKeepAlive();
+  updateMediaSessionMetadata(null, "", "none");
   clearReadingHighlights();
-  updateReaderUI();
+  updateReaderControlsUI();
 }
 
 function stepLessonReader(delta) {
-  if (readerState.unitId !== state.currentUnitId || !readerState.queue.length) {
-    const u = MURPHY_UNITS.find(x => x.id === state.currentUnitId);
+  if (readerState.unitId !== appState.currentUnitId || !readerState.queue.length) {
+    var u = MURPHY_UNITS.find(function(x) { return x.id === appState.currentUnitId; });
     readerState.unitId = u.id;
     readerState.queue = buildLessonPlaylist(u);
     readerState.stepIndex = 0;
   }
-  const nextIdx = Math.max(0, Math.min(readerState.queue.length - 1, readerState.stepIndex + delta));
-  toggleLessonReader(state.currentUnitId, nextIdx);
+  var nextIdx = Math.max(0, Math.min(readerState.queue.length - 1, readerState.stepIndex + delta));
+  toggleLessonReader(appState.currentUnitId, nextIdx);
 }
 
-function resumeFromBookmark() {
-  if (!state.audioBookmark) return;
-  const bm = state.audioBookmark;
-  if (state.currentUnitId !== bm.unitId) {
-    state.currentUnitId = bm.unitId;
-    saveState();
-    renderUnitList();
+function resumeFromSavedBookmark() {
+  if (!appState.audioBookmark) return;
+  var bm = appState.audioBookmark;
+  if (appState.currentUnitId !== bm.unitId) {
+    appState.currentUnitId = bm.unitId;
+    saveAppState();
+    renderUnitSidebar();
     renderLessonDetail(bm.unitId);
   }
-  setTimeout(() => {
+  setTimeout(function() {
     toggleLessonReader(bm.unitId, bm.stepIndex);
   }, 80);
 }
@@ -1367,676 +1461,786 @@ function resumeFromBookmark() {
 function playCurrentReaderChunk(token) {
   if (token !== readerState.sessionToken || readerState.status !== "playing") return;
 
+  var u = MURPHY_UNITS.find(function(x) { return x.id === readerState.unitId; });
+
   if (readerState.stepIndex >= readerState.queue.length) {
-    // Finished current unit
     clearReadingHighlights();
-    state.audioBookmark = null;
-    saveState();
-    if (state.audioPrefs.autoNext && readerState.unitId < MURPHY_UNITS.length) {
-      const nextUnitId = readerState.unitId + 1;
-      showToast(`⏭ Tự động chuyển sang bài tiếp theo...`);
-      state.currentUnitId = nextUnitId;
-      saveState();
-      renderUnitList();
+    appState.audioBookmark = null;
+    saveAppState();
+    if (appState.audioPrefs.autoNext && readerState.unitId < MURPHY_UNITS.length) {
+      var nextUnitId = readerState.unitId + 1;
+      showToast("⏭ Tự động chuyển sang bài tiếp theo...");
+      appState.currentUnitId = nextUnitId;
+      saveAppState();
+      renderUnitSidebar();
       renderLessonDetail(nextUnitId);
-      setTimeout(() => {
+      setTimeout(function() {
         toggleLessonReader(nextUnitId, 0);
       }, 650);
     } else {
       readerState.status = "idle";
-      updateReaderUI();
+      stopSilentAudioKeepAlive();
+      updateMediaSessionMetadata(u, "Hoàn thành", "none");
+      updateReaderControlsUI();
       showToast("✅ Đã đọc xong toàn bộ nội dung bài học!");
     }
     return;
   }
 
-  const step = readerState.queue[readerState.stepIndex];
-  highlightCurrentStep();
+  var step = readerState.queue[readerState.stepIndex];
+  highlightActiveStep();
   saveAudioBookmark();
-  updateReaderUI();
+  updateReaderControlsUI();
+  updateMediaSessionMetadata(u, step.label, "playing");
 
   if (readerState.subIndex >= step.parts.length) {
     readerState.stepIndex++;
     readerState.subIndex = 0;
-    setTimeout(() => playCurrentReaderChunk(token), 280);
+    setTimeout(function() {
+      playCurrentReaderChunk(token);
+    }, 260);
     return;
   }
 
-  const part = step.parts[readerState.subIndex];
-  const utter = new SpeechSynthesisUtterance(part.text);
-  const voices = getAvailableVoices();
+  var part = step.parts[readerState.subIndex];
+  var utter = createUtteranceForPart(part, null, null);
+  var pauseMs = part.pauseAfter || 180;
 
-  if (part.lang.startsWith("vi")) {
-    utter.lang = "vi-VN";
-    const chosenVi = voices.find(v => v.voiceURI === state.audioPrefs.viVoiceURI) ||
-                     voices.find(v => v.lang && v.lang.toLowerCase().startsWith("vi"));
-    if (chosenVi) utter.voice = chosenVi;
-  } else {
-    const accent = document.getElementById("voice-accent") ? document.getElementById("voice-accent").value : "en-US";
-    utter.lang = accent;
-    const chosenEn = voices.find(v => v.voiceURI === state.audioPrefs.enVoiceURI) ||
-                     voices.find(v => v.lang && v.lang.includes(accent)) ||
-                     voices.find(v => v.lang && v.lang.toLowerCase().startsWith("en"));
-    if (chosenEn) utter.voice = chosenEn;
-  }
-
-  utter.rate = parseFloat(state.audioPrefs.rate) || 1.0;
-  utter.pitch = parseFloat(state.audioPrefs.pitch) || 1.0;
-  utter.volume = parseFloat(state.audioPrefs.volume) ?? 1.0;
-
-  const pauseMs = part.pauseAfter || 180;
-  utter.onend = () => {
+  utter.onend = function() {
     if (token !== readerState.sessionToken || readerState.status !== "playing") return;
     readerState.subIndex++;
-    setTimeout(() => playCurrentReaderChunk(token), pauseMs);
+    setTimeout(function() {
+      playCurrentReaderChunk(token);
+    }, pauseMs);
   };
 
-  utter.onerror = (e) => {
+  utter.onerror = function(e) {
     if (token !== readerState.sessionToken || readerState.status !== "playing") return;
-    if (e.error === "interrupted" || e.error === "canceled") return;
-    // Gracefully skip chunk if mobile lacks a specific voice pack
+    if (e && (e.error === "interrupted" || e.error === "canceled")) return;
     readerState.subIndex++;
-    setTimeout(() => playCurrentReaderChunk(token), 150);
+    setTimeout(function() {
+      playCurrentReaderChunk(token);
+    }, 150);
   };
 
   window.speechSynthesis.speak(utter);
 }
 
-function updateAudioPref(key, val) {
-  state.audioPrefs[key] = val;
-  saveState();
-  if (key === "rate") document.getElementById("lbl-rate").innerText = Number(val).toFixed(2) + "x";
-  if (key === "pitch") document.getElementById("lbl-pitch").innerText = Number(val).toFixed(2);
-  if (key === "volume") document.getElementById("lbl-volume").innerText = Math.round(Number(val) * 100) + "%";
+function updateAudioPreference(key, value) {
+  appState.audioPrefs[key] = value;
+  saveAppState();
+  if (key === "rate") {
+    var rEl = document.getElementById("lbl-reader-rate");
+    if (rEl) rEl.textContent = Number(value).toFixed(2) + "x";
+  }
+  if (key === "pitch") {
+    var pEl = document.getElementById("lbl-reader-pitch");
+    if (pEl) pEl.textContent = Number(value).toFixed(2);
+  }
+  if (key === "volume") {
+    var vEl = document.getElementById("lbl-reader-volume");
+    if (vEl) vEl.textContent = Math.round(Number(value) * 100) + "%";
+  }
 }
 
-function toggleReaderSettings() {
-  state.audioPrefs.showSettings = !state.audioPrefs.showSettings;
-  saveState();
-  const panel = document.getElementById("reader-settings-panel");
-  if (panel) panel.style.display = state.audioPrefs.showSettings ? "grid" : "none";
+function toggleReaderSettingsPanel() {
+  appState.audioPrefs.showSettings = !appState.audioPrefs.showSettings;
+  saveAppState();
+  var panel = document.getElementById("reader-settings-panel");
+  if (panel) {
+    panel.style.display = appState.audioPrefs.showSettings ? "grid" : "none";
+  }
 }
 
-window.addEventListener("beforeunload", () => {
+function openVoiceSettingsFromHeader() {
+  appState.audioPrefs.showSettings = true;
+  saveAppState();
+  var panel = document.getElementById("reader-settings-panel");
+  if (panel) {
+    panel.style.display = "grid";
+    panel.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+}
+
+window.addEventListener("beforeunload", function() {
   if (readerState.status === "playing" || readerState.status === "paused") {
     saveAudioBookmark();
   }
 });
 
-// ==================== 3. NAVIGATION ====================
-document.querySelectorAll(".tab-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+/* ==========================================================================
+   7. TAB NAVIGATION & TAB 1 (LESSONS) RENDERING
+   ========================================================================== */
+function switchTab(tabName) {
+  document.querySelectorAll(".tab-btn").forEach(function(btn) {
+    if (btn.getAttribute("data-tab") === tabName) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
   });
-});
-
-// ==================== 4. LESSONS & EXERCISES RENDERING ====================
-function initFilters() {
-  const catFilter = document.getElementById("cat-filter");
-  const quizCat = document.getElementById("quiz-cat");
-  const cats = [...new Set(MURPHY_UNITS.map(u => u.cat))];
-  cats.forEach(c => {
-    catFilter.innerHTML += `<option value="${c}">${c}</option>`;
+  document.querySelectorAll(".panel").forEach(function(p) {
+    p.classList.remove("active");
   });
-  const qCats = [...new Set(QUIZ_BANK.map(q => q.cat))];
-  qCats.forEach(c => {
-    quizCat.innerHTML += `<option value="${c}">${c}</option>`;
-  });
-  catFilter.addEventListener("change", renderUnitList);
-  document.getElementById("unit-search").addEventListener("input", renderUnitList);
+  var targetPanel = document.getElementById("panel-" + tabName);
+  if (targetPanel) targetPanel.classList.add("active");
 }
 
-function renderUnitList() {
-  const q = document.getElementById("unit-search").value.toLowerCase();
-  const cat = document.getElementById("cat-filter").value;
-  const listEl = document.getElementById("unit-list");
-  listEl.innerHTML = "";
+function renderUnitSidebar() {
+  var searchEl = document.getElementById("unit-search-input");
+  var query = searchEl ? searchEl.value.toLowerCase().trim() : "";
+  var listEl = document.getElementById("unit-sidebar-list");
+  if (!listEl) return;
 
-  MURPHY_UNITS.filter(u => {
-    const matchCat = cat === "ALL" || u.cat === cat;
-    const matchQ = u.title.toLowerCase().includes(q) || u.unit.toLowerCase().includes(q) || u.cat.toLowerCase().includes(q);
-    return matchCat && matchQ;
-  }).forEach(u => {
-    const isDone = state.completedUnits.includes(u.id);
-    const btn = document.createElement("button");
-    btn.className = "unit-item" + (u.id === state.currentUnitId ? " active" : "");
-    btn.innerHTML = `
-      <div>
-        <div class="unit-cat">${u.unit} • ${u.cat.split(". ")[1]}</div>
-        <div style="font-weight:600; font-size:0.88rem; margin-top:2px;">${u.title}</div>
-      </div>
-      <span>${isDone ? "✅" : "📘"}</span>
-    `;
-    btn.onclick = () => {
+  listEl.innerHTML = "";
+  MURPHY_UNITS.filter(function(u) {
+    return !query ||
+      u.title.toLowerCase().indexOf(query) !== -1 ||
+      u.viTitle.toLowerCase().indexOf(query) !== -1 ||
+      u.code.toLowerCase().indexOf(query) !== -1;
+  }).forEach(function(u) {
+    var isDone = appState.completedUnits.indexOf(u.id) !== -1;
+    var btn = document.createElement("button");
+    btn.className = "unit-item" + (u.id === appState.currentUnitId ? " active" : "");
+    btn.innerHTML =
+      '<div>' +
+        '<div class="text-xs font-bold text-amber-400 uppercase">' + u.code + ' • ' + u.viTitle + '</div>' +
+        '<div class="text-sm font-semibold text-white mt-0.5">' + u.title + '</div>' +
+      '</div>' +
+      '<span class="text-base">' + (isDone ? "✅" : "📘") + '</span>';
+
+    btn.onclick = function() {
       stopLessonReader(true);
-      state.currentUnitId = u.id;
-      saveState();
-      renderUnitList();
+      appState.currentUnitId = u.id;
+      saveAppState();
+      renderUnitSidebar();
       renderLessonDetail(u.id);
     };
     listEl.appendChild(btn);
   });
 }
 
-function speakExample(unitId, exIdx, rate) {
-  if (readerState.status === "playing") pauseLessonReader();
-  const u = MURPHY_UNITS.find(x => x.id === unitId);
+function speakUnitFormula(unitId, rate) {
+  var u = MURPHY_UNITS.find(function(x) { return x.id === unitId; });
+  if (u) speakSmartSequence(u.formula, rate, "en-US", null);
+}
+
+function speakUnitExample(unitId, exIdx, rate) {
+  var u = MURPHY_UNITS.find(function(x) { return x.id === unitId; });
   if (u && u.examples[exIdx]) {
-    speakSmartSequence(u.examples[exIdx].en, rate, "en-US");
+    speakSmartSequence(u.examples[exIdx].en, rate, "en-US", null);
   }
 }
 
-function speakFormula(unitId, rate) {
-  if (readerState.status === "playing") pauseLessonReader();
-  const u = MURPHY_UNITS.find(x => x.id === unitId);
-  if (u) {
-    speakSmartSequence(u.formula, rate, "en-US");
+function toggleUnitComplete(unitId) {
+  var idx = appState.completedUnits.indexOf(unitId);
+  if (idx === -1) {
+    appState.completedUnits.push(unitId);
+    addXP(50);
+    showToast("🎉 Đã hoàn thành Unit! +50 XP");
+  } else {
+    appState.completedUnits.splice(idx, 1);
   }
+  saveAppState();
+  renderUnitSidebar();
+  renderLessonDetail(unitId);
+  renderProgressDashboard();
 }
 
-function renderLessonDetail(id) {
-  const u = MURPHY_UNITS.find(x => x.id === id) || MURPHY_UNITS[0];
-  const isDone = state.completedUnits.includes(u.id);
-  const container = document.getElementById("lesson-detail");
-
-  const auditBadge = u.auditStatus === "verified"
-    ? `<span class="audit-tag audit-ok">✓ Đã đối chiếu chuẩn Cambridge</span>`
-    : `<span class="audit-tag audit-fix">⚠ Đã hiệu đính lỗi OCR bản TXT</span>`;
-
-  const bm = state.audioBookmark;
-  const bmUnit = bm ? MURPHY_UNITS.find(x => x.id === bm.unitId) : null;
-  const resumeBannerHtml = (bm && bmUnit && readerState.status === "idle") ? `
-    <div class="resume-banner">
-      <span>🔖 <strong>Ghi nhớ chỗ dừng:</strong> ${bmUnit.unit} (${bm.label})</span>
-      <div style="display:flex; gap:6px;">
-        <button class="btn btn-sm btn-purple" onclick="resumeFromBookmark()">▶️ Đọc tiếp từ chỗ dừng</button>
-        <button class="btn btn-sm btn-outline" onclick="state.audioBookmark=null; saveState(); renderLessonDetail(${u.id});">Xóa dấu</button>
-      </div>
-    </div>
-  ` : "";
-
-  let examplesHtml = u.examples.map((ex, idx) => `
-    <div class="example-row" id="read-ex-${u.id}-${idx}">
-      <div>
-        <div class="example-en">${ex.en}</div>
-        <div class="example-vi">${ex.vi}</div>
-      </div>
-      <div class="audio-btns">
-        <button class="btn btn-sm" onclick="speakExample(${u.id}, ${idx}, 1.0)" title="Nghe chuẩn 1.0x">🔊 1.0x</button>
-        <button class="btn btn-sm btn-outline" onclick="speakExample(${u.id}, ${idx}, 0.65)" title="Nghe chậm 0.65x">🐢 0.65x</button>
-      </div>
-    </div>
-  `).join("");
-
-  let exercisesHtml = u.exercises.map((ex, idx) => `
-    <div class="exercise-item">
-      <div class="exercise-q">Câu ${idx + 1}: ${ex.q}</div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <input type="text" id="ex-in-${u.id}-${idx}" placeholder="Nhập đáp án của bạn..." style="max-width:340px;">
-        <button class="btn btn-sm btn-success" onclick="checkExercise(${u.id}, ${idx})">Kiểm tra</button>
-        <button class="btn btn-sm btn-outline" onclick="showHint(${u.id}, ${idx})">Xem đáp án</button>
-      </div>
-      <div id="ex-fb-${u.id}-${idx}" class="feedback"></div>
-    </div>
-  `).join("");
-
-  container.innerHTML = `
-    <div class="card">
-      <div id="read-title-${u.id}" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; margin-bottom:10px; padding:6px 8px; border-radius:8px; border:1px solid transparent;">
-        <div>
-          <span class="unit-cat">${u.unit} — ${u.cat}</span>
-          <h2 style="margin-top:4px;">${u.title}</h2>
-        </div>
-        ${auditBadge}
-      </div>
-
-      <!-- LESSON AUDIO READER TOOLBAR -->
-      <div class="reader-toolbar">
-        <div class="reader-main-row">
-          <div class="reader-controls-group">
-            <button id="reader-main-btn" class="speaker-hero-btn" onclick="toggleLessonReader(${u.id})">🔊 Đọc toàn bộ bài học</button>
-            <button class="btn btn-sm btn-outline" onclick="stepLessonReader(-1)" title="Đoạn trước">⏮</button>
-            <button class="btn btn-sm btn-outline" onclick="stepLessonReader(1)" title="Đoạn tiếp theo">⏭</button>
-            <button class="btn btn-sm btn-outline" onclick="stopLessonReader(true)" title="Dừng & Lưu vị trí">⏹ Dừng</button>
-          </div>
-          <div class="reader-controls-group">
-            <label class="toggle-pill" title="Tự động chuyển sang bài kế tiếp khi đọc xong">
-              <input type="checkbox" ${state.audioPrefs.autoNext ? "checked" : ""} onchange="updateAudioPref('autoNext', this.checked)">
-              <span>Tự động đọc bài tiếp theo</span>
-            </label>
-            <button class="btn btn-sm btn-outline" onclick="toggleReaderSettings()">⚙️ Giọng & Âm thanh</button>
-          </div>
-        </div>
-
-        <div id="reader-status-text" style="font-size:0.8rem; color:var(--primary); font-weight:600;">
-          Sẵn sàng đọc tự động lý thuyết & ví dụ song ngữ
-        </div>
-
-        ${resumeBannerHtml}
-
-        <div id="reader-settings-panel" class="reader-settings-panel" style="display:${state.audioPrefs.showSettings ? "grid" : "none"};">
-          <div class="slider-box">
-            <label><span>🇺🇸/🇬🇧 Giọng đọc Tiếng Anh</span></label>
-            <select id="reader-en-voice" onchange="updateAudioPref('enVoiceURI', this.value)"></select>
-          </div>
-          <div class="slider-box">
-            <label><span>🇻🇳 Giọng đọc Tiếng Việt</span></label>
-            <select id="reader-vi-voice" onchange="updateAudioPref('viVoiceURI', this.value)"></select>
-          </div>
-          <div class="slider-box">
-            <label><span>⚡ Tốc độ đọc</span><strong id="lbl-rate">${Number(state.audioPrefs.rate).toFixed(2)}x</strong></label>
-            <input type="range" min="0.5" max="1.6" step="0.05" value="${state.audioPrefs.rate}" oninput="updateAudioPref('rate', this.value)">
-          </div>
-          <div class="slider-box">
-            <label><span>🎵 Cao độ (Pitch)</span><strong id="lbl-pitch">${Number(state.audioPrefs.pitch).toFixed(2)}</strong></label>
-            <input type="range" min="0.7" max="1.4" step="0.05" value="${state.audioPrefs.pitch}" oninput="updateAudioPref('pitch', this.value)">
-          </div>
-          <div class="slider-box">
-            <label><span>🔊 Âm lượng</span><strong id="lbl-volume">${Math.round(Number(state.audioPrefs.volume) * 100)}%</strong></label>
-            <input type="range" min="0" max="1" step="0.05" value="${state.audioPrefs.volume}" oninput="updateAudioPref('volume', this.value)">
-          </div>
-        </div>
-      </div>
-
-      <div style="font-size:0.82rem; color:var(--muted); margin-bottom:12px;">🛡️ ${u.auditNote}</div>
-      
-      <div class="formula-box" id="read-formula-${u.id}" style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
-        <div style="flex:1; min-width:220px;">${u.formula.split("\n").join("<br>")}</div>
-        <div class="audio-btns">
-          <button class="btn btn-sm" onclick="speakFormula(${u.id}, 1.0)" title="Nghe công thức chuẩn">🔊 1.0x</button>
-          <button class="btn btn-sm btn-outline" onclick="speakFormula(${u.id}, 0.65)" title="Nghe công thức chậm">🐢 0.65x</button>
-        </div>
-      </div>
-      
-      <h3 style="margin-top:16px;">📌 Quy tắc cốt lõi (Raymond Murphy)</h3>
-      <ul style="padding-left:20px; margin-bottom:16px;">
-        ${u.rules.map((r, rIdx) => `<li class="rule-block" id="read-rule-${u.id}-${rIdx}">${r}</li>`).join("")}
-      </ul>
-
-      <h3>🗣️ Ví dụ minh họa chuẩn (Bấm loa để nghe phát âm)</h3>
-      <div style="margin-bottom:18px;">${examplesHtml}</div>
-
-      <h3>✍️ Bài tập thực hành tại chỗ</h3>
-      ${exercisesHtml}
-
-      <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-        <button class="btn ${isDone ? 'btn-outline' : 'btn-success'}" onclick="toggleComplete(${u.id})">
-          ${isDone ? "✅ Đã hoàn thành bài này (Bấm để bỏ đánh dấu)" : "🎉 Đánh dấu hoàn thành (+50 XP)"}
-        </button>
-        <div style="display:flex; gap:8px;">
-          ${u.id > 1 ? `<button class="btn btn-outline" onclick="navUnit(${u.id - 1})">← Bài trước</button>` : ""}
-          ${u.id < MURPHY_UNITS.length ? `<button class="btn" onclick="navUnit(${u.id + 1})">Bài tiếp theo →</button>` : ""}
-        </div>
-      </div>
-    </div>
-  `;
-
-  populateVoiceSelectors();
-  updateReaderUI();
-  highlightCurrentStep();
-}
-
-function navUnit(id) {
+function navigateToUnit(unitId) {
   if (readerState.status === "playing") stopLessonReader(false);
-  state.currentUnitId = id;
-  saveState();
-  renderUnitList();
-  renderLessonDetail(id);
+  appState.currentUnitId = unitId;
+  saveAppState();
+  renderUnitSidebar();
+  renderLessonDetail(unitId);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function checkExercise(unitId, idx) {
-  const u = MURPHY_UNITS.find(x => x.id === unitId);
-  const ex = u.exercises[idx];
-  const val = document.getElementById(`ex-in-${unitId}-${idx}`).value.trim().toLowerCase();
-  const fb = document.getElementById(`ex-fb-${unitId}-${idx}`);
-  const target = ex.ans.toLowerCase();
+function renderLessonDetail(unitId) {
+  var u = MURPHY_UNITS.find(function(x) { return x.id === unitId; }) || MURPHY_UNITS[0];
+  var isDone = appState.completedUnits.indexOf(u.id) !== -1;
+  var container = document.getElementById("lesson-detail-container");
+  if (!container) return;
 
-  const norm = s => s.replace(/’/g, "'")
-    .replace(/\bi'm\b/g, "i am")
-    .replace(/\b'll\b/g, " will")
-    .replace(/\b've\b/g, " have")
-    .replace(/\b's\b/g, " is")
-    .replace(/\bdon't\b/g, "do not")
-    .replace(/\bdoesn't\b/g, "does not")
-    .replace(/\bdidn't\b/g, "did not")
-    .replace(/\bwasn't\b/g, "was not")
-    .replace(/\bweren't\b/g, "were not")
-    .replace(/\bhadn't\b/g, "had not")
-    .replace(/\bwouldn't\b/g, "would not")
-    .replace(/\bcan't\b/g, "cannot")
-    .replace(/\bcouldn't\b/g, "could not")
-    .replace(/\bneedn't\b/g, "do not have to")
-    .replace(/\s+/g, " ").trim();
+  var bm = appState.audioBookmark;
+  var bmUnit = bm ? MURPHY_UNITS.find(function(x) { return x.id === bm.unitId; }) : null;
+  var bookmarkHtml = (bm && bmUnit && readerState.status === "idle")
+    ? '<div class="bg-purple-500/15 border border-purple-500/40 rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">' +
+        '<span>🔖 <strong>Ghi nhớ chỗ dừng:</strong> ' + bmUnit.code + ' (' + bm.label + ')</span>' +
+        '<div class="flex gap-2">' +
+          '<button onclick="resumeFromSavedBookmark()" class="btn-action bg-purple-600 text-xs py-1.5 px-2.5">▶️ Đọc tiếp từ chỗ dừng</button>' +
+          '<button onclick="appState.audioBookmark=null; saveAppState(); renderLessonDetail(' + u.id + ');" class="btn-ghost text-xs py-1.5 px-2.5">Xóa dấu</button>' +
+        '</div>' +
+      '</div>'
+    : "";
 
-  if (val === target || norm(val) === norm(target) || (target === "no article" && val === "-")) {
-    fb.className = "feedback ok";
-    fb.innerHTML = `✅ Chính xác! (+15 XP) — ${ex.explain}`;
-    addXP(15);
-  } else {
-    fb.className = "feedback err";
-    fb.innerHTML = `❌ Chưa đúng. Gợi ý: ${ex.explain}`;
-  }
+  var rulesHtml = u.rules.map(function(rule, rIdx) {
+    return '<div id="read-rule-' + u.id + '-' + rIdx + '" class="rule-card text-sm text-slate-200">' +
+             '<span class="text-sky-400 font-bold mr-1.5">' + (rIdx + 1) + '.</span>' + rule +
+           '</div>';
+  }).join("");
+
+  var examplesHtml = u.examples.map(function(ex, eIdx) {
+    return '<div id="read-ex-' + u.id + '-' + eIdx + '" class="example-card flex-col sm:flex-row items-start sm:items-center">' +
+             '<div>' +
+               '<div class="font-bold text-white text-sm sm:text-base">' + ex.en + '</div>' +
+               '<div class="text-xs sm:text-sm text-slate-400 mt-1">' + ex.vi + '</div>' +
+             '</div>' +
+             '<div class="flex gap-2 shrink-0">' +
+               '<button onclick="speakUnitExample(' + u.id + ', ' + eIdx + ', 1.0)" class="btn-action text-xs py-1.5 px-2.5" title="Nghe chuẩn 1.0x">🔊 1.0x</button>' +
+               '<button onclick="speakUnitExample(' + u.id + ', ' + eIdx + ', 0.65)" class="btn-ghost text-xs py-1.5 px-2.5" title="Nghe chậm 0.65x">🐢 0.65x</button>' +
+             '</div>' +
+           '</div>';
+  }).join("");
+
+  container.innerHTML =
+    '<div class="glass-card p-5">' +
+      '<div id="read-title-' + u.id + '" class="flex flex-wrap items-start justify-between gap-2 pb-3 mb-3 border-b border-slate-700 rounded-lg p-2 border border-transparent">' +
+        '<div>' +
+          '<span class="text-xs font-bold uppercase tracking-wider text-amber-400">' + u.code + ' • ' + u.viTitle + '</span>' +
+          '<h2 class="text-xl sm:text-2xl font-extrabold text-white mt-1">' + u.title + '</h2>' +
+        '</div>' +
+        '<span class="text-xs bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-full font-bold">✓ Chuẩn Raymond Murphy</span>' +
+      '</div>' +
+
+      /* LESSON AUDIO READER TOOLBAR */
+      '<div class="bg-slate-950/90 border border-sky-500/40 rounded-xl p-3.5 mb-4 space-y-2.5">' +
+        '<div class="flex flex-wrap items-center justify-between gap-2">' +
+          '<div class="flex flex-wrap items-center gap-2">' +
+            '<button id="reader-main-btn" onclick="toggleLessonReader(' + u.id + ')" class="speaker-hero-btn">🔊 Đọc toàn bộ bài học</button>' +
+            '<button onclick="stepLessonReader(-1)" class="btn-ghost px-2.5 py-2" title="Đoạn trước">⏮</button>' +
+            '<button onclick="stepLessonReader(1)" class="btn-ghost px-2.5 py-2" title="Đoạn tiếp theo">⏭</button>' +
+            '<button onclick="stopLessonReader(true)" class="btn-ghost px-3 py-2" title="Dừng & Lưu vị trí">⏹ Dừng</button>' +
+          '</div>' +
+          '<div class="flex flex-wrap items-center gap-2">' +
+            '<label class="bg-slate-900 border border-slate-700 px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer select-none">' +
+              '<input type="checkbox" ' + (appState.audioPrefs.autoNext ? "checked" : "") + ' onchange="updateAudioPreference(\'autoNext\', this.checked)" class="accent-sky-400 w-4 h-4">' +
+              '<span>Tự động đọc bài tiếp theo</span>' +
+            '</label>' +
+            '<button onclick="toggleWakeLockSetting()" class="btn-ghost text-xs py-1.5 px-2.5" title="Giữ màn hình không tắt khi nghe">' +
+              '<span>☀️ Giữ sáng màn hình</span>' +
+              '<span id="wakelock-status-badge" class="text-xs px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">Đang kiểm tra</span>' +
+            '</button>' +
+            '<button onclick="toggleReaderSettingsPanel()" class="btn-ghost text-xs py-1.5 px-2.5">⚙️ Giọng & Âm thanh</button>' +
+          '</div>' +
+        '</div>' +
+
+        '<div id="reader-status-text" class="text-xs font-semibold text-sky-400">Sẵn sàng đọc tự động lý thuyết & ví dụ song ngữ (hỗ trợ chạy nền)</div>' +
+        bookmarkHtml +
+
+        '<div id="reader-settings-panel" style="display:' + (appState.audioPrefs.showSettings ? "grid" : "none") + ';" class="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-2.5 border-t border-dashed border-slate-700">' +
+          '<div class="bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs">' +
+            '<label class="block text-slate-400 font-semibold mb-1">🇺🇸/🇬🇧 Giọng đọc Tiếng Anh</label>' +
+            '<select id="reader-en-voice" onchange="updateAudioPreference(\'enVoiceURI\', this.value)" class="w-full bg-slate-950 border border-slate-600 rounded-lg px-2 py-1.5 text-white"></select>' +
+          '</div>' +
+          '<div class="bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs">' +
+            '<label class="block text-slate-400 font-semibold mb-1">🇻🇳 Giọng đọc Tiếng Việt</label>' +
+            '<select id="reader-vi-voice" onchange="updateAudioPreference(\'viVoiceURI\', this.value)" class="w-full bg-slate-950 border border-slate-600 rounded-lg px-2 py-1.5 text-white"></select>' +
+          '</div>' +
+          '<div class="bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs">' +
+            '<div class="flex justify-between text-slate-400 font-semibold mb-1"><span>⚡ Tốc độ đọc</span><strong id="lbl-reader-rate" class="text-sky-400">' + Number(appState.audioPrefs.rate).toFixed(2) + 'x</strong></div>' +
+            '<input type="range" min="0.5" max="1.6" step="0.05" value="' + appState.audioPrefs.rate + '" oninput="updateAudioPreference(\'rate\', this.value)" class="w-full accent-sky-400">' +
+          '</div>' +
+          '<div class="bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs">' +
+            '<div class="flex justify-between text-slate-400 font-semibold mb-1"><span>🎵 Cao độ (Pitch)</span><strong id="lbl-reader-pitch" class="text-sky-400">' + Number(appState.audioPrefs.pitch).toFixed(2) + '</strong></div>' +
+            '<input type="range" min="0.7" max="1.4" step="0.05" value="' + appState.audioPrefs.pitch + '" oninput="updateAudioPreference(\'pitch\', this.value)" class="w-full accent-sky-400">' +
+          '</div>' +
+          '<div class="bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs">' +
+            '<div class="flex justify-between text-slate-400 font-semibold mb-1"><span>🔊 Âm lượng</span><strong id="lbl-reader-volume" class="text-sky-400">' + Math.round(Number(appState.audioPrefs.volume) * 100) + '%</strong></div>' +
+            '<input type="range" min="0" max="1" step="0.05" value="' + appState.audioPrefs.volume + '" oninput="updateAudioPreference(\'volume\', this.value)" class="w-full accent-sky-400">' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      /* FORMULA BOX */
+      '<div id="read-formula-' + u.id + '" class="formula-box mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">' +
+        '<div class="font-mono text-xs sm:text-sm">' + u.formula.split("\n").join("<br>") + '</div>' +
+        '<div class="flex gap-2 shrink-0">' +
+          '<button onclick="speakUnitFormula(' + u.id + ', 1.0)" class="btn-action text-xs py-1.5 px-2.5">🔊 1.0x</button>' +
+          '<button onclick="speakUnitFormula(' + u.id + ', 0.65)" class="btn-ghost text-xs py-1.5 px-2.5">🐢 0.65x</button>' +
+        '</div>' +
+      '</div>' +
+
+      /* THEORY RULES */
+      '<h3 class="text-base font-bold text-white mb-2.5">📌 Quy tắc cốt lõi</h3>' +
+      '<div class="space-y-2 mb-5">' + rulesHtml + '</div>' +
+
+      /* BILINGUAL EXAMPLES */
+      '<h3 class="text-base font-bold text-white mb-2.5">🗣️ Ví dụ minh họa song ngữ</h3>' +
+      '<div class="space-y-2.5 mb-6">' + examplesHtml + '</div>' +
+
+      /* FOOTER COMPLETE & NAV */
+      '<div class="pt-4 border-t border-slate-700 flex flex-wrap items-center justify-between gap-3">' +
+        '<button onclick="toggleUnitComplete(' + u.id + ')" class="' + (isDone ? "btn-ghost text-emerald-300 border-emerald-500/40" : "btn-action bg-emerald-600") + '">' +
+          (isDone ? "✅ Đã hoàn thành Unit này" : "🎉 Đánh dấu hoàn thành Unit (+50 XP)") +
+        '</button>' +
+        '<div class="flex gap-2">' +
+          (u.id > 1 ? '<button onclick="navigateToUnit(' + (u.id - 1) + ')" class="btn-ghost">← Bài trước</button>' : "") +
+          (u.id < MURPHY_UNITS.length ? '<button onclick="navigateToUnit(' + (u.id + 1) + ')" class="btn-action">Bài tiếp theo →</button>' : "") +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  populateVoiceSelectors();
+  updateReaderControlsUI();
+  highlightActiveStep();
+  applyWakeLockPreference();
 }
 
-function showHint(unitId, idx) {
-  const u = MURPHY_UNITS.find(x => x.id === unitId);
-  const ex = u.exercises[idx];
-  const fb = document.getElementById(`ex-fb-${unitId}-${idx}`);
-  fb.className = "feedback ok";
-  fb.innerHTML = `💡 Đáp án chuẩn: <strong>${ex.ans}</strong> — ${ex.explain}`;
+/* ==========================================================================
+   8. TAB 2: PRACTICE QUIZ ENGINE
+   ========================================================================== */
+var quizSession = {
+  questions: [],
+  index: 0,
+  score: 0
+};
+
+function populateQuizUnitDropdown() {
+  var sel = document.getElementById("quiz-unit-filter");
+  if (!sel) return;
+  MURPHY_UNITS.forEach(function(u) {
+    var opt = document.createElement("option");
+    opt.value = String(u.id);
+    opt.textContent = u.code + " — " + u.viTitle;
+    sel.appendChild(opt);
+  });
 }
 
-function toggleComplete(unitId) {
-  const idx = state.completedUnits.indexOf(unitId);
-  if (idx === -1) {
-    state.completedUnits.push(unitId);
-    addXP(50);
-    showToast("🎉 Hoàn thành chuyên đề! +50 XP");
-  } else {
-    state.completedUnits.splice(idx, 1);
-  }
-  saveState();
-  renderUnitList();
-  renderLessonDetail(unitId);
+function startNewQuiz() {
+  var sel = document.getElementById("quiz-unit-filter");
+  var filterVal = sel ? sel.value : "ALL";
+  var pool = QUIZ_QUESTIONS.filter(function(item) {
+    return filterVal === "ALL" || String(item.unitId) === filterVal;
+  });
+  quizSession.questions = pool.slice().sort(function() { return Math.random() - 0.5; });
+  quizSession.index = 0;
+  quizSession.score = 0;
+  renderCurrentQuizQuestion();
 }
 
-// ==================== 5. QUIZ ENGINE ====================
-let currentQuiz = [], qIndex = 0, qScore = 0;
+function renderCurrentQuizQuestion() {
+  var stage = document.getElementById("quiz-stage");
+  if (!stage) return;
 
-function startQuiz() {
-  const cat = document.getElementById("quiz-cat").value;
-  let pool = QUIZ_BANK.filter(q => cat === "ALL" || q.cat === cat);
-  currentQuiz = [...pool].sort(() => Math.random() - 0.5).slice(0, 8);
-  qIndex = 0; qScore = 0;
-  renderQuizQuestion();
-}
-
-function renderQuizQuestion() {
-  const box = document.getElementById("quiz-box");
-  if (qIndex >= currentQuiz.length) {
-    box.innerHTML = `
-      <div style="text-align:center; padding:24px; background:var(--bg); border-radius:12px;">
-        <h2>🏆 Hoàn thành bài Quiz!</h2>
-        <p style="font-size:1.2rem; margin:10px 0;">Điểm số: <strong>${qScore} / ${currentQuiz.length}</strong> câu đúng</p>
-        <button class="btn" onclick="startQuiz()">Làm bộ đề mới</button>
-      </div>
-    `;
+  if (quizSession.index >= quizSession.questions.length) {
+    stage.innerHTML =
+      '<div class="text-center bg-slate-950 border border-slate-700 rounded-2xl p-6">' +
+        '<div class="text-3xl mb-2">🏆</div>' +
+        '<h3 class="text-xl font-extrabold text-white">Hoàn thành bài luyện tập!</h3>' +
+        '<p class="text-slate-300 mt-2">Bạn trả lời đúng <strong class="text-sky-400">' + quizSession.score + ' / ' + quizSession.questions.length + '</strong> câu hỏi.</p>' +
+        '<button onclick="startNewQuiz()" class="btn-action mt-4">Làm lại bộ đề khác</button>' +
+      '</div>';
     return;
   }
-  const item = currentQuiz[qIndex];
-  box.innerHTML = `
-    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-      <span class="badge">${item.cat}</span>
-      <span style="color:var(--muted); font-size:0.85rem;">Câu ${qIndex + 1} / ${currentQuiz.length}</span>
-    </div>
-    <div style="font-size:1.12rem; font-weight:700; margin:12px 0;">${item.q}</div>
-    <div class="quiz-options">
-      ${item.opts.map((o, i) => `<button class="opt-btn" id="qopt-${i}" onclick="selectQuizOpt(${i})">${String.fromCharCode(65+i)}. ${o}</button>`).join("")}
-    </div>
-    <div id="quiz-fb" class="feedback" style="margin-top:14px;"></div>
-    <button class="btn" id="quiz-next-btn" style="display:none; margin-top:12px;" onclick="qIndex++; renderQuizQuestion();">Câu tiếp theo →</button>
-  `;
+
+  var item = quizSession.questions[quizSession.index];
+  var unitObj = MURPHY_UNITS.find(function(u) { return u.id === item.unitId; });
+  var optsHtml = item.opts.map(function(opt, idx) {
+    return '<button id="quiz-opt-' + idx + '" onclick="submitQuizChoice(' + idx + ')" class="w-full text-left bg-slate-950 hover:bg-slate-800 border border-slate-600 rounded-xl p-3.5 text-sm sm:text-base font-medium text-white transition">' +
+             '<span class="font-bold text-sky-400 mr-2">' + String.fromCharCode(65 + idx) + '.</span>' + opt +
+           '</button>';
+  }).join("");
+
+  stage.innerHTML =
+    '<div class="flex items-center justify-between text-xs mb-3">' +
+      '<span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-full font-bold">' + (unitObj ? unitObj.code + " • " + unitObj.viTitle : "Grammar") + '</span>' +
+      '<span class="text-slate-400 font-semibold">Câu ' + (quizSession.index + 1) + ' / ' + quizSession.questions.length + '</span>' +
+    '</div>' +
+    '<div class="text-base sm:text-lg font-bold text-white mb-4">' + item.q + '</div>' +
+    '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">' + optsHtml + '</div>' +
+    '<div id="quiz-feedback-box" class="mt-4"></div>';
 }
 
-function selectQuizOpt(i) {
-  const item = currentQuiz[qIndex];
-  document.querySelectorAll(".opt-btn").forEach(b => b.disabled = true);
-  const fb = document.getElementById("quiz-fb");
-  if (i === item.ans) {
-    document.getElementById(`qopt-${i}`).classList.add("correct");
-    fb.className = "feedback ok";
-    fb.innerHTML = `✅ Tuyệt vời! (+20 XP) — ${item.exp}`;
-    qScore++; addXP(20);
+function submitQuizChoice(chosenIdx) {
+  var item = quizSession.questions[quizSession.index];
+  item.opts.forEach(function(_, i) {
+    var b = document.getElementById("quiz-opt-" + i);
+    if (b) b.disabled = true;
+  });
+
+  var chosenBtn = document.getElementById("quiz-opt-" + chosenIdx);
+  var correctBtn = document.getElementById("quiz-opt-" + item.ans);
+  var fb = document.getElementById("quiz-feedback-box");
+  var fullSentence = item.q.replace(/_{2,}/g, item.opts[item.ans]).replace(/\s*\([^)]*\)/g, "");
+
+  if (chosenIdx === item.ans) {
+    if (chosenBtn) chosenBtn.className += " border-emerald-500 bg-emerald-500/20 text-emerald-200";
+    quizSession.score++;
+    addXP(20);
+    fb.innerHTML =
+      '<div class="bg-emerald-500/15 border border-emerald-500/40 rounded-xl p-3.5 text-sm text-emerald-200">' +
+        '<div class="font-bold mb-1">✅ Chính xác! (+20 XP)</div>' +
+        '<p class="text-slate-200 mb-2">' + item.exp + '</p>' +
+        '<div class="flex flex-wrap gap-2">' +
+          '<button onclick="speakSmartSequence(\'' + fullSentence.replace(/'/g, "\\'") + '\', 1.0, \'en-US\')" class="btn-action text-xs py-1.5">🔊 Nghe câu chuẩn</button>' +
+          '<button onclick="quizSession.index++; renderCurrentQuizQuestion();" class="btn-ghost text-xs py-1.5">Câu tiếp theo →</button>' +
+        '</div>' +
+      '</div>';
   } else {
-    document.getElementById(`qopt-${i}`).classList.add("wrong");
-    document.getElementById(`qopt-${item.ans}`).classList.add("correct");
-    fb.className = "feedback err";
-    fb.innerHTML = `❌ Chưa chính xác. ${item.exp}`;
+    if (chosenBtn) chosenBtn.className += " border-rose-500 bg-rose-500/20 text-rose-200";
+    if (correctBtn) correctBtn.className += " border-emerald-500 bg-emerald-500/20 text-emerald-200";
+    fb.innerHTML =
+      '<div class="bg-rose-500/15 border border-rose-500/40 rounded-xl p-3.5 text-sm text-rose-200">' +
+        '<div class="font-bold mb-1">❌ Chưa đúng. Đáp án chuẩn: ' + item.opts[item.ans] + '</div>' +
+        '<p class="text-slate-200 mb-2">' + item.exp + '</p>' +
+        '<div class="flex flex-wrap gap-2">' +
+          '<button onclick="speakSmartSequence(\'' + fullSentence.replace(/'/g, "\\'") + '\', 1.0, \'en-US\')" class="btn-action text-xs py-1.5">🔊 Nghe câu chuẩn</button>' +
+          '<button onclick="quizSession.index++; renderCurrentQuizQuestion();" class="btn-ghost text-xs py-1.5">Câu tiếp theo →</button>' +
+        '</div>' +
+      '</div>';
   }
-  document.getElementById("quiz-next-btn").style.display = "inline-flex";
 }
 
-// ==================== 6. GAMES (WORD SCRAMBLE & GRAMMAR HUNTER) ====================
-let scrIdx = 0, scrBank = [], scrAns = [];
+/* ==========================================================================
+   9. TAB 3: GRAMMAR GAMES (SENTENCE BUILDER & SPEED MATCH)
+   ========================================================================== */
+var sbState = {
+  idx: 0,
+  bank: [],
+  picked: []
+};
 
-function loadScramble() {
-  const item = SCRAMBLE_DATA[scrIdx % SCRAMBLE_DATA.length];
-  document.getElementById("scramble-vi").innerText = "Nghĩa tiếng Việt: " + item.vi;
-  scrAns = [];
-  scrBank = item.words.map((w, i) => ({ w, id: i })).sort(() => Math.random() - 0.5);
-  document.getElementById("scramble-fb").innerText = "";
-  renderScrambleZones();
+function loadSentenceBuilder() {
+  var item = SENTENCE_BUILDER_LIST[sbState.idx % SENTENCE_BUILDER_LIST.length];
+  document.getElementById("sb-counter").textContent = "Câu " + ((sbState.idx % SENTENCE_BUILDER_LIST.length) + 1) + "/" + SENTENCE_BUILDER_LIST.length;
+  document.getElementById("sb-vi-prompt").textContent = "Nghĩa tiếng Việt: " + item.vi;
+  document.getElementById("sb-feedback").textContent = "";
+  sbState.picked = [];
+  sbState.bank = item.words.map(function(w, i) { return { w: w, id: i }; }).sort(function() { return Math.random() - 0.5; });
+  renderSentenceBuilderZones();
 }
 
-function renderScrambleZones() {
-  const az = document.getElementById("answer-zone");
-  const wb = document.getElementById("word-bank");
-  az.innerHTML = scrAns.map((obj, idx) => `<span class="word-chip" onclick="removeWord(${idx})">${obj.w}</span>`).join("");
-  wb.innerHTML = scrBank.map((obj, idx) => `<span class="word-chip" onclick="pickWord(${idx})">${obj.w}</span>`).join("");
+function renderSentenceBuilderZones() {
+  var ansZone = document.getElementById("sb-answer-zone");
+  var bankZone = document.getElementById("sb-bank-zone");
+  if (!ansZone || !bankZone) return;
+
+  ansZone.innerHTML = sbState.picked.map(function(obj, idx) {
+    return '<span onclick="unpickSbWord(' + idx + ')" class="word-chip bg-sky-600/30 border-sky-400">' + obj.w + '</span>';
+  }).join("");
+
+  bankZone.innerHTML = sbState.bank.map(function(obj, idx) {
+    return '<span onclick="pickSbWord(' + idx + ')" class="word-chip">' + obj.w + '</span>';
+  }).join("");
 }
 
-function pickWord(idx) {
-  scrAns.push(scrBank[idx]);
-  scrBank.splice(idx, 1);
-  renderScrambleZones();
+function pickSbWord(idx) {
+  sbState.picked.push(sbState.bank[idx]);
+  sbState.bank.splice(idx, 1);
+  renderSentenceBuilderZones();
 }
 
-function removeWord(idx) {
-  scrBank.push(scrAns[idx]);
-  scrAns.splice(idx, 1);
-  renderScrambleZones();
+function unpickSbWord(idx) {
+  sbState.bank.push(sbState.picked[idx]);
+  sbState.picked.splice(idx, 1);
+  renderSentenceBuilderZones();
 }
 
-function resetScramble() { loadScramble(); }
-function nextScramble() { scrIdx++; loadScramble(); }
+function resetSentenceBuilder() {
+  loadSentenceBuilder();
+}
 
-function checkScramble() {
-  const item = SCRAMBLE_DATA[scrIdx % SCRAMBLE_DATA.length];
-  const userStr = scrAns.map(o => o.w).join(" ");
-  const targetStr = item.words.join(" ");
-  const fb = document.getElementById("scramble-fb");
-  if (userStr === targetStr) {
-    fb.className = "feedback ok";
-    fb.innerHTML = "✅ Chính xác tuyệt đối! (+25 XP)";
-    speakText(targetStr, 1.0);
+function nextSentenceBuilder() {
+  sbState.idx++;
+  loadSentenceBuilder();
+}
+
+function checkSentenceBuilder() {
+  var item = SENTENCE_BUILDER_LIST[sbState.idx % SENTENCE_BUILDER_LIST.length];
+  var userSentence = sbState.picked.map(function(x) { return x.w; }).join(" ");
+  var targetSentence = item.words.join(" ");
+  var fb = document.getElementById("sb-feedback");
+
+  if (userSentence === targetSentence) {
+    fb.className = "mt-3 text-sm font-bold text-emerald-400";
+    fb.textContent = "✅ Chính xác tuyệt đối! (+25 XP)";
     addXP(25);
+    speakSmartSequence(targetSentence, 1.0, "en-US");
   } else {
-    fb.className = "feedback err";
-    fb.innerHTML = "❌ Trật tự chưa đúng. Hãy kiểm tra lại vị trí trạng từ hoặc trợ động từ!";
+    fb.className = "mt-3 text-sm font-bold text-rose-400";
+    fb.textContent = "❌ Trật tự từ chưa chuẩn. Hãy kiểm tra lại vị trí trợ động từ hoặc mệnh đề!";
   }
 }
 
-// Game 2: Grammar Hunter
-let hunterIdx = 0, hunterStreak = 0, hunterTime = 15, hunterInterval = null;
+/* Speed Match Game */
+var smState = {
+  selectedLeft: null,
+  selectedRight: null,
+  matchedIds: [],
+  combo: 0,
+  timeLeft: 45,
+  timerId: null
+};
 
-function loadHunter() {
-  clearInterval(hunterInterval);
-  hunterTime = 15;
-  document.getElementById("hunter-timer").innerText = hunterTime;
-  const item = HUNTER_DATA[hunterIdx % HUNTER_DATA.length];
-  document.getElementById("hunter-sentence").innerText = `"${item.s}"`;
-  document.getElementById("hunter-fb").innerText = "";
-  hunterInterval = setInterval(() => {
-    hunterTime--;
-    document.getElementById("hunter-timer").innerText = hunterTime;
-    if (hunterTime <= 0) {
-      clearInterval(hunterInterval);
-      hunterStreak = 0;
-      document.getElementById("hunter-streak").innerText = hunterStreak;
-      document.getElementById("hunter-fb").className = "feedback err";
-      document.getElementById("hunter-fb").innerText = "⏰ Hết giờ! " + item.exp;
-      setTimeout(() => { hunterIdx++; loadHunter(); }, 2500);
+function initSpeedMatch() {
+  clearInterval(smState.timerId);
+  smState.selectedLeft = null;
+  smState.selectedRight = null;
+  smState.matchedIds = [];
+  smState.combo = 0;
+  smState.timeLeft = 45;
+  document.getElementById("sm-combo").textContent = "0";
+  document.getElementById("sm-timer").textContent = "45";
+  document.getElementById("sm-status").textContent = "";
+
+  var leftItems = SPEED_MATCH_PAIRS.slice().sort(function() { return Math.random() - 0.5; });
+  var rightItems = SPEED_MATCH_PAIRS.slice().sort(function() { return Math.random() - 0.5; });
+
+  document.getElementById("sm-left-col").innerHTML = leftItems.map(function(p) {
+    return '<button id="sm-l-' + p.id + '" onclick="selectSmCard(\'left\', \'' + p.id + '\')" class="w-full text-left bg-slate-950 border border-slate-600 rounded-xl p-2.5 text-xs font-mono text-sky-300 hover:border-sky-400 transition">' + p.left + '</button>';
+  }).join("");
+
+  document.getElementById("sm-right-col").innerHTML = rightItems.map(function(p) {
+    return '<button id="sm-r-' + p.id + '" onclick="selectSmCard(\'right\', \'' + p.id + '\')" class="w-full text-left bg-slate-950 border border-slate-600 rounded-xl p-2.5 text-xs font-medium text-white hover:border-purple-400 transition">' + p.right + '</button>';
+  }).join("");
+
+  smState.timerId = setInterval(function() {
+    smState.timeLeft--;
+    var tEl = document.getElementById("sm-timer");
+    if (tEl) tEl.textContent = String(smState.timeLeft);
+    if (smState.timeLeft <= 0) {
+      clearInterval(smState.timerId);
+      document.getElementById("sm-status").textContent = "⏰ Hết giờ! Bấm Chơi ván mới.";
     }
   }, 1000);
 }
 
-function answerHunter(userChoice) {
-  clearInterval(hunterInterval);
-  const item = HUNTER_DATA[hunterIdx % HUNTER_DATA.length];
-  const fb = document.getElementById("hunter-fb");
-  if (userChoice === item.ok) {
-    hunterStreak++;
-    addXP(15);
-    fb.className = "feedback ok";
-    fb.innerText = `✅ Chuẩn xác! (+15 XP) ${item.exp}`;
-  } else {
-    hunterStreak = 0;
-    fb.className = "feedback err";
-    fb.innerText = `❌ Bị lừa rồi! ${item.exp}`;
-  }
-  document.getElementById("hunter-streak").innerText = hunterStreak;
-  setTimeout(() => { hunterIdx++; loadHunter(); }, 2400);
-}
+function selectSmCard(side, id) {
+  if (smState.timeLeft <= 0 || smState.matchedIds.indexOf(id) !== -1) return;
 
-// ==================== 7. PRONUNCIATION & SPEECH RECOGNITION ====================
-let allExamples = [];
-MURPHY_UNITS.forEach(u => u.examples.forEach(e => allExamples.push({ unit: u.unit, en: e.en.replace(/\s*\(.*?\)/g, ""), vi: e.vi })));
-let pronIdx = 0;
-
-function nextPronounceSentence() {
-  pronIdx = (pronIdx + 1) % allExamples.length;
-  const item = allExamples[pronIdx];
-  document.getElementById("pron-unit-label").innerText = item.unit;
-  document.getElementById("pron-target").innerText = item.en;
-  document.getElementById("pron-vi").innerText = item.vi;
-  document.getElementById("speech-result").style.display = "none";
-}
-
-function setCustomPronounce() {
-  const val = document.getElementById("custom-tts-input").value.trim();
-  if (!val) return;
-  document.getElementById("pron-unit-label").innerText = "Câu tùy chỉnh";
-  document.getElementById("pron-target").innerText = val;
-  document.getElementById("pron-vi").innerText = "";
-  document.getElementById("speech-result").style.display = "none";
-}
-
-function speakText(text, rate = 1.0) {
-  speakSmartSequence(text, rate, "en-US");
-}
-
-function startSpeechCheck() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    showToast("Trình duyệt hiện tại không hỗ trợ nhận diện micro (Hãy dùng Chrome/Edge/Safari).");
-    return;
-  }
-  const btn = document.getElementById("mic-btn");
-  const recognition = new SpeechRecognition();
-  recognition.lang = document.getElementById("voice-accent").value;
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-
-  btn.classList.add("mic-pulse");
-  btn.innerText = "🔴 Đang nghe bạn nói...";
-
-  recognition.onresult = (event) => {
-    const spoken = event.results[0][0].transcript;
-    evaluatePronunciation(spoken);
-  };
-  recognition.onerror = (e) => {
-    showToast("Lỗi nhận diện micro: " + e.error + ". Hãy kiểm tra quyền Micro.");
-  };
-  recognition.onend = () => {
-    btn.classList.remove("mic-pulse");
-    btn.innerText = "🎤 Bấm để đọc & Chấm điểm";
-  };
-  recognition.start();
-}
-
-function evaluatePronunciation(spoken) {
-  const target = document.getElementById("pron-target").innerText;
-  const clean = s => s.toLowerCase().replace(/[^a-z0-9'\s]/g, "").split(/\s+/).filter(Boolean);
-  const tWords = clean(target);
-  const sWords = clean(spoken);
-
-  let matchedCount = 0;
-  const diffHtml = tWords.map(w => {
-    if (sWords.includes(w)) {
-      matchedCount++;
-      return `<span style="color:#4ade80; font-weight:700; margin-right:6px;">${w}</span>`;
-    } else {
-      return `<span style="color:#f87171; text-decoration:underline; margin-right:6px;">${w}</span>`;
+  if (side === "left") {
+    if (smState.selectedLeft) {
+      var prevL = document.getElementById("sm-l-" + smState.selectedLeft);
+      if (prevL) prevL.classList.remove("border-amber-400", "bg-amber-500/20");
     }
-  }).join("");
-
-  const score = Math.round((matchedCount / Math.max(tWords.length, 1)) * 100);
-  document.getElementById("speech-result").style.display = "block";
-  document.getElementById("spoken-text").innerText = spoken;
-  document.getElementById("speech-score").innerText = `${score}% (${matchedCount}/${tWords.length} từ khớp)`;
-  document.getElementById("speech-score").style.color = score >= 80 ? "#4ade80" : "#fbbf24";
-  document.getElementById("word-diff").innerHTML = "Chi tiết từng từ: " + diffHtml;
-  if (score >= 80) addXP(20);
-}
-
-// ==================== 8. SRS FLASHCARDS ====================
-let srsDeck = MURPHY_UNITS.map(u => ({
-  unit: u.unit,
-  front: `${u.unit}: ${u.title}`,
-  back: `${u.formula}\n\nVí dụ chuẩn: ${u.examples[0].en}\n(${u.examples[0].vi})`,
-  example: u.examples[0].en
-}));
-let fcIdx = 0;
-
-function renderFlashcard() {
-  const card = srsDeck[fcIdx % srsDeck.length];
-  document.getElementById("srs-counter").innerText = `Thẻ ${(fcIdx % srsDeck.length) + 1} / ${srsDeck.length}`;
-  document.getElementById("fc-front").innerText = card.front;
-  document.getElementById("fc-back").innerText = card.back;
-  document.getElementById("fc-back").style.display = "none";
-}
-
-function flipCard() {
-  const b = document.getElementById("fc-back");
-  b.style.display = b.style.display === "none" ? "block" : "none";
-}
-
-function rateCard(level) {
-  if (level === 1) {
-    const current = srsDeck.splice(fcIdx % srsDeck.length, 1)[0];
-    srsDeck.splice(Math.min(fcIdx + 2, srsDeck.length), 0, current);
-    showToast("Thẻ sẽ lặp lại sau 2 lượt nữa!");
+    smState.selectedLeft = id;
+    var curL = document.getElementById("sm-l-" + id);
+    if (curL) curL.classList.add("border-amber-400", "bg-amber-500/20");
   } else {
-    fcIdx++;
-    addXP(10);
+    if (smState.selectedRight) {
+      var prevR = document.getElementById("sm-r-" + smState.selectedRight);
+      if (prevR) prevR.classList.remove("border-amber-400", "bg-amber-500/20");
+    }
+    smState.selectedRight = id;
+    var curR = document.getElementById("sm-r-" + id);
+    if (curR) curR.classList.add("border-amber-400", "bg-amber-500/20");
   }
-  renderFlashcard();
+
+  if (smState.selectedLeft && smState.selectedRight) {
+    var lId = smState.selectedLeft;
+    var rId = smState.selectedRight;
+    smState.selectedLeft = null;
+    smState.selectedRight = null;
+
+    var lBtn = document.getElementById("sm-l-" + lId);
+    var rBtn = document.getElementById("sm-r-" + rId);
+    if (lBtn) lBtn.classList.remove("border-amber-400", "bg-amber-500/20");
+    if (rBtn) rBtn.classList.remove("border-amber-400", "bg-amber-500/20");
+
+    if (lId === rId) {
+      smState.matchedIds.push(lId);
+      smState.combo++;
+      document.getElementById("sm-combo").textContent = String(smState.combo);
+      var pts = 10 * smState.combo;
+      addXP(pts);
+      if (lBtn) {
+        lBtn.disabled = true;
+        lBtn.className += " border-emerald-500 bg-emerald-500/20 opacity-60";
+      }
+      if (rBtn) {
+        rBtn.disabled = true;
+        rBtn.className += " border-emerald-500 bg-emerald-500/20 opacity-60";
+      }
+      var pairObj = SPEED_MATCH_PAIRS.find(function(x) { return x.id === lId; });
+      if (pairObj) speakSmartSequence(pairObj.right, 1.0, "en-US");
+
+      if (smState.matchedIds.length === SPEED_MATCH_PAIRS.length) {
+        clearInterval(smState.timerId);
+        document.getElementById("sm-status").textContent = "🏆 Xuất sắc! Hoàn thành toàn bộ bảng!";
+      }
+    } else {
+      smState.combo = 0;
+      document.getElementById("sm-combo").textContent = "0";
+      showToast("❌ Cặp công thức và ví dụ chưa khớp!");
+    }
+  }
 }
 
-function speakCurrentCard() {
-  const card = srsDeck[fcIdx % srsDeck.length];
-  speakText(card.example, 1.0);
+/* ==========================================================================
+   10. TAB 4: PRONUNCIATION LAB (US vs UK COMPARISON)
+   ========================================================================== */
+function renderPronunciationLab() {
+  var grid = document.getElementById("pronounce-cards-grid");
+  if (!grid) return;
+
+  grid.innerHTML = PRONUNCIATION_DRILLS.map(function(item, idx) {
+    var escaped = item.en.replace(/'/g, "\\'");
+    return '<div class="bg-slate-950 border border-slate-700 rounded-xl p-4 flex flex-col justify-between gap-3">' +
+             '<div>' +
+               '<span class="text-xs font-bold text-sky-400 uppercase">' + item.tag + '</span>' +
+               '<div class="text-base font-bold text-white mt-1">' + item.en + '</div>' +
+               '<div class="text-xs text-slate-400 mt-1">' + item.vi + '</div>' +
+             '</div>' +
+             '<div class="flex flex-wrap gap-2 pt-2 border-t border-slate-800">' +
+               '<button onclick="speakSmartSequence(\'' + escaped + '\', 1.0, \'en-US\', \'en-US\')" class="btn-action text-xs py-1.5 px-2.5">🇺🇸 US 1.0x</button>' +
+               '<button onclick="speakSmartSequence(\'' + escaped + '\', 0.65, \'en-US\', \'en-US\')" class="btn-ghost text-xs py-1.5 px-2">🇺🇸 0.65x</button>' +
+               '<button onclick="speakSmartSequence(\'' + escaped + '\', 1.0, \'en-GB\', \'en-GB\')" class="btn-action bg-purple-700 text-xs py-1.5 px-2.5">🇬🇧 UK 1.0x</button>' +
+               '<button onclick="speakSmartSequence(\'' + escaped + '\', 0.65, \'en-GB\', \'en-GB\')" class="btn-ghost text-xs py-1.5 px-2">🇬🇧 0.65x</button>' +
+             '</div>' +
+           '</div>';
+  }).join("");
 }
 
-// ==================== 9. CROSS-AUDIT TABLE ====================
-function renderAuditTable() {
-  const tbody = document.getElementById("audit-table-body");
-  tbody.innerHTML = MURPHY_UNITS.map(u => `
-    <tr>
-      <td><strong>${u.unit}</strong><br><span style="color:var(--muted); font-size:0.8rem;">${u.cat}</span></td>
-      <td>${u.auditStatus === "fixed" ? "Bản số hóa TXT trên mạng có sai lệch ký tự/đáp án" : "Trùng khớp 100% nội dung gốc"}</td>
-      <td>${u.auditNote}</td>
-      <td>${u.auditStatus === "fixed" ? '<span class="audit-tag audit-fix">Đã hiệu đính</span>' : '<span class="audit-tag audit-ok">Chuẩn xác</span>'}</td>
-    </tr>
-  `).join("");
+/* ==========================================================================
+   11. TAB 5: SRS FLASHCARDS
+   ========================================================================== */
+var srsSession = {
+  index: 0,
+  flipped: false
+};
+
+function renderSrsCard() {
+  var u = MURPHY_UNITS[srsSession.index % MURPHY_UNITS.length];
+  srsSession.flipped = false;
+  document.getElementById("srs-status-badge").textContent = "Thẻ " + ((srsSession.index % MURPHY_UNITS.length) + 1) + " / " + MURPHY_UNITS.length;
+  document.getElementById("srs-card-unit").textContent = u.code + " • " + u.viTitle;
+  document.getElementById("srs-card-front").textContent = u.title;
+
+  var backEl = document.getElementById("srs-card-back");
+  backEl.classList.add("hidden");
+  backEl.innerHTML =
+    '<div class="font-mono text-xs sm:text-sm text-sky-300 bg-slate-950/80 p-3 rounded-xl border border-slate-700">' + u.formula.split("\n").join("<br>") + '</div>' +
+    '<div class="text-sm text-slate-300 mt-2"><strong>Cách dùng:</strong> ' + u.rules[0] + '</div>' +
+    '<div class="text-sm text-emerald-300 mt-2"><strong>Ví dụ:</strong> ' + u.examples[0].en + '<br><span class="text-slate-400 text-xs">(' + u.examples[0].vi + ')</span></div>';
 }
 
-// ==================== BOOT ====================
-window.addEventListener("load", () => {
-  initFilters();
-  saveState();
-  renderUnitList();
-  renderLessonDetail(state.currentUnitId);
-  startQuiz();
-  loadScramble();
-  loadHunter();
-  nextPronounceSentence();
-  renderFlashcard();
-  renderAuditTable();
+function flipSrsCard() {
+  var backEl = document.getElementById("srs-card-back");
+  if (!backEl) return;
+  srsSession.flipped = !srsSession.flipped;
+  if (srsSession.flipped) {
+    backEl.classList.remove("hidden");
+  } else {
+    backEl.classList.add("hidden");
+  }
+}
+
+function rateSrsCard(rating) {
+  var u = MURPHY_UNITS[srsSession.index % MURPHY_UNITS.length];
+  var intervals = { again: "1 phút", hard: "10 phút", good: "1 ngày", easy: "4 ngày" };
+  appState.srsRecords[u.id] = {
+    rating: rating,
+    nextLabel: intervals[rating] || "1 ngày",
+    updatedAt: Date.now()
+  };
+  if (rating === "good" || rating === "easy") {
+    addXP(15);
+  }
+  saveAppState();
+  renderProgressDashboard();
+  showToast("🧠 Đã lưu lịch ôn thẻ " + u.code + " (" + intervals[rating] + ")");
+  srsSession.index++;
+  renderSrsCard();
+}
+
+function speakCurrentSrsCard() {
+  var u = MURPHY_UNITS[srsSession.index % MURPHY_UNITS.length];
+  speakSmartSequence(u.examples[0].en, 1.0, "en-US");
+}
+
+/* ==========================================================================
+   12. TAB 6: PROGRESS DASHBOARD
+   ========================================================================== */
+function renderProgressDashboard() {
+  var doneCount = appState.completedUnits.length;
+  var pct = Math.round((doneCount / MURPHY_UNITS.length) * 100);
+  var rank = "Học viên Khởi đầu";
+  if (appState.xp >= 1000) rank = "Bậc thầy Ngữ pháp Cambridge";
+  else if (appState.xp >= 500) rank = "Chuyên gia Raymond Murphy";
+  else if (appState.xp >= 200) rank = "Học viên Tích cực";
+
+  var masteredSrs = Object.keys(appState.srsRecords).filter(function(k) {
+    var r = appState.srsRecords[k];
+    return r && (r.rating === "good" || r.rating === "easy");
+  }).length;
+
+  var rEl = document.getElementById("prog-rank");
+  var xpSub = document.getElementById("prog-xp-sub");
+  var uCount = document.getElementById("prog-units-count");
+  var uPct = document.getElementById("prog-units-pct");
+  var srsEl = document.getElementById("prog-srs-mastered");
+  var gridEl = document.getElementById("prog-units-grid");
+
+  if (rEl) rEl.textContent = rank;
+  if (xpSub) xpSub.textContent = appState.xp + " XP tích lũy";
+  if (uCount) uCount.textContent = doneCount + " / " + MURPHY_UNITS.length + " Units";
+  if (uPct) uPct.textContent = pct + "% tổng khối lượng";
+  if (srsEl) srsEl.textContent = masteredSrs + " / " + MURPHY_UNITS.length + " thẻ";
+
+  if (gridEl) {
+    gridEl.innerHTML = MURPHY_UNITS.map(function(u) {
+      var isDone = appState.completedUnits.indexOf(u.id) !== -1;
+      var srsInfo = appState.srsRecords[u.id];
+      return '<div onclick="switchTab(\'lessons\'); navigateToUnit(' + u.id + ');" class="cursor-pointer bg-slate-950 border ' + (isDone ? "border-emerald-500/50" : "border-slate-700") + ' rounded-xl p-3 hover:border-sky-400 transition">' +
+               '<div class="flex items-center justify-between text-xs font-bold mb-1">' +
+                 '<span class="text-amber-400">' + u.code + '</span>' +
+                 '<span>' + (isDone ? "✅ Hoàn thành" : "⏳ Đang học") + '</span>' +
+               '</div>' +
+               '<div class="text-xs font-semibold text-white line-clamp-1">' + u.viTitle + '</div>' +
+               '<div class="text-[11px] text-slate-400 mt-1">SRS: ' + (srsInfo ? srsInfo.nextLabel : "Chưa ôn") + '</div>' +
+             '</div>';
+    }).join("");
+  }
+}
+
+function exportProgressReport() {
+  var report = "MurphyMaster Pro — Báo cáo học tập:\n" +
+    "- Điểm XP: " + appState.xp + "\n" +
+    "- Hoàn thành: " + appState.completedUnits.length + "/" + MURPHY_UNITS.length + " Units\n" +
+    "- Chuỗi ngày học: " + appState.streak + " ngày";
+  var ta = document.createElement("textarea");
+  ta.value = report;
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand("copy");
+    showToast("📋 Đã sao chép báo cáo tiến độ vào bộ nhớ tạm!");
+  } catch (e) {
+    showToast("Không thể sao chép tự động.");
+  }
+  document.body.removeChild(ta);
+}
+
+function resetAllProgress() {
+  appState.xp = 0;
+  appState.completedUnits = [];
+  appState.srsRecords = {};
+  appState.audioBookmark = null;
+  saveAppState();
+  renderUnitSidebar();
+  renderLessonDetail(appState.currentUnitId);
+  renderSrsCard();
+  renderProgressDashboard();
+  showToast("🗑️ Đã đặt lại toàn bộ tiến độ học tập.");
+}
+
+/* ==========================================================================
+   13. INITIALIZATION ON DOMContentLoaded
+   ========================================================================== */
+document.addEventListener("DOMContentLoaded", function() {
+  loadSavedState();
+  updateHeaderAndProgressUI();
+  renderUnitSidebar();
+  renderLessonDetail(appState.currentUnitId);
+  populateQuizUnitDropdown();
+  startNewQuiz();
+  loadSentenceBuilder();
+  initSpeedMatch();
+  renderPronunciationLab();
+  renderSrsCard();
+  renderProgressDashboard();
+
   if ("speechSynthesis" in window) {
     window.speechSynthesis.getVoices();
     setTimeout(populateVoiceSelectors, 300);
