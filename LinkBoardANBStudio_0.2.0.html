@@ -1,0 +1,3984 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>LinkBoard ANB Studio 0.2.0 — Diagram & Intelligence Analysis</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- SheetJS for Excel (.xlsx / .xls / .csv) Import & Relational Export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- jsPDF for direct multi-resolution PDF export -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-canvas: #f8fafc;
+      --grid-dot: #cbd5e1;
+      --panel-bg: #ffffff;
+      --panel-border: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --accent: #2563eb;
+    }
+    body.dark-theme {
+      --bg-canvas: #0b1120;
+      --grid-dot: #1e293b;
+      --panel-bg: #0f172a;
+      --panel-border: #1e293b;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --accent: #3b82f6;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      user-select: none;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Canvas Viewport */
+    #canvas-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      touch-action: none;
+      background-color: var(--bg-canvas);
+    }
+    svg#diagram-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: default;
+    }
+    svg#diagram-svg.mode-pan {
+      cursor: grab;
+    }
+    svg#diagram-svg.mode-pan.panning {
+      cursor: grabbing;
+    }
+    svg#diagram-svg.mode-link,
+    svg#diagram-svg.mode-add-entity,
+    svg#diagram-svg.mode-add-text {
+      cursor: crosshair;
+    }
+
+    /* CRITICAL FIX: Waypoint Hover Stability (NO transform/scale changes that shift bounding box & cause jitter!) */
+    .waypoint-handle {
+      cursor: move;
+      transition: fill 0.12s ease, stroke 0.12s ease, stroke-width 0.12s ease;
+    }
+    .waypoint-handle:hover {
+      fill: #f59e0b;
+      stroke: #ffffff;
+      stroke-width: 3px;
+    }
+
+    .link-hit-area {
+      fill: none;
+      stroke: transparent;
+      stroke-width: 18px;
+      cursor: pointer;
+    }
+    .link-visible-path {
+      fill: none;
+      transition: stroke-opacity 0.15s ease;
+      pointer-events: none;
+    }
+    .link-group.selected .link-visible-path {
+      filter: drop-shadow(0 0 4px rgba(37, 99, 235, 0.45));
+    }
+    .entity-group {
+      cursor: move;
+    }
+    .entity-group.locked,
+    .textbox-group.locked {
+      cursor: not-allowed;
+    }
+    .resize-handle {
+      fill: #ffffff;
+      stroke: #2563eb;
+      stroke-width: 2px;
+      cursor: nwse-resize;
+    }
+    .rotate-handle {
+      fill: #10b981;
+      stroke: #ffffff;
+      stroke-width: 2px;
+      cursor: grab;
+    }
+    .link-label-group {
+      cursor: move;
+    }
+    .link-label-group:hover rect.label-pill {
+      stroke: #2563eb;
+      stroke-width: 1.5px;
+    }
+
+    /* Floating Context Menu */
+    #context-menu {
+      position: fixed;
+      z-index: 1000;
+      min-width: 230px;
+      max-width: 290px;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.22);
+      padding: 6px;
+      display: none;
+      font-size: 13px;
+      color: var(--text-primary);
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    .ctx-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+      padding: 7px 10px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .ctx-item:hover {
+      background: rgba(37, 99, 235, 0.1);
+      color: #2563eb;
+    }
+    .ctx-item.danger:hover {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+    }
+    .ctx-divider {
+      height: 1px;
+      background: var(--panel-border);
+      margin: 4px 0;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 999px;
+    }
+
+    /* Print optimization */
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body, #canvas-container {
+        background: #ffffff !important;
+      }
+    }
+  </style>
+</head>
+<body class="flex flex-col h-screen w-screen overflow-hidden">
+
+  <!-- TOP HEADER & PRIMARY TOOLBAR -->
+  <header class="no-print flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-b z-30 shrink-0" style="background: var(--panel-bg); border-color: var(--panel-border);">
+    <!-- Brand & Project Title -->
+    <div class="flex items-center gap-2 min-w-0">
+      <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold shadow-sm shrink-0">
+        ANB
+      </div>
+      <div class="min-w-0">
+        <input id="project-title-input" type="text" value="Sơ đồ Điều tra Liên kết #01"
+          class="font-semibold text-sm bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 rounded px-1.5 py-0.5 outline-none w-40 sm:w-56 truncate" />
+        <div class="text-[11px] opacity-65 px-1.5 flex items-center gap-2">
+          <span id="autosave-status">Đã lưu tự động</span>
+          <span>•</span>
+          <span id="stats-badge">7 thực thể • 7 liên kết</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core Interaction Tools -->
+    <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200/70 dark:border-slate-700 overflow-x-auto max-w-full">
+      <button data-tool="select" onclick="setTool('select')" title="Chọn & Di chuyển / Quét vùng (V)"
+        class="tool-btn active flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-blue-600 text-white shadow-sm">
+        <span>↖</span><span class="hidden md:inline">Chọn</span>
+      </button>
+      <button data-tool="pan" onclick="setTool('pan')" title="Kéo nền / Di chuyển vùng nhìn (Space / H)"
+        class="tool-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium hover:bg-white/60">
+        <span>✋</span><span class="hidden md:inline">Kéo nền</span>
+      </button>
+      <button data-tool="add-entity" onclick="setTool('add-entity')" title="Thêm Thực thể mới (E)"
+        class="tool-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium hover:bg-white/60">
+        <span>➕</span><span class="hidden sm:inline">Thực thể</span>
+      </button>
+      <button data-tool="link" onclick="setTool('link')" title="Vẽ Liên kết nhiều đoạn (L): Nhấp nguồn -> Nhấp các điểm uốn -> Nhấp đích"
+        class="tool-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium hover:bg-white/60">
+        <span>🔗</span><span class="hidden sm:inline">Vẽ Liên kết</span>
+      </button>
+      <button data-tool="add-text" onclick="setTool('add-text')" title="Thêm Nhãn / Hộp văn bản (T)"
+        class="tool-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium hover:bg-white/60">
+        <span>📝</span><span class="hidden md:inline">Nhãn Text</span>
+      </button>
+      <div class="h-5 w-px bg-slate-300 mx-0.5"></div>
+      <button onclick="undo()" title="Hoàn tác (Ctrl+Z)" class="px-2 py-1.5 rounded-lg text-xs hover:bg-white/60">↩️</button>
+      <button onclick="redo()" title="Làm lại (Ctrl+Y)" class="px-2 py-1.5 rounded-lg text-xs hover:bg-white/60">↪️</button>
+    </div>
+
+    <!-- Templates, Mermaid, Excel, Library, Export & Theme -->
+    <div class="flex items-center gap-1.5 overflow-x-auto">
+      <!-- Analytical Templates Dropdown -->
+      <div class="relative">
+        <button onclick="toggleDropdown('templates-menu')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 flex items-center gap-1">
+          <span>📐</span><span>Mẫu Phân tích</span><span>▾</span>
+        </button>
+        <div id="templates-menu" class="hidden fixed right-auto mt-1.5 w-72 rounded-xl shadow-xl border p-1.5 z-50" style="background: var(--panel-bg); border-color: var(--panel-border);">
+          <div class="px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider opacity-60">Mô hình Nghiệp vụ & Điều tra</div>
+          <button onclick="loadTemplate('anb_default')" class="ctx-item">
+            <div>
+              <div class="font-semibold">🕵️ Sơ đồ Liên kết ANB (Mẫu chuẩn)</div>
+              <div class="text-[11px] opacity-70">Đối tượng, SĐT, Phương tiện, Công ty, Địa điểm</div>
+            </div>
+          </button>
+          <button onclick="loadTemplate('crime_triangle')" class="ctx-item">
+            <div>
+              <div class="font-semibold">🔺 Tam giác Tội phạm (Crime Triangle)</div>
+              <div class="text-[11px] opacity-70">Đối tượng - Nạn nhân - Địa điểm & Lớp kiểm soát</div>
+            </div>
+          </button>
+          <button onclick="loadTemplate('crime_script')" class="ctx-item">
+            <div>
+              <div class="font-semibold">🎬 Kịch bản Tội phạm (Crime Script 7 bước)</div>
+              <div class="text-[11px] opacity-70">Chuẩn bị → Tiếp cận → Thực hiện → Rút lui & Điểm chặn</div>
+            </div>
+          </button>
+          <button onclick="loadTemplate('sara_model')" class="ctx-item">
+            <div>
+              <div class="font-semibold">🔄 Mô hình Phân tích SARA</div>
+              <div class="text-[11px] opacity-70">Scanning → Analysis → Response → Assessment</div>
+            </div>
+          </button>
+          <div class="ctx-divider"></div>
+          <button onclick="clearDiagramConfirm()" class="ctx-item danger">
+            <span>🗑️ Xóa trắng bảng vẽ (Canvas mới)</span>
+          </button>
+        </div>
+      </div>
+
+      <button onclick="toggleDrawer('mermaid-drawer')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium border hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1" style="border-color: var(--panel-border);">
+        <span>🧜‍♀️</span><span class="hidden sm:inline">Mermaid</span>
+      </button>
+
+      <!-- Excel Import / Export -->
+      <div class="relative">
+        <button onclick="toggleDropdown('excel-menu')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 flex items-center gap-1">
+          <span>📊</span><span class="hidden sm:inline">Excel I2</span><span>▾</span>
+        </button>
+        <div id="excel-menu" class="hidden fixed right-4 sm:right-auto mt-1.5 w-64 rounded-xl shadow-xl border p-1.5 z-50" style="background: var(--panel-bg); border-color: var(--panel-border);">
+          <button onclick="triggerExcelImport()" class="ctx-item">
+            <span>📥 Nhập từ Excel / CSV (tự dựng ANB)</span>
+          </button>
+          <button onclick="downloadSampleExcel()" class="ctx-item">
+            <span>📄 Tải file Excel mẫu nhập liệu</span>
+          </button>
+          <div class="ctx-divider"></div>
+          <button onclick="exportRelationalExcel()" class="ctx-item">
+            <span>📤 Xuất Excel Quan hệ (.xlsx)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Save / Saved Library -->
+      <button onclick="openLibraryModal()" class="px-2.5 py-1.5 rounded-lg text-xs font-medium border hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1" style="border-color: var(--panel-border);">
+        <span>💾</span><span class="hidden md:inline">Kho Sơ đồ</span>
+      </button>
+
+      <!-- Export Menu -->
+      <div class="relative">
+        <button onclick="toggleDropdown('export-menu')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1 shadow-sm">
+          <span>📤</span><span>Xuất file</span><span>▾</span>
+        </button>
+        <div id="export-menu" class="hidden fixed right-3 mt-1.5 w-56 rounded-xl shadow-xl border p-1.5 z-50" style="background: var(--panel-bg); border-color: var(--panel-border);">
+          <button onclick="exportSVG()" class="ctx-item"><span>✒️ Xuất ảnh Vector (SVG)</span></button>
+          <button onclick="exportRaster('png')" class="ctx-item"><span>🖼️ Xuất ảnh sắc nét (PNG)</span></button>
+          <button onclick="exportRaster('jpeg')" class="ctx-item"><span>📷 Xuất ảnh nén (JPG)</span></button>
+          <button onclick="exportPDF()" class="ctx-item"><span>📕 Xuất tài liệu (PDF)</span></button>
+          <div class="ctx-divider"></div>
+          <button onclick="exportJSON()" class="ctx-item"><span>📦 Lưu file dự án (.json)</span></button>
+          <button onclick="triggerJSONImport()" class="ctx-item"><span>📂 Mở file dự án (.json)</span></button>
+        </div>
+      </div>
+
+      <button onclick="toggleTheme()" title="Đổi giao diện Sáng / Tối" class="p-1.5 rounded-lg border text-xs hover:bg-slate-100 dark:hover:bg-slate-800" style="border-color: var(--panel-border);">
+        <span id="theme-icon">🌙</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- SECONDARY CONTEXTUAL QUICK-ACTION BAR (Adapts to Selected Object / Link Drawing State) -->
+  <div id="quick-action-bar" class="no-print flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 border-b text-xs z-20 shrink-0" style="background: var(--panel-bg); border-color: var(--panel-border);">
+    <div id="quick-bar-content" class="flex flex-wrap items-center gap-1.5 overflow-x-auto">
+      <span class="opacity-70">💡 Mẹo: <b>1-Click</b> chọn • <b>Kéo</b> di chuyển • <b>Double-Click / Chuột phải</b> mở Menu tắt & Sửa • <b>Double-Click lên dây</b> thêm điểm uốn mềm.</span>
+    </div>
+    <div class="flex items-center gap-1.5 shrink-0">
+      <button onclick="togglePanel('layers-panel')" class="px-2 py-1 rounded-md border hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1" style="border-color: var(--panel-border);">
+        <span>📑</span><span>Lớp (<span id="layer-count">1</span>)</span>
+      </button>
+      <button onclick="togglePanel('palette-panel')" class="px-2 py-1 rounded-md border hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1" style="border-color: var(--panel-border);">
+        <span>🎨</span><span>Bảng màu</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN WORKSPACE -->
+  <div class="relative flex-1 flex overflow-hidden">
+    <!-- Left Entity Quick-Stencils Dock (Collapsible on Mobile) -->
+    <aside class="no-print flex flex-col items-center gap-1.5 p-1.5 border-r z-20 shrink-0 overflow-y-auto" style="background: var(--panel-bg); border-color: var(--panel-border);">
+      <div class="text-[10px] font-bold uppercase opacity-50 pt-1">Thêm nhanh</div>
+      <button onclick="quickSpawnEntity('person_male')" title="Nam giới" class="w-10 h-10 rounded-xl border flex flex-col items-center justify-center hover:border-blue-500 hover:bg-blue-50/50 transition" style="border-color: var(--panel-border);">
+        <span class="text-base leading-none">👨</span>
+        <span class="text-[9px] mt-0.5 opacity-75">Nam</span>
+      </button>
+      <button onclick="quickSpawnEntity('person_female')" title="Nữ giới" class="w-10 h-10 rounded-xl border flex flex-col items-center justify-center hover:border-blue-500 hover:bg-blue-50/50 transition" style="border-color: var(--panel-border);">
+        <span class="text-base leading-none">👩</span>
+        <span class="text-[9px] mt-0.5 opacity-75">Nữ</span>
+      </button>
+      <button onclick="quickSpawnEntity('person_anon')" title="Ẩn danh / Chưa rõ giới tính" class="w-10 h-10 rounded-xl border flex flex-col items-center justify-center hover:border-amber-500 hover:bg-amber-50/50 transition" style="border-color: var(--panel-border);">
+        <span class="text-base leading-none">👤</span>
+        <span class="text-[9px] mt-0.5 opacity-75">Ẩn danh</span>
+      </button>
+      <button onclick="quickSpawnEntity('phone')" title="Số điện thoại" class="w-10 h-10 rounded-xl border flex flex-col items-center justify-center hover:border-emerald-500 hover:bg-emerald-50/50 transition" style="border-color: var(--panel-border);">
+        <span class="text-base leading-none">📱</span>
+        <span class="text-[9px] mt-0.5 opacity-75">SĐT</span>
+      </button>
+      <button onclick="quickSpawnEntity('vehicle')" title="Phương tiện" class="w-10 h-10 rounded-xl border flex flex-col items-center justify-center hover:border-amber-500 hover:bg-amber-50/50 transition" style="border-color: var(--panel-border);">
+        <span class="text-base leading-none">🚗</span>
+        <span class="text-[9px] mt-0.5 opacity-75">Xe</span>
+      </button>
+      <button onclick="quickSpawnEntity('location')" title="Địa điểm" class="w-10 h-10 rounded-xl border flex flex-col items-center justify-center hover:border-rose-500 hover:bg-rose-50/50 transition" style="border-color: var(--panel-border);">
+        <span class="text-base leading-none">📍</span>
+        <span class="text-[9px] mt-0.5 opacity-75">Địa điểm</span>
+      </button>
+      <button onclick="quickSpawnEntity('org')" title="Tổ chức / Công ty" class="w-10 h-10 rounded-xl border flex flex-col items-center justify-center hover:border-purple-500 hover:bg-purple-50/50 transition" style="border-color: var(--panel-border);">
+        <span class="text-base leading-none">🏢</span>
+        <span class="text-[9px] mt-0.5 opacity-75">Tổ chức</span>
+      </button>
+      <button onclick="quickSpawnEntity('bank')" title="Tài khoản / Giao dịch" class="w-10 h-10 rounded-xl border flex flex-col items-center justify-center hover:border-cyan-500 hover:bg-cyan-50/50 transition" style="border-color: var(--panel-border);">
+        <span class="text-base leading-none">💳</span>
+        <span class="text-[9px] mt-0.5 opacity-75">Tài khoản</span>
+      </button>
+      <button onclick="quickSpawnTextbox()" title="Hộp văn bản / Ghi chú" class="w-10 h-10 rounded-xl border flex flex-col items-center justify-center hover:border-slate-500 hover:bg-slate-100 transition" style="border-color: var(--panel-border);">
+        <span class="text-base leading-none">🏷️</span>
+        <span class="text-[9px] mt-0.5 opacity-75">Text</span>
+      </button>
+    </aside>
+
+    <!-- INTERACTIVE SVG DIAGRAM CANVAS -->
+    <main id="canvas-container" class="flex-1 relative">
+      <svg id="diagram-svg" xmlns="http://www.w3.org/2000/svg">
+        <defs id="svg-defs">
+          <!-- Subtle Dot Grid -->
+          <pattern id="dot-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1.1" fill="var(--grid-dot)" />
+          </pattern>
+          <!-- Drop Shadow Filter -->
+          <filter id="card-shadow" x="-15%" y="-15%" width="130%" height="130%">
+            <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#0f172a" flood-opacity="0.08" />
+          </filter>
+          <!-- Dynamic Markers Container populated by JS -->
+        </defs>
+
+        <!-- Background Grid Rect -->
+        <rect id="canvas-bg-rect" x="-10000" y="-10000" width="20000" height="20000" fill="url(#dot-grid)" />
+
+        <!-- Main Pan/Zoom Viewport Group -->
+        <g id="viewport-group">
+          <g id="layer-links"></g>
+          <g id="layer-entities"></g>
+          <g id="layer-textboxes"></g>
+          <g id="layer-overlays"></g>
+        </g>
+      </svg>
+
+      <!-- Active Link Drawing Banner -->
+      <div id="link-drawing-banner" class="hidden no-print absolute top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg text-xs font-medium flex items-center gap-3 z-30">
+        <span id="link-banner-text">🔗 Nhấp vào vùng trống để tạo điểm uốn, hoặc nhấp vào Thực thể đích để hoàn tất</span>
+        <button onclick="finishOrCancelLinkDrawing(true)" class="bg-white/20 hover:bg-white/30 px-2.5 py-0.5 rounded-full">Hủy (Esc)</button>
+      </div>
+
+      <!-- Bottom-Right Zoom & Navigation Controls -->
+      <div class="no-print absolute bottom-3 right-3 flex items-center gap-1 p-1 rounded-xl border shadow-md z-20" style="background: var(--panel-bg); border-color: var(--panel-border);">
+        <button onclick="zoomBy(0.85)" title="Thu nhỏ (-)" class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-sm">−</button>
+        <button id="zoom-level-btn" onclick="resetZoom()" title="Đặt lại 100%" class="px-2 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold mono">100%</button>
+        <button onclick="zoomBy(1.18)" title="Phóng to (+)" class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-sm">+</button>
+        <div class="w-px h-5 bg-slate-300 mx-0.5"></div>
+        <button onclick="fitToScreen()" title="Vừa màn hình" class="px-2.5 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium">⊡ Vừa khung</button>
+        <button onclick="toggleGrid()" title="Ẩn/Hiện lưới nền" class="px-2 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs">⊞</button>
+      </div>
+
+      <!-- Floating Layers Panel -->
+      <div id="layers-panel" class="hidden no-print absolute top-3 right-3 w-64 rounded-xl border shadow-xl p-3 z-30 text-xs" style="background: var(--panel-bg); border-color: var(--panel-border);">
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-bold text-sm">📑 Quản lý Lớp (Layers)</span>
+          <button onclick="togglePanel('layers-panel')" class="opacity-60 hover:opacity-100">✕</button>
+        </div>
+        <div id="layers-list" class="space-y-1.5 max-h-56 overflow-y-auto mb-2"></div>
+        <button onclick="addLayer()" class="w-full py-1.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700">+ Thêm lớp mới</button>
+      </div>
+
+      <!-- Floating Color Palettes Panel -->
+      <div id="palette-panel" class="hidden no-print absolute top-3 right-3 w-72 rounded-xl border shadow-xl p-3 z-30 text-xs" style="background: var(--panel-bg); border-color: var(--panel-border);">
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-bold text-sm">🎨 Bảng màu Định sẵn</span>
+          <button onclick="togglePanel('palette-panel')" class="opacity-60 hover:opacity-100">✕</button>
+        </div>
+        <p class="opacity-70 mb-2">Áp dụng nhanh cho đối tượng đang chọn hoặc toàn bộ sơ đồ:</p>
+        <div id="palette-presets-list" class="space-y-2 max-h-64 overflow-y-auto"></div>
+      </div>
+    </main>
+
+    <!-- MERMAID.JS LIVE CODE DRAWER -->
+    <aside id="mermaid-drawer" class="hidden no-print w-full sm:w-96 border-l flex flex-col z-30 shrink-0" style="background: var(--panel-bg); border-color: var(--panel-border);">
+      <div class="flex items-center justify-between px-3 py-2.5 border-b" style="border-color: var(--panel-border);">
+        <div class="font-bold text-sm flex items-center gap-1.5">
+          <span>🧜‍♀️</span><span>Mã nguồn Mermaid.js</span>
+        </div>
+        <button onclick="toggleDrawer('mermaid-drawer')" class="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-xs">✕ Đóng</button>
+      </div>
+      <div class="p-3 flex-1 flex flex-col gap-2 overflow-hidden">
+        <div class="text-[11px] opacity-75">
+          Đồng bộ 2 chiều: Dùng <code class="mono bg-slate-100 dark:bg-slate-800 px-1 rounded">--></code> cho liên kết Xác nhận (Confirm) và <code class="mono bg-slate-100 dark:bg-slate-800 px-1 rounded">-.-></code> cho Chưa xác nhận (Unconfirm).
+        </div>
+        <textarea id="mermaid-code-textarea" spellcheck="false"
+          class="flex-1 w-full p-2.5 rounded-xl border mono text-xs leading-relaxed outline-none focus:border-blue-500 resize-none"
+          style="background: var(--bg-canvas); border-color: var(--panel-border); color: var(--text-primary);"></textarea>
+        <div class="flex gap-2">
+          <button onclick="applyMermaidToCanvas()" class="flex-1 py-2 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700">
+            ⚡ Cập nhật lên Sơ đồ
+          </button>
+          <button onclick="copyMermaidCode()" class="px-3 py-2 rounded-lg border text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-800" style="border-color: var(--panel-border);">
+            📋 Copy
+          </button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- FLOATING CONTEXT / SHORTCUT MENU (Right-Click or Double-Click) -->
+  <div id="context-menu" class="no-print"></div>
+
+  <!-- EDIT MODAL (For Entity, Link, or Textbox) -->
+  <div id="edit-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-3">
+    <div class="w-full max-w-lg rounded-2xl border shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" style="background: var(--panel-bg); border-color: var(--panel-border);">
+      <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color: var(--panel-border);">
+        <h3 id="edit-modal-title" class="font-bold text-base">Chỉnh sửa Đối tượng</h3>
+        <button onclick="closeEditModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center">✕</button>
+      </div>
+      <div id="edit-modal-body" class="p-4 overflow-y-auto space-y-3 text-xs"></div>
+      <div class="flex items-center justify-end gap-2 px-4 py-3 border-t" style="border-color: var(--panel-border);">
+        <button onclick="closeEditModal()" class="px-3.5 py-2 rounded-xl border font-medium hover:bg-slate-100 dark:hover:bg-slate-800" style="border-color: var(--panel-border);">Hủy</button>
+        <button onclick="saveEditModal()" class="px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 shadow-sm">Lưu thay đổi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAVED DIAGRAMS LIBRARY MODAL -->
+  <div id="library-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-3">
+    <div class="w-full max-w-xl rounded-2xl border shadow-2xl overflow-hidden flex flex-col max-h-[85vh]" style="background: var(--panel-bg); border-color: var(--panel-border);">
+      <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color: var(--panel-border);">
+        <h3 class="font-bold text-base">💾 Kho Lưu trữ Sơ đồ (Trình duyệt)</h3>
+        <button onclick="closeLibraryModal()" class="w-7 h-7 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center">✕</button>
+      </div>
+      <div class="p-4 overflow-y-auto space-y-3 text-xs">
+        <div class="flex gap-2">
+          <button onclick="saveCurrentToLibrary()" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700">
+            💾 Lưu sơ đồ hiện tại vào Kho
+          </button>
+        </div>
+        <div id="saved-diagrams-list" class="space-y-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-box" class="hidden no-print fixed bottom-14 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-4 py-2 rounded-full shadow-lg text-xs font-medium z-50 transition-opacity"></div>
+
+  <!-- Hidden File Inputs -->
+  <input id="excel-file-input" type="file" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleExcelFileUpload(event)" />
+  <input id="json-file-input" type="file" accept=".json" class="hidden" onchange="handleJSONFileUpload(event)" />
+  <input id="entity-image-input" type="file" accept="image/*" class="hidden" onchange="handleEntityImageUpload(event)" />
+
+  <script>
+    /*************************************************************************
+     * LINKBOARD ANB STUDIO — 0.2.0 STABILIZATION BUILD
+     *************************************************************************/
+
+    const STORAGE_KEY_AUTOSAVE = 'linkboard_anb_autosave_v2';
+    const STORAGE_KEY_LIBRARY = 'linkboard_anb_library_v2';
+
+    // Security and persistence helpers (0.2.0)
+    const PROJECT_SCHEMA_VERSION = 2;
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>\"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#39;'
+      })[ch]);
+    }
+    function safeLocalStorageGet(key, fallback = null) {
+      try { return localStorage.getItem(key) ?? fallback; } catch (_) { return fallback; }
+    }
+    function safeLocalStorageSet(key, value) {
+      try { localStorage.setItem(key, value); return true; } catch (_) { return false; }
+    }
+    function validateProjectData(data) {
+      if (!data || typeof data !== 'object' || Array.isArray(data)) return 'Cấu trúc dự án không hợp lệ.';
+      if (!Array.isArray(data.entities) || !Array.isArray(data.links)) return 'Dự án phải có danh sách thực thể và liên kết.';
+      if (data.layers !== undefined && !Array.isArray(data.layers)) return 'Danh sách lớp không hợp lệ.';
+      if (data.textboxes !== undefined && !Array.isArray(data.textboxes)) return 'Danh sách hộp văn bản không hợp lệ.';
+      const ids = new Set();
+      for (const entity of data.entities) {
+        if (!entity || typeof entity !== 'object' || typeof entity.id !== 'string' || !entity.id.trim()) return 'Có thực thể thiếu mã định danh.';
+        if (ids.has(entity.id)) return 'Phát hiện mã thực thể bị trùng: ' + entity.id;
+        ids.add(entity.id);
+        if (![entity.x, entity.y].every(Number.isFinite)) return 'Tọa độ thực thể không hợp lệ: ' + entity.id;
+      }
+      const linkIds = new Set();
+      for (const link of data.links) {
+        if (!link || typeof link !== 'object' || typeof link.id !== 'string' || !link.id.trim()) return 'Có liên kết thiếu mã định danh.';
+        if (linkIds.has(link.id)) return 'Phát hiện mã liên kết bị trùng: ' + link.id;
+        linkIds.add(link.id);
+        if (!ids.has(link.source) || !ids.has(link.target)) return 'Liên kết ' + link.id + ' đang trỏ tới thực thể không tồn tại.';
+        if (link.waypoints !== undefined && (!Array.isArray(link.waypoints) || link.waypoints.some(w => !w || !Number.isFinite(w.x) || !Number.isFinite(w.y)))) return 'Điểm uốn của liên kết không hợp lệ: ' + link.id;
+      }
+      if (data.textboxes?.some(t => !t || typeof t.id !== 'string')) return 'Hộp văn bản không hợp lệ.';
+      return null;
+    }
+
+    const COLOR_PALETTES = [
+      {
+        id: 'anb_classic',
+        name: 'ANB Điều tra Chuẩn (Mặc định)',
+        entityStroke: '#2563eb',
+        entityFill: '#ffffff',
+        labelStroke: '#93c5fd',
+        linkColor: '#1e293b',
+        unconfirmedColor: '#d97706',
+        textColor: '#0f172a'
+      },
+      {
+        id: 'crime_alert',
+        name: 'Cảnh báo Rủi ro / Trọng điểm',
+        entityStroke: '#dc2626',
+        entityFill: '#fef2f2',
+        labelStroke: '#fca5a5',
+        linkColor: '#991b1b',
+        unconfirmedColor: '#ea580c',
+        textColor: '#450a0a'
+      },
+      {
+        id: 'emerald_intel',
+        name: 'Tình báo Viễn thông / Tài chính',
+        entityStroke: '#059669',
+        entityFill: '#ecfdf5',
+        labelStroke: '#6ee7b7',
+        linkColor: '#065f46',
+        unconfirmedColor: '#0284c7',
+        textColor: '#064e3b'
+      },
+      {
+        id: 'royal_org',
+        name: 'Pháp nhân & Tổ chức Doanh nghiệp',
+        entityStroke: '#7c3aed',
+        entityFill: '#f5f3ff',
+        labelStroke: '#c4b5fd',
+        linkColor: '#4c1d95',
+        unconfirmedColor: '#db2777',
+        textColor: '#2e1065'
+      },
+      {
+        id: 'high_contrast',
+        name: 'In ấn Đen Trắng Tương phản cao',
+        entityStroke: '#0f172a',
+        entityFill: '#ffffff',
+        labelStroke: '#475569',
+        linkColor: '#0f172a',
+        unconfirmedColor: '#475569',
+        textColor: '#000000'
+      }
+    ];
+
+    const EMOJI_PRESETS = [
+      '👨', '👩', '👤', '🕵️', '👮', '👨‍💼', '👩‍💼', '🧔',
+      '📱', '☎️', '💻', '🚗', '🏍️', '🚚', '📍', '🏠',
+      '🏢', '🏭', '🏦', '💳', '💰', '📦', '📄', '⚠️',
+      '🎯', '🛡️', '👁️', '🔑', '🔗', '⏱️', '🚨', '⚖️'
+    ];
+
+    // Core Application State
+    let state = {
+      title: 'Sơ đồ Điều tra Liên kết #01',
+      tool: 'select', // 'select' | 'pan' | 'add-entity' | 'link' | 'add-text'
+      theme: 'light',
+      showGrid: true,
+      viewport: { x: 0, y: 0, scale: 1 },
+      layers: [
+        { id: 'layer_1', name: 'Lớp Chính (Đối tượng & Quan hệ)', visible: true, locked: false }
+      ],
+      activeLayerId: 'layer_1',
+      entities: [],
+      links: [],
+      textboxes: [],
+      selection: {
+        type: null, // 'entity' | 'link' | 'textbox' | 'multi'
+        ids: []
+      },
+      // Multi-segment interactive link creation state
+      linkDraft: null // { sourceId, waypoints: [{x, y}], cursor: {x, y} }
+    };
+
+    let historyStack = [];
+    let redoStack = [];
+    let pendingImageUploadEntityId = null;
+    let currentEditTarget = null;
+
+    // Pointer / Interaction State
+    let interaction = {
+      mode: null, // 'pan' | 'drag-entities' | 'drag-waypoint' | 'drag-link-label' | 'drag-textbox' | 'resize' | 'rotate' | 'marquee'
+      startScreen: { x: 0, y: 0 },
+      startCanvas: { x: 0, y: 0 },
+      initialPositions: {},
+      targetId: null,
+      waypointIndex: -1,
+      marqueeRect: null,
+      spacePressed: false
+    };
+
+    /*************************************************************************
+     * INITIALIZATION & SAMPLE TEMPLATES
+     *************************************************************************/
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = safeLocalStorageGet(STORAGE_KEY_AUTOSAVE);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (!validateProjectData(parsed)) {
+            state = Object.assign(state, parsed);
+          } else {
+            loadTemplate('anb_default', true);
+          }
+        } catch (e) {
+          loadTemplate('anb_default', true);
+        }
+      } else {
+        loadTemplate('anb_default', true);
+      }
+
+      document.getElementById('project-title-input').value = state.title || 'Sơ đồ Điều tra Liên kết #01';
+      document.getElementById('project-title-input').addEventListener('input', (e) => {
+        state.title = e.target.value;
+        scheduleAutosave();
+      });
+
+      renderPalettePresets();
+      setupPointerEvents();
+      setupKeyboardEvents();
+      renderAll();
+      syncCanvasToMermaid();
+    });
+
+    function createAnbDefaultData() {
+      return {
+        title: 'Sơ đồ Điều tra Liên kết #01',
+        layers: [
+          { id: 'layer_1', name: 'Đối tượng & Quan hệ chính', visible: true, locked: false },
+          { id: 'layer_2', name: 'Nghi vấn & Tài sản liên quan', visible: true, locked: false }
+        ],
+        activeLayerId: 'layer_1',
+        entities: [
+          {
+            id: 'e_phone',
+            name: '0912.345.678',
+            subtitle: 'Nhà mạng: Vinaphone',
+            type: 'phone',
+            shape: 'circle',
+            icon: '📱',
+            imageUrl: '',
+            x: 170,
+            y: 120,
+            width: 72,
+            height: 72,
+            rotation: 0,
+            strokeColor: '#059669',
+            fillColor: '#ffffff',
+            labelBorderColor: '#3b82f6',
+            textColor: '#0f172a',
+            confirmed: true,
+            locked: false,
+            layerId: 'layer_1'
+          },
+          {
+            id: 'e_hung',
+            name: 'Nguyễn Văn Hùng',
+            subtitle: 'CCCD: 00108500xxxx\nVai trò: Đối tượng chính',
+            type: 'person_male',
+            shape: 'circle',
+            icon: '👨',
+            imageUrl: '',
+            x: 490,
+            y: 265,
+            width: 76,
+            height: 76,
+            rotation: 0,
+            strokeColor: '#2563eb',
+            fillColor: '#ffffff',
+            labelBorderColor: '#cbd5e1',
+            textColor: '#0f172a',
+            confirmed: true,
+            locked: false,
+            layerId: 'layer_1'
+          },
+          {
+            id: 'e_mai',
+            name: 'Trần Thị Mai',
+            subtitle: 'Vai trò: Kế toán',
+            type: 'person_female',
+            shape: 'circle',
+            icon: '👩',
+            imageUrl: '',
+            x: 645,
+            y: 265,
+            width: 76,
+            height: 76,
+            rotation: 0,
+            strokeColor: '#2563eb',
+            fillColor: '#ffffff',
+            labelBorderColor: '#cbd5e1',
+            textColor: '#0f172a',
+            confirmed: true,
+            locked: false,
+            layerId: 'layer_1'
+          },
+          {
+            id: 'e_anon',
+            name: 'Nhân vật Ẩn danh #3',
+            subtitle: 'Ghi chú: Chưa rõ giới tính',
+            type: 'person_anon',
+            shape: 'circle',
+            icon: '👤',
+            imageUrl: '',
+            x: 890,
+            y: 265,
+            width: 76,
+            height: 76,
+            rotation: 0,
+            strokeColor: '#d97706',
+            fillColor: '#ffffff',
+            labelBorderColor: '#cbd5e1',
+            textColor: '#0f172a',
+            confirmed: true,
+            locked: false,
+            layerId: 'layer_2'
+          },
+          {
+            id: 'e_car',
+            name: '30H-886.68',
+            subtitle: 'Hiệu xe: Toyota Camry',
+            type: 'vehicle',
+            shape: 'circle',
+            icon: '🚗',
+            imageUrl: '',
+            x: 645,
+            y: 470,
+            width: 74,
+            height: 74,
+            rotation: 0,
+            strokeColor: '#d97706',
+            fillColor: '#ffffff',
+            labelBorderColor: '#cbd5e1',
+            textColor: '#0f172a',
+            confirmed: true,
+            locked: false,
+            layerId: 'layer_2'
+          },
+          {
+            id: 'e_addr',
+            name: '120 Cầu Giấy, HN',
+            subtitle: 'Loại: Văn phòng',
+            type: 'location',
+            shape: 'circle',
+            icon: '📍',
+            imageUrl: '',
+            x: 890,
+            y: 470,
+            width: 74,
+            height: 74,
+            rotation: 0,
+            strokeColor: '#dc2626',
+            fillColor: '#ffffff',
+            labelBorderColor: '#cbd5e1',
+            textColor: '#0f172a',
+            confirmed: true,
+            locked: false,
+            layerId: 'layer_1'
+          },
+          {
+            id: 'e_company',
+            name: 'Công ty Hoàng Kim',
+            subtitle: 'MST: 0109876543',
+            type: 'org',
+            shape: 'circle',
+            icon: '🏢',
+            imageUrl: '',
+            x: 410,
+            y: 660,
+            width: 76,
+            height: 76,
+            rotation: 0,
+            strokeColor: '#7c3aed',
+            fillColor: '#ffffff',
+            labelBorderColor: '#cbd5e1',
+            textColor: '#0f172a',
+            confirmed: true,
+            locked: false,
+            layerId: 'layer_1'
+          }
+        ],
+        links: [
+          {
+            id: 'l_1',
+            source: 'e_hung',
+            target: 'e_phone',
+            label: 'Sử dụng SĐT',
+            confirmed: true,
+            arrowMode: 'right',
+            curved: true,
+            color: '#1e293b',
+            width: 2.5,
+            waypoints: [],
+            labelOffset: { x: 0, y: 0 },
+            labelAngle: 0,
+            layerId: 'layer_1'
+          },
+          {
+            id: 'l_2',
+            source: 'e_hung',
+            target: 'e_mai',
+            label: 'Chuyển khoản 450tr',
+            confirmed: false,
+            arrowMode: 'right',
+            curved: true,
+            color: '#d97706',
+            width: 2.5,
+            waypoints: [{ x: 568, y: 215 }],
+            labelOffset: { x: 0, y: -12 },
+            labelAngle: 0,
+            layerId: 'layer_2'
+          },
+          {
+            id: 'l_3',
+            source: 'e_mai',
+            target: 'e_anon',
+            label: 'Nghi vấn gặp mặt',
+            confirmed: false,
+            arrowMode: 'right',
+            curved: true,
+            color: '#d97706',
+            width: 2.5,
+            waypoints: [],
+            labelOffset: { x: 0, y: 0 },
+            labelAngle: 0,
+            layerId: 'layer_2'
+          },
+          {
+            id: 'l_4',
+            source: 'e_hung',
+            target: 'e_car',
+            label: 'Sở hữu xe',
+            confirmed: true,
+            arrowMode: 'right',
+            curved: true,
+            color: '#1e293b',
+            width: 2.5,
+            waypoints: [],
+            labelOffset: { x: -16, y: 5 },
+            labelAngle: 0,
+            layerId: 'layer_2'
+          },
+          {
+            id: 'l_5',
+            source: 'e_hung',
+            target: 'e_addr',
+            label: 'Thường xuyên lui tới',
+            confirmed: true,
+            arrowMode: 'right',
+            curved: true,
+            color: '#1e293b',
+            width: 2.5,
+            waypoints: [],
+            labelOffset: { x: 10, y: -6 },
+            labelAngle: 0,
+            layerId: 'layer_1'
+          },
+          {
+            id: 'l_6',
+            source: 'e_mai',
+            target: 'e_company',
+            label: 'Điều hành',
+            confirmed: true,
+            arrowMode: 'right',
+            curved: true,
+            color: '#1e293b',
+            width: 2.5,
+            waypoints: [],
+            labelOffset: { x: -18, y: 12 },
+            labelAngle: 0,
+            layerId: 'layer_1'
+          }
+        ],
+        textboxes: []
+      };
+    }
+
+    function createCrimeTriangleTemplate() {
+      return {
+        title: 'Tam giác Phân tích Tội phạm (Crime Triangle)',
+        layers: [{ id: 'layer_1', name: 'Tam giác Tội phạm & Kiểm soát', visible: true, locked: false }],
+        activeLayerId: 'layer_1',
+        entities: [
+          // Core Triangle (Inner)
+          { id: 'ct_offender', name: 'ĐỐI TƯỢNG GÂY ÁN\n(Motivated Offender)', subtitle: 'Động cơ, tiền án, công cụ', type: 'person_male', shape: 'triangle', icon: '🕵️', imageUrl: '', x: 520, y: 220, width: 84, height: 84, rotation: 0, strokeColor: '#dc2626', fillColor: '#fef2f2', labelBorderColor: '#fca5a5', textColor: '#7f1d1d', confirmed: true, locked: false, layerId: 'layer_1' },
+          { id: 'ct_target', name: 'NẠN NHÂN / MỤC TIÊU\n(Suitable Target)', subtitle: 'Tài sản giá trị, sơ hở bảo vệ', type: 'person_female', shape: 'circle', icon: '🎯', imageUrl: '', x: 360, y: 460, width: 84, height: 84, rotation: 0, strokeColor: '#2563eb', fillColor: '#eff6ff', labelBorderColor: '#93c5fd', textColor: '#1e3a8a', confirmed: true, locked: false, layerId: 'layer_1' },
+          { id: 'ct_place', name: 'ĐỊA ĐIỂM / KHÔNG GIAN\n(Crime Place / Hotspot)', subtitle: 'Điểm nóng, thiếu chiếu sáng', type: 'location', shape: 'diamond', icon: '📍', imageUrl: '', x: 680, y: 460, width: 86, height: 86, rotation: 0, strokeColor: '#d97706', fillColor: '#fffbeb', labelBorderColor: '#fcd34d', textColor: '#78350f', confirmed: true, locked: false, layerId: 'layer_1' },
+          // Outer Guardians/Controllers
+          { id: 'ct_handler', name: 'NGƯỜI KIỂM SOÁT\n(Handler)', subtitle: 'Gia đình, giám sát giáo dục', type: 'person_anon', shape: 'hexagon', icon: '👁️', imageUrl: '', x: 520, y: 65, width: 76, height: 76, rotation: 0, strokeColor: '#475569', fillColor: '#f8fafc', labelBorderColor: '#cbd5e1', textColor: '#0f172a', confirmed: false, locked: false, layerId: 'layer_1' },
+          { id: 'ct_guardian', name: 'NGƯỜI BẢO VỆ\n(Capable Guardian)', subtitle: 'Cảnh sát khu vực, người dân, camera', type: 'org', shape: 'hexagon', icon: '🛡️', imageUrl: '', x: 160, y: 540, width: 76, height: 76, rotation: 0, strokeColor: '#059669', fillColor: '#ecfdf5', labelBorderColor: '#6ee7b7', textColor: '#064e3b', confirmed: false, locked: false, layerId: 'layer_1' },
+          { id: 'ct_manager', name: 'NGƯỜI QUẢN LÝ ĐỊA BÀN\n(Place Manager)', subtitle: 'Chủ cơ sở, bảo vệ tòa nhà', type: 'org', shape: 'hexagon', icon: '🏢', imageUrl: '', x: 880, y: 540, width: 76, height: 76, rotation: 0, strokeColor: '#7c3aed', fillColor: '#f5f3ff', labelBorderColor: '#c4b5fd', textColor: '#2e1065', confirmed: false, locked: false, layerId: 'layer_1' }
+        ],
+        links: [
+          { id: 'ctl_1', source: 'ct_offender', target: 'ct_target', label: 'Xâm hại / Tác động', confirmed: true, arrowMode: 'both', curved: false, color: '#dc2626', width: 3, waypoints: [], labelOffset: { x: -25, y: 0 }, labelAngle: 0, layerId: 'layer_1' },
+          { id: 'ctl_2', source: 'ct_target', target: 'ct_place', label: 'Hiện diện tại', confirmed: true, arrowMode: 'both', curved: false, color: '#2563eb', width: 3, waypoints: [], labelOffset: { x: 0, y: 12 }, labelAngle: 0, layerId: 'layer_1' },
+          { id: 'ctl_3', source: 'ct_place', target: 'ct_offender', label: 'Lợi dụng địa bàn', confirmed: true, arrowMode: 'both', curved: false, color: '#d97706', width: 3, waypoints: [], labelOffset: { x: 25, y: 0 }, labelAngle: 0, layerId: 'layer_1' },
+          { id: 'ctl_4', source: 'ct_handler', target: 'ct_offender', label: 'Thiếu kiểm soát', confirmed: false, arrowMode: 'right', curved: true, color: '#64748b', width: 2, waypoints: [], labelOffset: { x: 45, y: 0 }, labelAngle: 0, layerId: 'layer_1' },
+          { id: 'ctl_5', source: 'ct_guardian', target: 'ct_target', label: 'Thiếu bảo vệ', confirmed: false, arrowMode: 'right', curved: true, color: '#059669', width: 2, waypoints: [], labelOffset: { x: 0, y: -14 }, labelAngle: 0, layerId: 'layer_1' },
+          { id: 'ctl_6', source: 'ct_manager', target: 'ct_place', label: 'Buông lỏng quản lý', confirmed: false, arrowMode: 'right', curved: true, color: '#7c3aed', width: 2, waypoints: [], labelOffset: { x: 0, y: -14 }, labelAngle: 0, layerId: 'layer_1' }
+        ],
+        textboxes: [
+          { id: 'tb_ct_title', text: 'MÔ HÌNH TAM GIÁC TỘI PHẠM (PROBLEM ANALYSIS TRIANGLE)\nTội phạm xảy ra khi 3 yếu tố hội tụ và thiếu vắng 3 lớp kiểm soát vòng ngoài', x: 520, y: 660, width: 460, height: 54, rotation: 0, bgColor: '#eff6ff', borderColor: '#3b82f6', textColor: '#1e3a8a', confirmed: true, attachedLinkId: null, locked: false, layerId: 'layer_1' }
+        ]
+      };
+    }
+
+    function createCrimeScriptTemplate() {
+      const stages = [
+        { id: 'cs_1', name: '1. Chuẩn bị\n(Preparation)', subtitle: 'Cấu kết đồng bọn, lên kế hoạch', icon: '📋', color: '#475569', x: 110, y: 200 },
+        { id: 'cs_2', name: '2. Tiếp cận\n(Entry)', subtitle: 'Di chuyển tới hiện trường/mục tiêu', icon: '🚗', color: '#2563eb', x: 270, y: 200 },
+        { id: 'cs_3', name: '3. Tiền điều kiện\n(Pre-condition)', subtitle: 'Trinh sát, vô hiệu hóa cảnh giới', icon: '👁️', color: '#0284c7', x: 430, y: 200 },
+        { id: 'cs_4', name: '4. Công cụ hỗ trợ\n(Instrumental)', subtitle: 'Sử dụng SIM rác, tài khoản ảo', icon: '📱', color: '#7c3aed', x: 590, y: 200 },
+        { id: 'cs_5', name: '5. Khởi phát\n(Initiation)', subtitle: 'Tiếp xúc nạn nhân / Đột nhập', icon: '⚡', color: '#d97706', x: 750, y: 200 },
+        { id: 'cs_6', name: '6. Thực hiện\n(Execution)', subtitle: 'Chiếm đoạt tài sản / Gây án', icon: '🚨', color: '#dc2626', x: 910, y: 200 },
+        { id: 'cs_7', name: '7. Rút lui & Tiêu thụ\n(Exit & Post)', subtitle: 'Tẩu tán tang vật, rửa tiền', icon: '💰', color: '#059669', x: 1070, y: 200 }
+      ];
+
+      const entities = stages.map(s => ({
+        id: s.id,
+        name: s.name,
+        subtitle: s.subtitle,
+        type: 'stage',
+        shape: 'rect',
+        icon: s.icon,
+        imageUrl: '',
+        x: s.x,
+        y: s.y,
+        width: 96,
+        height: 68,
+        rotation: 0,
+        strokeColor: s.color,
+        fillColor: '#ffffff',
+        labelBorderColor: '#cbd5e1',
+        textColor: '#0f172a',
+        confirmed: true,
+        locked: false,
+        layerId: 'layer_1'
+      }));
+
+      // Add Intervention Points row below
+      entities.push(
+        { id: 'cs_int_1', name: 'Điểm chặn 1:\nKiểm soát nguồn', subtitle: 'Quản lý đối tượng hình sự', type: 'shield', shape: 'hexagon', icon: '🛡️', imageUrl: '', x: 270, y: 410, width: 74, height: 74, rotation: 0, strokeColor: '#059669', fillColor: '#ecfdf5', labelBorderColor: '#6ee7b7', textColor: '#064e3b', confirmed: false, locked: false, layerId: 'layer_1' },
+        { id: 'cs_int_2', name: 'Điểm chặn 2:\nPhong tỏa SIM/TK', subtitle: 'Chặn giao dịch đáng ngờ', type: 'shield', shape: 'hexagon', icon: '🔒', imageUrl: '', x: 590, y: 410, width: 74, height: 74, rotation: 0, strokeColor: '#059669', fillColor: '#ecfdf5', labelBorderColor: '#6ee7b7', textColor: '#064e3b', confirmed: false, locked: false, layerId: 'layer_1' },
+        { id: 'cs_int_3', name: 'Điểm chặn 3:\nTruy vết dòng tiền', subtitle: 'Đóng băng & thu hồi tang vật', type: 'shield', shape: 'hexagon', icon: '🔍', imageUrl: '', x: 910, y: 410, width: 74, height: 74, rotation: 0, strokeColor: '#059669', fillColor: '#ecfdf5', labelBorderColor: '#6ee7b7', textColor: '#064e3b', confirmed: false, locked: false, layerId: 'layer_1' }
+      );
+
+      const links = [];
+      for (let i = 0; i < stages.length - 1; i++) {
+        links.push({
+          id: `csl_${i + 1}`,
+          source: stages[i].id,
+          target: stages[i + 1].id,
+          label: `Bước ${i + 1}→${i + 2}`,
+          confirmed: true,
+          arrowMode: 'right',
+          curved: false,
+          color: '#1e293b',
+          width: 2.5,
+          waypoints: [],
+          labelOffset: { x: 0, y: -14 },
+          labelAngle: 0,
+          layerId: 'layer_1'
+        });
+      }
+      links.push(
+        { id: 'csl_i1', source: 'cs_int_1', target: 'cs_2', label: 'Can thiệp sớm', confirmed: false, arrowMode: 'right', curved: true, color: '#059669', width: 2, waypoints: [], labelOffset: { x: 0, y: 0 }, labelAngle: 0, layerId: 'layer_1' },
+        { id: 'csl_i2', source: 'cs_int_2', target: 'cs_4', label: 'Ngắt kết nối', confirmed: false, arrowMode: 'right', curved: true, color: '#059669', width: 2, waypoints: [], labelOffset: { x: 0, y: 0 }, labelAngle: 0, layerId: 'layer_1' },
+        { id: 'csl_i3', source: 'cs_int_3', target: 'cs_6', label: 'Bắt quả tang / Thu hồi', confirmed: false, arrowMode: 'right', curved: true, color: '#059669', width: 2, waypoints: [], labelOffset: { x: 0, y: 0 }, labelAngle: 0, layerId: 'layer_1' }
+      );
+
+      return {
+        title: 'Kịch bản Tội phạm (Crime Script Analysis)',
+        layers: [{ id: 'layer_1', name: 'Chuỗi Hành vi & Điểm Can thiệp', visible: true, locked: false }],
+        activeLayerId: 'layer_1',
+        entities,
+        links,
+        textboxes: []
+      };
+    }
+
+    function createSaraTemplate() {
+      return {
+        title: 'Mô hình Phân tích Vấn đề SARA',
+        layers: [{ id: 'layer_1', name: 'Chu trình SARA', visible: true, locked: false }],
+        activeLayerId: 'layer_1',
+        entities: [
+          { id: 's_1', name: '1. SCANNING\n(Rà soát & Nhận diện)', subtitle: 'Xác định nhóm vấn đề tái diễn', type: 'stage', shape: 'circle', icon: '📡', imageUrl: '', x: 350, y: 170, width: 86, height: 86, rotation: 0, strokeColor: '#2563eb', fillColor: '#eff6ff', labelBorderColor: '#93c5fd', textColor: '#1e3a8a', confirmed: true, locked: false, layerId: 'layer_1' },
+          { id: 's_2', name: '2. ANALYSIS\n(Phân tích Nguyên nhân)', subtitle: 'Phân tích đối tượng, nạn nhân, địa bàn', type: 'stage', shape: 'circle', icon: '🧠', imageUrl: '', x: 710, y: 170, width: 86, height: 86, rotation: 0, strokeColor: '#7c3aed', fillColor: '#f5f3ff', labelBorderColor: '#c4b5fd', textColor: '#2e1065', confirmed: true, locked: false, layerId: 'layer_1' },
+          { id: 's_3', name: '3. RESPONSE\n(Triển khai Giải pháp)', subtitle: 'Can thiệp trọng điểm vào nguyên nhân gốc', type: 'stage', shape: 'circle', icon: '⚡', imageUrl: '', x: 710, y: 470, width: 86, height: 86, rotation: 0, strokeColor: '#d97706', fillColor: '#fffbeb', labelBorderColor: '#fcd34d', textColor: '#78350f', confirmed: true, locked: false, layerId: 'layer_1' },
+          { id: 's_4', name: '4. ASSESSMENT\n(Đánh giá Hiệu quả)', subtitle: 'Đo lường tác động & điều chỉnh', type: 'stage', shape: 'circle', icon: '📊', imageUrl: '', x: 350, y: 470, width: 86, height: 86, rotation: 0, strokeColor: '#059669', fillColor: '#ecfdf5', labelBorderColor: '#6ee7b7', textColor: '#064e3b', confirmed: true, locked: false, layerId: 'layer_1' }
+        ],
+        links: [
+          { id: 'sl_1', source: 's_1', target: 's_2', label: 'Dữ liệu đầu vào', confirmed: true, arrowMode: 'right', curved: true, color: '#2563eb', width: 2.5, waypoints: [{ x: 530, y: 120 }], labelOffset: { x: 0, y: -10 }, labelAngle: 0, layerId: 'layer_1' },
+          { id: 'sl_2', source: 's_2', target: 's_3', label: 'Đề xuất phương án', confirmed: true, arrowMode: 'right', curved: true, color: '#7c3aed', width: 2.5, waypoints: [{ x: 770, y: 320 }], labelOffset: { x: 25, y: 0 }, labelAngle: 0, layerId: 'layer_1' },
+          { id: 'sl_3', source: 's_3', target: 's_4', label: 'Kết quả thực thi', confirmed: true, arrowMode: 'right', curved: true, color: '#d97706', width: 2.5, waypoints: [{ x: 530, y: 530 }], labelOffset: { x: 0, y: 12 }, labelAngle: 0, layerId: 'layer_1' },
+          { id: 'sl_4', source: 's_4', target: 's_1', label: 'Phản hồi cải tiến', confirmed: false, arrowMode: 'right', curved: true, color: '#059669', width: 2.5, waypoints: [{ x: 290, y: 320 }], labelOffset: { x: -25, y: 0 }, labelAngle: 0, layerId: 'layer_1' }
+        ],
+        textboxes: []
+      };
+    }
+
+    function loadTemplate(templateName, skipHistory = false) {
+      closeAllMenus();
+      if (!skipHistory) pushHistory();
+
+      let tpl;
+      if (templateName === 'crime_triangle') tpl = createCrimeTriangleTemplate();
+      else if (templateName === 'crime_script') tpl = createCrimeScriptTemplate();
+      else if (templateName === 'sara_model') tpl = createSaraTemplate();
+      else tpl = createAnbDefaultData();
+
+      state.title = tpl.title;
+      state.layers = tpl.layers;
+      state.activeLayerId = tpl.activeLayerId;
+      state.entities = tpl.entities;
+      state.links = tpl.links;
+      state.textboxes = tpl.textboxes || [];
+      state.selection = { type: null, ids: [] };
+      state.linkDraft = null;
+
+      document.getElementById('project-title-input').value = state.title;
+      renderAll();
+      fitToScreen();
+      syncCanvasToMermaid();
+      scheduleAutosave();
+      if (!skipHistory) showToast(`Đã nạp mẫu: ${tpl.title}`);
+    }
+
+    function clearDiagramConfirm() {
+      closeAllMenus();
+      pushHistory();
+      state.entities = [];
+      state.links = [];
+      state.textboxes = [];
+      state.selection = { type: null, ids: [] };
+      state.linkDraft = null;
+      renderAll();
+      syncCanvasToMermaid();
+      scheduleAutosave();
+      showToast('Đã tạo bảng vẽ trống mới');
+    }
+
+    /*************************************************************************
+     * HISTORY (UNDO / REDO) & AUTOSAVE
+     *************************************************************************/
+    function pushHistory() {
+      const snapshot = JSON.stringify({
+        title: state.title,
+        layers: state.layers,
+        activeLayerId: state.activeLayerId,
+        entities: state.entities,
+        links: state.links,
+        textboxes: state.textboxes
+      });
+      historyStack.push(snapshot);
+      if (historyStack.length > 40) historyStack.shift();
+      redoStack = [];
+    }
+
+    function undo() {
+      if (historyStack.length === 0) return showToast('Không có thao tác để hoàn tác');
+      const current = JSON.stringify({
+        title: state.title,
+        layers: state.layers,
+        activeLayerId: state.activeLayerId,
+        entities: state.entities,
+        links: state.links,
+        textboxes: state.textboxes
+      });
+      redoStack.push(current);
+      const prev = JSON.parse(historyStack.pop());
+      Object.assign(state, prev);
+      state.selection = { type: null, ids: [] };
+      renderAll();
+      syncCanvasToMermaid();
+      scheduleAutosave();
+    }
+
+    function redo() {
+      if (redoStack.length === 0) return showToast('Không có thao tác để làm lại');
+      const current = JSON.stringify({
+        title: state.title,
+        layers: state.layers,
+        activeLayerId: state.activeLayerId,
+        entities: state.entities,
+        links: state.links,
+        textboxes: state.textboxes
+      });
+      historyStack.push(current);
+      const next = JSON.parse(redoStack.pop());
+      Object.assign(state, next);
+      state.selection = { type: null, ids: [] };
+      renderAll();
+      syncCanvasToMermaid();
+      scheduleAutosave();
+    }
+
+    let autosaveTimer = null;
+    function scheduleAutosave() {
+      const statusEl = document.getElementById('autosave-status');
+      if (statusEl) statusEl.textContent = 'Đang lưu...';
+      clearTimeout(autosaveTimer);
+      autosaveTimer = setTimeout(() => {
+        try {
+          const saved = safeLocalStorageSet(STORAGE_KEY_AUTOSAVE, JSON.stringify({
+            title: state.title,
+            theme: state.theme,
+            showGrid: state.showGrid,
+            viewport: state.viewport,
+            layers: state.layers,
+            activeLayerId: state.activeLayerId,
+            entities: state.entities,
+            links: state.links,
+            textboxes: state.textboxes
+          }));
+          if (statusEl) statusEl.textContent = saved ? 'Đã lưu tự động' : 'Không thể lưu — hãy xuất JSON';
+        } catch (e) {
+          if (statusEl) statusEl.textContent = 'Bộ nhớ đầy';
+        }
+      }, 350);
+    }
+
+    /*************************************************************************
+     * COORDINATE TRANSFORMS & GEOMETRY UTILITIES
+     *************************************************************************/
+    function clientToCanvas(clientX, clientY) {
+      const svg = document.getElementById('diagram-svg');
+      const rect = svg.getBoundingClientRect();
+      const sx = clientX - rect.left;
+      const sy = clientY - rect.top;
+      return {
+        x: (sx - state.viewport.x) / state.viewport.scale,
+        y: (sy - state.viewport.y) / state.viewport.scale
+      };
+    }
+
+    function isLayerVisible(layerId) {
+      const layer = state.layers.find(l => l.id === layerId);
+      return layer ? layer.visible : true;
+    }
+
+    function isLayerLocked(layerId) {
+      const layer = state.layers.find(l => l.id === layerId);
+      return layer ? layer.locked : false;
+    }
+
+    // Compute intersection point from entity center toward a target point so arrows terminate cleanly on entity border
+    function getEntityPerimeterPoint(entity, targetPt) {
+      const cx = entity.x;
+      const cy = entity.y;
+      const dx = targetPt.x - cx;
+      const dy = targetPt.y - cy;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 1) return { x: cx, y: cy };
+
+      const rx = (entity.width || 74) / 2 + 6;
+      const ry = (entity.height || 74) / 2 + 6;
+      const ux = dx / dist;
+      const uy = dy / dist;
+
+      if (entity.shape === 'rect') {
+        const tx = ux !== 0 ? Math.abs(rx / ux) : Infinity;
+        const ty = uy !== 0 ? Math.abs(ry / uy) : Infinity;
+        const t = Math.min(tx, ty);
+        return { x: cx + ux * t, y: cy + uy * t };
+      }
+      // Ellipse / Circle / Polygon radius approximation
+      const r = (rx * ry) / Math.hypot(ry * ux, rx * uy);
+      return { x: cx + ux * r, y: cy + uy * r };
+    }
+
+    // Smooth Catmull-Rom to Cubic Bezier SVG path so curves pass smoothly through every waypoint
+    function buildSmoothPath(points, curved = true) {
+      if (!points || points.length === 0) return '';
+      if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+      if (!curved || points.length === 2) {
+        return points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+      }
+
+      let d = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+      const tension = 0.28; // Smooth organic curve without overshoot
+
+      for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i === 0 ? 0 : i - 1];
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const p3 = points[i + 2 < points.length ? i + 2 : i + 1];
+
+        const cp1x = p1.x + (p2.x - p0.x) * tension;
+        const cp1y = p1.y + (p2.y - p0.y) * tension;
+        const cp2x = p2.x - (p3.x - p1.x) * tension;
+        const cp2y = p2.y - (p3.y - p1.y) * tension;
+
+        d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+      }
+      return d;
+    }
+
+    function getLinkFullPoints(link) {
+      const src = state.entities.find(e => e.id === link.source);
+      const tgt = state.entities.find(e => e.id === link.target);
+      if (!src || !tgt) return [];
+
+      const wps = Array.isArray(link.waypoints) ? link.waypoints : [];
+      const firstRef = wps.length > 0 ? wps[0] : { x: tgt.x, y: tgt.y };
+      const lastRef = wps.length > 0 ? wps[wps.length - 1] : { x: src.x, y: src.y };
+
+      const startPt = getEntityPerimeterPoint(src, firstRef);
+      const endPt = getEntityPerimeterPoint(tgt, lastRef);
+
+      return [startPt, ...wps, endPt];
+    }
+
+    function getPolylineMidpointAndAngle(points) {
+      if (points.length === 0) return { x: 0, y: 0, angle: 0 };
+      if (points.length === 1) return { x: points[0].x, y: points[0].y, angle: 0 };
+
+      let totalLen = 0;
+      const segs = [];
+      for (let i = 0; i < points.length - 1; i++) {
+        const len = Math.hypot(points[i + 1].x - points[i].x, points[i + 1].y - points[i].y);
+        segs.push({ p1: points[i], p2: points[i + 1], len });
+        totalLen += len;
+      }
+      const half = totalLen / 2;
+      let acc = 0;
+      for (const s of segs) {
+        if (acc + s.len >= half && s.len > 0) {
+          const t = (half - acc) / s.len;
+          const x = s.p1.x + (s.p2.x - s.p1.x) * t;
+          const y = s.p1.y + (s.p2.y - s.p1.y) * t;
+          let angle = (Math.atan2(s.p2.y - s.p1.y, s.p2.x - s.p1.x) * 180) / Math.PI;
+          if (angle > 90) angle -= 180;
+          if (angle < -90) angle += 180;
+          return { x, y, angle };
+        }
+        acc += s.len;
+      }
+      const last = segs[segs.length - 1];
+      return { x: (last.p1.x + last.p2.x) / 2, y: (last.p1.y + last.p2.y) / 2, angle: 0 };
+    }
+
+    // Find best insertion index when double-clicking along a link to insert a new waypoint
+    function findBestWaypointInsertIndex(points, clickPt) {
+      if (points.length <= 2) return 0;
+      let bestIdx = 0;
+      let minDist = Infinity;
+      for (let i = 0; i < points.length - 1; i++) {
+        const d = pointToSegmentDistance(clickPt, points[i], points[i + 1]);
+        if (d < minDist) {
+          minDist = d;
+          bestIdx = i; // index inside waypoints array (since points[0] is startPt, points[1] is waypoints[0])
+        }
+      }
+      return bestIdx;
+    }
+
+    function pointToSegmentDistance(p, v, w) {
+      const l2 = (v.x - w.x) ** 2 + (v.y - w.y) ** 2;
+      if (l2 === 0) return Math.hypot(p.x - v.x, p.y - v.y);
+      let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+      t = Math.max(0, Math.min(1, t));
+      return Math.hypot(p.x - (v.x + t * (w.x - v.x)), p.y - (v.y + t * (w.y - v.y)));
+    }
+
+    /*************************************************************************
+     * SVG RENDERING ENGINE
+     *************************************************************************/
+    function renderAll() {
+      applyThemeAndGrid();
+      updateViewportTransform();
+      renderLinks();
+      renderEntities();
+      renderTextboxes();
+      renderOverlays();
+      updateStatsAndBars();
+    }
+
+    function applyThemeAndGrid() {
+      document.body.classList.toggle('dark-theme', state.theme === 'dark');
+      document.getElementById('theme-icon').textContent = state.theme === 'dark' ? '☀️' : '🌙';
+      const bgRect = document.getElementById('canvas-bg-rect');
+      if (bgRect) {
+        bgRect.setAttribute('fill', state.showGrid ? 'url(#dot-grid)' : 'transparent');
+      }
+    }
+
+    function updateViewportTransform() {
+      const vp = document.getElementById('viewport-group');
+      vp.setAttribute('transform', `translate(${state.viewport.x}, ${state.viewport.y}) scale(${state.viewport.scale})`);
+      document.getElementById('zoom-level-btn').textContent = `${Math.round(state.viewport.scale * 100)}%`;
+    }
+
+    function ensureArrowMarker(color, direction) {
+      const defs = document.getElementById('svg-defs');
+      const cleanHex = color.replace('#', '');
+      const markerId = `arrow_${direction}_${cleanHex}`;
+      if (document.getElementById(markerId)) return markerId;
+
+      const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+      marker.setAttribute('id', markerId);
+      marker.setAttribute('viewBox', '0 0 12 12');
+      marker.setAttribute('refX', direction === 'end' ? '10' : '2');
+      marker.setAttribute('refY', '6');
+      marker.setAttribute('markerWidth', '7');
+      marker.setAttribute('markerHeight', '7');
+      marker.setAttribute('orient', 'auto');
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      if (direction === 'end') {
+        path.setAttribute('d', 'M 1 1.5 L 11 6 L 1 10.5 L 3.2 6 Z');
+      } else {
+        path.setAttribute('d', 'M 11 1.5 L 1 6 L 11 10.5 L 8.8 6 Z');
+      }
+      path.setAttribute('fill', color);
+      marker.appendChild(path);
+      defs.appendChild(marker);
+      return markerId;
+    }
+
+    function renderLinks() {
+      const container = document.getElementById('layer-links');
+      container.innerHTML = '';
+
+      state.links.forEach(link => {
+        if (!isLayerVisible(link.layerId)) return;
+        const pts = getLinkFullPoints(link);
+        if (pts.length < 2) return;
+
+        const isSelected = state.selection.type === 'link' && state.selection.ids.includes(link.id);
+        const color = link.color || (link.confirmed ? '#1e293b' : '#d97706');
+        const pathD = buildSmoothPath(pts, link.curved !== false);
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', `link-group ${isSelected ? 'selected' : ''}`);
+        g.dataset.linkId = link.id;
+
+        // Invisible wide hit-target for effortless click, double-click (add waypoint), and right-click
+        const hitPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        hitPath.setAttribute('d', pathD);
+        hitPath.setAttribute('class', 'link-hit-area');
+        hitPath.dataset.linkId = link.id;
+        g.appendChild(hitPath);
+
+        // Visible styled path
+        const visPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        visPath.setAttribute('d', pathD);
+        visPath.setAttribute('class', 'link-visible-path');
+        visPath.setAttribute('stroke', isSelected ? '#2563eb' : color);
+        visPath.setAttribute('stroke-width', isSelected ? (link.width || 2.5) + 1.2 : (link.width || 2.5));
+        visPath.setAttribute('stroke-linecap', 'round');
+        visPath.setAttribute('stroke-linejoin', 'round');
+
+        if (!link.confirmed) {
+          visPath.setAttribute('stroke-dasharray', '8,6');
+        }
+
+        const arrowMode = link.arrowMode || 'right';
+        if (arrowMode === 'right' || arrowMode === 'both') {
+          const endId = ensureArrowMarker(isSelected ? '#2563eb' : color, 'end');
+          visPath.setAttribute('marker-end', `url(#${endId})`);
+        }
+        if (arrowMode === 'left' || arrowMode === 'both') {
+          const startId = ensureArrowMarker(isSelected ? '#2563eb' : color, 'start');
+          visPath.setAttribute('marker-start', `url(#${startId})`);
+        }
+        g.appendChild(visPath);
+
+        // Link Label Pill (Movable & Rotatable)
+        const mid = getPolylineMidpointAndAngle(pts);
+        const offX = link.labelOffset?.x || 0;
+        const offY = link.labelOffset?.y || 0;
+        const lx = mid.x + offX;
+        const ly = mid.y + offY;
+        const angle = link.labelAngle || 0;
+
+        if (link.label && link.label.trim() !== '') {
+          const labelG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          labelG.setAttribute('class', 'link-label-group');
+          labelG.setAttribute('transform', `translate(${lx}, ${ly}) rotate(${angle})`);
+          labelG.dataset.linkLabelId = link.id;
+
+          const textLen = link.label.length;
+          const pillW = Math.max(78, textLen * 7.2 + 24);
+          const pillH = 26;
+
+          const pill = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          pill.setAttribute('class', 'label-pill');
+          pill.setAttribute('x', -pillW / 2);
+          pill.setAttribute('y', -pillH / 2);
+          pill.setAttribute('width', pillW);
+          pill.setAttribute('height', pillH);
+          pill.setAttribute('rx', '8');
+          pill.setAttribute('fill', state.theme === 'dark' ? '#1e293b' : '#ffffff');
+          pill.setAttribute('stroke', isSelected ? '#2563eb' : (link.confirmed ? '#cbd5e1' : '#f59e0b'));
+          pill.setAttribute('stroke-width', isSelected ? '1.8' : '1.2');
+          if (!link.confirmed) pill.setAttribute('stroke-dasharray', '4,3');
+          pill.setAttribute('filter', 'url(#card-shadow)');
+          labelG.appendChild(pill);
+
+          const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          txt.setAttribute('x', '0');
+          txt.setAttribute('y', '4');
+          txt.setAttribute('text-anchor', 'middle');
+          txt.setAttribute('font-size', '12');
+          txt.setAttribute('font-weight', '600');
+          txt.setAttribute('fill', state.theme === 'dark' ? '#f1f5f9' : '#1e293b');
+          txt.textContent = link.label;
+          labelG.appendChild(txt);
+
+          g.appendChild(labelG);
+        }
+
+        // Waypoint Handles (Visible when Link is selected — NO transform on hover so zero jitter!)
+        if (isSelected && Array.isArray(link.waypoints)) {
+          link.waypoints.forEach((wp, idx) => {
+            const handle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            handle.setAttribute('cx', wp.x);
+            handle.setAttribute('cy', wp.y);
+            handle.setAttribute('r', '6.5');
+            handle.setAttribute('fill', '#2563eb');
+            handle.setAttribute('stroke', '#ffffff');
+            handle.setAttribute('stroke-width', '2');
+            handle.setAttribute('class', 'waypoint-handle');
+            handle.dataset.linkId = link.id;
+            handle.dataset.waypointIndex = idx;
+            g.appendChild(handle);
+          });
+        }
+
+        container.appendChild(g);
+      });
+    }
+
+    function createEntityShapeSVG(entity) {
+      const w = entity.width || 74;
+      const h = entity.height || 74;
+      const hw = w / 2;
+      const hh = h / 2;
+      const shape = entity.shape || 'circle';
+      let el;
+
+      if (shape === 'rect') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        el.setAttribute('x', -hw);
+        el.setAttribute('y', -hh);
+        el.setAttribute('width', w);
+        el.setAttribute('height', h);
+        el.setAttribute('rx', '14');
+      } else if (shape === 'triangle') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        el.setAttribute('points', `0,${-hh} ${hw},${hh} ${-hw},${hh}`);
+      } else if (shape === 'diamond') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        el.setAttribute('points', `0,${-hh} ${hw},0 0,${hh} ${-hw},0`);
+      } else if (shape === 'hexagon') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        const qx = hw * 0.88;
+        const qy = hh * 0.5;
+        el.setAttribute('points', `0,${-hh} ${qx},${-qy} ${qx},${qy} 0,${hh} ${-qx},${qy} ${-qx},${-qy}`);
+      } else {
+        // circle or oval
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+        el.setAttribute('cx', '0');
+        el.setAttribute('cy', '0');
+        el.setAttribute('rx', hw);
+        el.setAttribute('ry', hh);
+      }
+
+      el.setAttribute('fill', entity.fillColor || '#ffffff');
+      el.setAttribute('stroke', entity.strokeColor || '#2563eb');
+      el.setAttribute('stroke-width', '3.5');
+      if (!entity.confirmed) {
+        el.setAttribute('stroke-dasharray', '7,5');
+      }
+      el.setAttribute('filter', 'url(#card-shadow)');
+      return el;
+    }
+
+    function renderEntities() {
+      const container = document.getElementById('layer-entities');
+      container.innerHTML = '';
+
+      state.entities.forEach(entity => {
+        if (!isLayerVisible(entity.layerId)) return;
+
+        const isSelected = state.selection.ids.includes(entity.id) &&
+          (state.selection.type === 'entity' || state.selection.type === 'multi');
+        const w = entity.width || 74;
+        const h = entity.height || 74;
+        const rot = entity.rotation || 0;
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', `entity-group ${entity.locked || isLayerLocked(entity.layerId) ? 'locked' : ''}`);
+        g.setAttribute('transform', `translate(${entity.x}, ${entity.y})`);
+        g.dataset.entityId = entity.id;
+
+        // Rotatable Shape + Icon Sub-group
+        const shapeG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        if (rot !== 0) {
+          shapeG.setAttribute('transform', `rotate(${rot})`);
+        }
+        shapeG.appendChild(createEntityShapeSVG(entity));
+
+        // Image or Emoji inside entity
+        if (entity.imageUrl && entity.imageUrl.trim() !== '') {
+          const clipId = `clip_${entity.id}`;
+          let clipPath = document.getElementById(clipId);
+          if (!clipPath) {
+            clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+            clipPath.setAttribute('id', clipId);
+            document.getElementById('svg-defs').appendChild(clipPath);
+          }
+          clipPath.innerHTML = '';
+          const clipEllipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+          clipEllipse.setAttribute('cx', '0');
+          clipEllipse.setAttribute('cy', '0');
+          clipEllipse.setAttribute('rx', Math.max(10, w / 2 - 4));
+          clipEllipse.setAttribute('ry', Math.max(10, h / 2 - 4));
+          clipPath.appendChild(clipEllipse);
+
+          const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+          img.setAttribute('href', entity.imageUrl);
+          img.setAttribute('x', -(w / 2 - 4));
+          img.setAttribute('y', -(h / 2 - 4));
+          img.setAttribute('width', Math.max(20, w - 8));
+          img.setAttribute('height', Math.max(20, h - 8));
+          img.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+          img.setAttribute('clip-path', `url(#${clipId})`);
+          shapeG.appendChild(img);
+        } else {
+          const iconTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          iconTxt.setAttribute('x', '0');
+          iconTxt.setAttribute('y', Math.round(Math.min(w, h) * 0.16));
+          iconTxt.setAttribute('text-anchor', 'middle');
+          iconTxt.setAttribute('font-size', Math.round(Math.min(w, h) * 0.44));
+          iconTxt.textContent = entity.icon || '👤';
+          shapeG.appendChild(iconTxt);
+        }
+        g.appendChild(shapeG);
+
+        // Lock Badge if locked
+        if (entity.locked || isLayerLocked(entity.layerId)) {
+          const lockBadge = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          lockBadge.setAttribute('x', w / 2 - 4);
+          lockBadge.setAttribute('y', -h / 2 + 8);
+          lockBadge.setAttribute('font-size', '13');
+          lockBadge.textContent = '🔒';
+          g.appendChild(lockBadge);
+        }
+
+        // ANB Name Box below Entity
+        const nameLines = (entity.name || 'Thực thể').split('\n');
+        const maxLineLen = Math.max(...nameLines.map(l => l.length));
+        const boxW = Math.max(116, maxLineLen * 7.6 + 24);
+        const boxH = nameLines.length * 17 + 10;
+        const boxTop = h / 2 + 8;
+
+        const nameRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        nameRect.setAttribute('x', -boxW / 2);
+        nameRect.setAttribute('y', boxTop);
+        nameRect.setAttribute('width', boxW);
+        nameRect.setAttribute('height', boxH);
+        nameRect.setAttribute('rx', '8');
+        nameRect.setAttribute('fill', state.theme === 'dark' ? '#1e293b' : '#ffffff');
+        nameRect.setAttribute('stroke', isSelected ? '#2563eb' : (entity.labelBorderColor || '#cbd5e1'));
+        nameRect.setAttribute('stroke-width', isSelected ? '2' : '1.2');
+        if (!entity.confirmed) nameRect.setAttribute('stroke-dasharray', '5,4');
+        nameRect.setAttribute('filter', 'url(#card-shadow)');
+        g.appendChild(nameRect);
+
+        nameLines.forEach((line, idx) => {
+          const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          t.setAttribute('x', '0');
+          t.setAttribute('y', boxTop + 17 + idx * 17);
+          t.setAttribute('text-anchor', 'middle');
+          t.setAttribute('font-size', '12.5');
+          t.setAttribute('font-weight', '700');
+          t.setAttribute('fill', state.theme === 'dark' ? '#f8fafc' : (entity.textColor || '#0f172a'));
+          t.textContent = line;
+          g.appendChild(t);
+        });
+
+        // Subtitle lines (CCCD, Vai trò, Nhà mạng, Hiệu xe, MST...)
+        if (entity.subtitle && entity.subtitle.trim() !== '') {
+          const subLines = entity.subtitle.split('\n');
+          subLines.forEach((sLine, sIdx) => {
+            const st = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            st.setAttribute('x', '0');
+            st.setAttribute('y', boxTop + boxH + 15 + sIdx * 15);
+            st.setAttribute('text-anchor', 'middle');
+            st.setAttribute('font-size', '11');
+            st.setAttribute('font-weight', '500');
+            st.setAttribute('fill', state.theme === 'dark' ? '#94a3b8' : '#475569');
+            st.textContent = sLine;
+            g.appendChild(st);
+          });
+        }
+
+        // Selection Bounding Box + Resize & Rotate Handles
+        if (isSelected) {
+          const selRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          selRect.setAttribute('x', -w / 2 - 6);
+          selRect.setAttribute('y', -h / 2 - 6);
+          selRect.setAttribute('width', w + 12);
+          selRect.setAttribute('height', h + 12);
+          selRect.setAttribute('rx', '10');
+          selRect.setAttribute('fill', 'none');
+          selRect.setAttribute('stroke', '#2563eb');
+          selRect.setAttribute('stroke-width', '1.5');
+          selRect.setAttribute('stroke-dasharray', '4,3');
+          g.appendChild(selRect);
+
+          if (!entity.locked && !isLayerLocked(entity.layerId)) {
+            // Corner Resize Handle
+            const rHandle = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rHandle.setAttribute('x', w / 2 + 1);
+            rHandle.setAttribute('y', h / 2 + 1);
+            rHandle.setAttribute('width', '10');
+            rHandle.setAttribute('height', '10');
+            rHandle.setAttribute('rx', '2');
+            rHandle.setAttribute('class', 'resize-handle');
+            rHandle.dataset.resizeId = entity.id;
+            rHandle.dataset.targetType = 'entity';
+            g.appendChild(rHandle);
+
+            // Top Rotate Handle
+            const rotLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            rotLine.setAttribute('x1', '0');
+            rotLine.setAttribute('y1', -h / 2 - 6);
+            rotLine.setAttribute('x2', '0');
+            rotLine.setAttribute('y2', -h / 2 - 22);
+            rotLine.setAttribute('stroke', '#10b981');
+            rotLine.setAttribute('stroke-width', '1.5');
+            g.appendChild(rotLine);
+
+            const rotHandle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            rotHandle.setAttribute('cx', '0');
+            rotHandle.setAttribute('cy', -h / 2 - 24);
+            rotHandle.setAttribute('r', '5.5');
+            rotHandle.setAttribute('class', 'rotate-handle');
+            rotHandle.dataset.rotateId = entity.id;
+            rotHandle.dataset.targetType = 'entity';
+            g.appendChild(rotHandle);
+          }
+        }
+
+        container.appendChild(g);
+      });
+    }
+
+    function renderTextboxes() {
+      const container = document.getElementById('layer-textboxes');
+      container.innerHTML = '';
+
+      state.textboxes.forEach(tb => {
+        if (!isLayerVisible(tb.layerId)) return;
+
+        // If attached to a link, follow that link's midpoint + local offset!
+        let renderX = tb.x;
+        let renderY = tb.y;
+        if (tb.attachedLinkId) {
+          const link = state.links.find(l => l.id === tb.attachedLinkId);
+          if (link) {
+            const pts = getLinkFullPoints(link);
+            const mid = getPolylineMidpointAndAngle(pts);
+            renderX = mid.x + (tb.attachOffset?.x || 0);
+            renderY = mid.y + (tb.attachOffset?.y || -34);
+          }
+        }
+
+        const isSelected = state.selection.type === 'textbox' && state.selection.ids.includes(tb.id);
+        const lines = (tb.text || 'Nhãn ghi chú').split('\n');
+        const w = tb.width || Math.max(150, Math.max(...lines.map(l => l.length)) * 7.5 + 28);
+        const h = tb.height || Math.max(36, lines.length * 18 + 16);
+        const rot = tb.rotation || 0;
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', `textbox-group ${tb.locked ? 'locked' : ''}`);
+        g.setAttribute('transform', `translate(${renderX}, ${renderY}) rotate(${rot})`);
+        g.dataset.textboxId = tb.id;
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', -w / 2);
+        rect.setAttribute('y', -h / 2);
+        rect.setAttribute('width', w);
+        rect.setAttribute('height', h);
+        rect.setAttribute('rx', '10');
+        rect.setAttribute('fill', tb.bgColor || (state.theme === 'dark' ? '#1e293b' : '#ffffff'));
+        rect.setAttribute('stroke', isSelected ? '#2563eb' : (tb.borderColor || '#94a3b8'));
+        rect.setAttribute('stroke-width', isSelected ? '2' : '1.4');
+        if (!tb.confirmed) rect.setAttribute('stroke-dasharray', '6,4');
+        rect.setAttribute('filter', 'url(#card-shadow)');
+        g.appendChild(rect);
+
+        lines.forEach((line, i) => {
+          const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          txt.setAttribute('x', '0');
+          txt.setAttribute('y', -h / 2 + 20 + i * 18);
+          txt.setAttribute('text-anchor', 'middle');
+          txt.setAttribute('font-size', '12');
+          txt.setAttribute('font-weight', '600');
+          txt.setAttribute('fill', tb.textColor || (state.theme === 'dark' ? '#f1f5f9' : '#0f172a'));
+          txt.textContent = line;
+          g.appendChild(txt);
+        });
+
+        if (tb.attachedLinkId) {
+          const pin = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          pin.setAttribute('x', w / 2 - 14);
+          pin.setAttribute('y', -h / 2 + 13);
+          pin.setAttribute('font-size', '10');
+          pin.textContent = '📎';
+          g.appendChild(pin);
+        }
+
+        if (isSelected && !tb.locked) {
+          const rHandle = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          rHandle.setAttribute('x', w / 2 - 4);
+          rHandle.setAttribute('y', h / 2 - 4);
+          rHandle.setAttribute('width', '10');
+          rHandle.setAttribute('height', '10');
+          rHandle.setAttribute('rx', '2');
+          rHandle.setAttribute('class', 'resize-handle');
+          rHandle.dataset.resizeId = tb.id;
+          rHandle.dataset.targetType = 'textbox';
+          g.appendChild(rHandle);
+
+          const rotHandle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          rotHandle.setAttribute('cx', '0');
+          rotHandle.setAttribute('cy', -h / 2 - 18);
+          rotHandle.setAttribute('r', '5.5');
+          rotHandle.setAttribute('class', 'rotate-handle');
+          rotHandle.dataset.rotateId = tb.id;
+          rotHandle.dataset.targetType = 'textbox';
+          g.appendChild(rotHandle);
+        }
+
+        container.appendChild(g);
+      });
+    }
+
+    function renderOverlays() {
+      const container = document.getElementById('layer-overlays');
+      container.innerHTML = '';
+
+      // 1. Multi-segment Link Draft Preview
+      if (state.linkDraft) {
+        const src = state.entities.find(e => e.id === state.linkDraft.sourceId);
+        if (src) {
+          const pts = [{ x: src.x, y: src.y }, ...state.linkDraft.waypoints, state.linkDraft.cursor];
+          const pathD = buildSmoothPath(pts, true);
+
+          const previewPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          previewPath.setAttribute('d', pathD);
+          previewPath.setAttribute('fill', 'none');
+          previewPath.setAttribute('stroke', '#2563eb');
+          previewPath.setAttribute('stroke-width', '2.5');
+          previewPath.setAttribute('stroke-dasharray', '6,4');
+          container.appendChild(previewPath);
+
+          state.linkDraft.waypoints.forEach(wp => {
+            const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            c.setAttribute('cx', wp.x);
+            c.setAttribute('cy', wp.y);
+            c.setAttribute('r', '5');
+            c.setAttribute('fill', '#2563eb');
+            c.setAttribute('stroke', '#ffffff');
+            c.setAttribute('stroke-width', '2');
+            container.appendChild(c);
+          });
+        }
+      }
+
+      // 2. Marquee Selection Box
+      if (interaction.mode === 'marquee' && interaction.marqueeRect) {
+        const r = interaction.marqueeRect;
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', r.x);
+        rect.setAttribute('y', r.y);
+        rect.setAttribute('width', r.width);
+        rect.setAttribute('height', r.height);
+        rect.setAttribute('fill', 'rgba(37, 99, 235, 0.12)');
+        rect.setAttribute('stroke', '#2563eb');
+        rect.setAttribute('stroke-width', '1.5');
+        rect.setAttribute('stroke-dasharray', '5,3');
+        container.appendChild(rect);
+      }
+    }
+
+    function updateStatsAndBars() {
+      document.getElementById('stats-badge').textContent = `${state.entities.length} thực thể • ${state.links.length} liên kết`;
+      document.getElementById('layer-count').textContent = state.layers.length;
+      renderLayersList();
+      renderQuickActionBar();
+    }
+
+    function renderQuickActionBar() {
+      const bar = document.getElementById('quick-bar-content');
+      const sel = state.selection;
+
+      if (!sel.type || sel.ids.length === 0) {
+        bar.innerHTML = `<span class="opacity-75">💡 <b>1-Click</b> chọn • <b>Kéo</b> di chuyển • <b>Double-Click / Chuột phải</b> mở Menu tắt & Sửa • <b>Double-Click lên dây</b> thêm điểm uốn mềm.</span>`;
+        return;
+      }
+
+      if (sel.type === 'multi') {
+        bar.innerHTML = `
+          <span class="font-semibold text-blue-600">Đã chọn nhóm ${sel.ids.length} thực thể:</span>
+          <button onclick="batchSetConfirm(true)" class="px-2 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">✓ Xác nhận (Solid)</button>
+          <button onclick="batchSetConfirm(false)" class="px-2 py-1 rounded bg-amber-50 text-amber-700 border border-amber-200 font-medium">⋯ Chưa xác nhận (Dashed)</button>
+          <button onclick="batchToggleLock()" class="px-2 py-1 rounded border hover:bg-slate-100">🔒 Khóa/Mở nhóm</button>
+          <button onclick="deleteSelected()" class="px-2 py-1 rounded bg-rose-50 text-rose-600 border border-rose-200 font-medium">🗑️ Xóa nhóm</button>
+        `;
+        return;
+      }
+
+      if (sel.type === 'entity') {
+        const ent = state.entities.find(e => e.id === sel.ids[0]);
+        if (!ent) return;
+        bar.innerHTML = `
+          <span class="font-semibold text-blue-600 truncate max-w-[140px]">${ent.icon} ${ent.name}</span>
+          <button onclick="openEditModal('entity', '${ent.id}')" class="px-2 py-1 rounded bg-blue-600 text-white font-medium">✏️ Sửa chi tiết</button>
+          <button onclick="startLinkFromEntity('${ent.id}')" class="px-2 py-1 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 font-medium">🔗 Nối liên kết</button>
+          <button onclick="toggleConfirm('entity', '${ent.id}')" class="px-2 py-1 rounded border font-medium ${ent.confirmed ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}">
+            ${ent.confirmed ? '✓ Đã xác nhận (Solid)' : '⋯ Nghi vấn (Dashed)'}
+          </button>
+          <button onclick="cycleEntityShape('${ent.id}')" class="px-2 py-1 rounded border hover:bg-slate-100">⬡ Đổi hình (${ent.shape})</button>
+          <button onclick="triggerEntityImageUpload('${ent.id}')" class="px-2 py-1 rounded border hover:bg-slate-100">🖼️ Thay ảnh</button>
+          <button onclick="toggleLock('entity', '${ent.id}')" class="px-2 py-1 rounded border hover:bg-slate-100">${ent.locked ? '🔓 Mở khóa' : '🔒 Khóa'}</button>
+          <button onclick="deleteSelected()" class="px-2 py-1 rounded bg-rose-50 text-rose-600 border border-rose-200">🗑️</button>
+        `;
+        return;
+      }
+
+      if (sel.type === 'link') {
+        const lnk = state.links.find(l => l.id === sel.ids[0]);
+        if (!lnk) return;
+        bar.innerHTML = `
+          <span class="font-semibold text-blue-600">🔗 Liên kết:</span>
+          <button onclick="openEditModal('link', '${lnk.id}')" class="px-2 py-1 rounded bg-blue-600 text-white font-medium">✏️ Sửa nhãn</button>
+          <button onclick="toggleConfirm('link', '${lnk.id}')" class="px-2 py-1 rounded border font-medium ${lnk.confirmed ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}">
+            ${lnk.confirmed ? '✓ Confirm (Nét liền)' : '⋯ Unconfirm (Nét đứt)'}
+          </button>
+          <button onclick="setLinkArrow('${lnk.id}', 'right')" class="px-2 py-1 rounded border ${lnk.arrowMode === 'right' ? 'bg-blue-100 border-blue-400 font-bold' : ''}">→</button>
+          <button onclick="setLinkArrow('${lnk.id}', 'left')" class="px-2 py-1 rounded border ${lnk.arrowMode === 'left' ? 'bg-blue-100 border-blue-400 font-bold' : ''}">←</button>
+          <button onclick="setLinkArrow('${lnk.id}', 'both')" class="px-2 py-1 rounded border ${lnk.arrowMode === 'both' ? 'bg-blue-100 border-blue-400 font-bold' : ''}">↔</button>
+          <button onclick="setLinkArrow('${lnk.id}', 'none')" class="px-2 py-1 rounded border ${lnk.arrowMode === 'none' ? 'bg-blue-100 border-blue-400 font-bold' : ''}">✕ Mũi tên</button>
+          <button onclick="reverseLinkDirection('${lnk.id}')" class="px-2 py-1 rounded border hover:bg-slate-100" title="Đảo chiều liên kết">⇄ Đảo chiều</button>
+          <button onclick="toggleLinkCurved('${lnk.id}')" class="px-2 py-1 rounded border hover:bg-slate-100">${lnk.curved !== false ? '〰️ Uốn mềm' : '📐 Gấp khúc'}</button>
+          <button onclick="alignLinkLabel('${lnk.id}')" class="px-2 py-1 rounded border hover:bg-slate-100" title="Xoay nhãn song song đường dây">🧭 Căn nhãn</button>
+          <button onclick="deleteSelected()" class="px-2 py-1 rounded bg-rose-50 text-rose-600 border border-rose-200">🗑️</button>
+        `;
+        return;
+      }
+
+      if (sel.type === 'textbox') {
+        const tb = state.textboxes.find(t => t.id === sel.ids[0]);
+        if (!tb) return;
+        bar.innerHTML = `
+          <span class="font-semibold text-blue-600">🏷️ Hộp văn bản:</span>
+          <button onclick="openEditModal('textbox', '${tb.id}')" class="px-2 py-1 rounded bg-blue-600 text-white font-medium">✏️ Sửa nội dung</button>
+          <button onclick="toggleConfirm('textbox', '${tb.id}')" class="px-2 py-1 rounded border">${tb.confirmed ? '✓ Viền liền' : '⋯ Viền đứt'}</button>
+          <button onclick="toggleLock('textbox', '${tb.id}')" class="px-2 py-1 rounded border">${tb.locked ? '🔓 Mở khóa' : '🔒 Khóa'}</button>
+          <button onclick="deleteSelected()" class="px-2 py-1 rounded bg-rose-50 text-rose-600 border border-rose-200">🗑️</button>
+        `;
+      }
+    }
+
+    /*************************************************************************
+     * POINTER, TOUCH, DOUBLE-CLICK & CONTEXT MENU EVENTS
+     *************************************************************************/
+    function setupPointerEvents() {
+      const svg = document.getElementById('diagram-svg');
+
+      // Prevent browser default context menu inside SVG and show our custom ANB shortcut menu
+      svg.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        const hit = detectHitTarget(e.target);
+
+        // If right-clicking a waypoint handle, remove that waypoint immediately!
+        if (hit.type === 'waypoint') {
+          pushHistory();
+          const link = state.links.find(l => l.id === hit.linkId);
+          if (link && Array.isArray(link.waypoints)) {
+            link.waypoints.splice(hit.waypointIndex, 1);
+            renderAll();
+            scheduleAutosave();
+            showToast('Đã xóa điểm uốn');
+          }
+          return;
+        }
+
+        if (hit.type === 'entity' || hit.type === 'link' || hit.type === 'link-label' || hit.type === 'textbox') {
+          const realType = hit.type === 'link-label' ? 'link' : hit.type;
+          state.selection = { type: realType, ids: [hit.id] };
+          renderAll();
+          showContextMenu(e.clientX, e.clientY, realType, hit.id);
+        } else {
+          const canvasPt = clientToCanvas(e.clientX, e.clientY);
+          showCanvasContextMenu(e.clientX, e.clientY, canvasPt);
+        }
+      });
+
+      // Double-click handler:
+      // - Double-click on Link -> Add smooth Waypoint at exact cursor position!
+      // - Double-click on Link Label / Entity / Textbox -> Open Context/Edit Menu immediately!
+      svg.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        const hit = detectHitTarget(e.target);
+        const pt = clientToCanvas(e.clientX, e.clientY);
+
+        if (hit.type === 'link') {
+          const link = state.links.find(l => l.id === hit.id);
+          if (link) {
+            pushHistory();
+            if (!Array.isArray(link.waypoints)) link.waypoints = [];
+            const fullPts = getLinkFullPoints(link);
+            const insertIdx = findBestWaypointInsertIndex(fullPts, pt);
+            link.waypoints.splice(insertIdx, 0, { x: Math.round(pt.x), y: Math.round(pt.y) });
+            state.selection = { type: 'link', ids: [link.id] };
+            renderAll();
+            scheduleAutosave();
+            showToast('Đã thêm điểm uốn mềm (Kéo để chỉnh, Chuột phải để xóa)');
+          }
+          return;
+        }
+
+        if (hit.type === 'link-label') {
+          state.selection = { type: 'link', ids: [hit.id] };
+          renderAll();
+          showContextMenu(e.clientX, e.clientY, 'link', hit.id);
+          return;
+        }
+
+        if (hit.type === 'entity') {
+          state.selection = { type: 'entity', ids: [hit.id] };
+          renderAll();
+          showContextMenu(e.clientX, e.clientY, 'entity', hit.id);
+          return;
+        }
+
+        if (hit.type === 'textbox') {
+          state.selection = { type: 'textbox', ids: [hit.id] };
+          renderAll();
+          showContextMenu(e.clientX, e.clientY, 'textbox', hit.id);
+        }
+      });
+
+      // Pointer Down (Mouse + Touch unified)
+      svg.addEventListener('pointerdown', (e) => {
+        if (e.button === 2) return; // Right-click handled by contextmenu
+        closeAllMenus();
+
+        const pt = clientToCanvas(e.clientX, e.clientY);
+        const hit = detectHitTarget(e.target);
+
+        // 1. Multi-segment Link Drawing Mode
+        if (state.tool === 'link') {
+          if (hit.type === 'entity') {
+            if (!state.linkDraft) {
+              // Start new multi-segment link from Source Entity
+              state.linkDraft = {
+                sourceId: hit.id,
+                waypoints: [],
+                cursor: pt
+              };
+              document.getElementById('link-drawing-banner').classList.remove('hidden');
+              renderOverlays();
+            } else if (hit.id !== state.linkDraft.sourceId) {
+              // Finish link on Target Entity
+              pushHistory();
+              const newLink = {
+                id: 'l_' + Date.now(),
+                source: state.linkDraft.sourceId,
+                target: hit.id,
+                label: 'Liên hệ',
+                confirmed: true,
+                arrowMode: 'right',
+                curved: true,
+                color: '#1e293b',
+                width: 2.5,
+                waypoints: state.linkDraft.waypoints,
+                labelOffset: { x: 0, y: 0 },
+                labelAngle: 0,
+                layerId: state.activeLayerId
+              };
+              state.links.push(newLink);
+              state.linkDraft = null;
+              document.getElementById('link-drawing-banner').classList.add('hidden');
+              state.selection = { type: 'link', ids: [newLink.id] };
+              setTool('select');
+              renderAll();
+              syncCanvasToMermaid();
+              scheduleAutosave();
+              showToast('Đã tạo liên kết! Double-click để sửa nhãn hoặc uốn cong');
+            }
+          } else if (state.linkDraft) {
+            // Clicked empty canvas while drawing link -> Add intermediate waypoint segment!
+            state.linkDraft.waypoints.push({ x: Math.round(pt.x), y: Math.round(pt.y) });
+            renderOverlays();
+          }
+          return;
+        }
+
+        // 2. Add Entity Mode
+        if (state.tool === 'add-entity') {
+          spawnEntityAt(pt.x, pt.y, 'person_anon');
+          setTool('select');
+          return;
+        }
+
+        // 3. Add Textbox Mode
+        if (state.tool === 'add-text') {
+          spawnTextboxAt(pt.x, pt.y);
+          setTool('select');
+          return;
+        }
+
+        // 4. Pan Mode or Middle Mouse / Spacebar
+        if (state.tool === 'pan' || e.button === 1 || interaction.spacePressed) {
+          interaction.mode = 'pan';
+          interaction.startScreen = { x: e.clientX, y: e.clientY };
+          interaction.initialPositions = { x: state.viewport.x, y: state.viewport.y };
+          svg.classList.add('panning');
+          return;
+        }
+
+        // 5. Select / Manipulate Mode
+        if (hit.type === 'waypoint') {
+          pushHistory();
+          interaction.mode = 'drag-waypoint';
+          interaction.targetId = hit.linkId;
+          interaction.waypointIndex = hit.waypointIndex;
+          return;
+        }
+
+        if (hit.type === 'resize') {
+          pushHistory();
+          interaction.mode = 'resize';
+          interaction.targetId = hit.id;
+          interaction.targetType = hit.targetType;
+          interaction.startCanvas = pt;
+          const obj = hit.targetType === 'entity'
+            ? state.entities.find(x => x.id === hit.id)
+            : state.textboxes.find(x => x.id === hit.id);
+          interaction.initialPositions = { width: obj.width || 74, height: obj.height || 74 };
+          return;
+        }
+
+        if (hit.type === 'rotate') {
+          pushHistory();
+          interaction.mode = 'rotate';
+          interaction.targetId = hit.id;
+          interaction.targetType = hit.targetType;
+          return;
+        }
+
+        if (hit.type === 'link-label') {
+          pushHistory();
+          state.selection = { type: 'link', ids: [hit.id] };
+          interaction.mode = 'drag-link-label';
+          interaction.targetId = hit.id;
+          interaction.startCanvas = pt;
+          const link = state.links.find(l => l.id === hit.id);
+          interaction.initialPositions = {
+            x: link.labelOffset?.x || 0,
+            y: link.labelOffset?.y || 0
+          };
+          renderAll();
+          return;
+        }
+
+        if (hit.type === 'link') {
+          state.selection = { type: 'link', ids: [hit.id] };
+          renderAll();
+          return;
+        }
+
+        if (hit.type === 'entity') {
+          const ent = state.entities.find(x => x.id === hit.id);
+          if (!ent) return;
+
+          // Multi-select with Shift key or preserve existing group selection
+          if (e.shiftKey) {
+            const currentIds = state.selection.type === 'entity' || state.selection.type === 'multi'
+              ? [...state.selection.ids] : [];
+            if (currentIds.includes(ent.id)) {
+              const filtered = currentIds.filter(id => id !== ent.id);
+              state.selection = filtered.length > 0
+                ? { type: filtered.length > 1 ? 'multi' : 'entity', ids: filtered }
+                : { type: null, ids: [] };
+            } else {
+              currentIds.push(ent.id);
+              state.selection = { type: currentIds.length > 1 ? 'multi' : 'entity', ids: currentIds };
+            }
+          } else if (!state.selection.ids.includes(ent.id)) {
+            state.selection = { type: 'entity', ids: [ent.id] };
+          }
+
+          renderAll();
+
+          if (ent.locked || isLayerLocked(ent.layerId)) return;
+
+          pushHistory();
+          interaction.mode = 'drag-entities';
+          interaction.startCanvas = pt;
+          interaction.initialPositions = {};
+          state.selection.ids.forEach(id => {
+            const item = state.entities.find(x => x.id === id);
+            if (item && !item.locked && !isLayerLocked(item.layerId)) {
+              interaction.initialPositions[id] = { x: item.x, y: item.y };
+            }
+          });
+          return;
+        }
+
+        if (hit.type === 'textbox') {
+          const tb = state.textboxes.find(x => x.id === hit.id);
+          if (!tb) return;
+          state.selection = { type: 'textbox', ids: [tb.id] };
+          renderAll();
+          if (tb.locked || isLayerLocked(tb.layerId)) return;
+
+          pushHistory();
+          interaction.mode = 'drag-textbox';
+          interaction.targetId = tb.id;
+          interaction.startCanvas = pt;
+          interaction.initialPositions = tb.attachedLinkId
+            ? { x: tb.attachOffset?.x || 0, y: tb.attachOffset?.y || -34 }
+            : { x: tb.x, y: tb.y };
+          return;
+        }
+
+        // Empty canvas clicked in Select mode -> Start Marquee Selection Box
+        state.selection = { type: null, ids: [] };
+        interaction.mode = 'marquee';
+        interaction.startCanvas = pt;
+        interaction.marqueeRect = { x: pt.x, y: pt.y, width: 0, height: 0 };
+        renderAll();
+      });
+
+      // Pointer Move
+      window.addEventListener('pointermove', (e) => {
+        const pt = clientToCanvas(e.clientX, e.clientY);
+
+        if (state.linkDraft) {
+          state.linkDraft.cursor = pt;
+          renderOverlays();
+        }
+
+        if (!interaction.mode) return;
+
+        if (interaction.mode === 'pan') {
+          state.viewport.x = interaction.initialPositions.x + (e.clientX - interaction.startScreen.x);
+          state.viewport.y = interaction.initialPositions.y + (e.clientY - interaction.startScreen.y);
+          updateViewportTransform();
+          return;
+        }
+
+        if (interaction.mode === 'drag-entities') {
+          const dx = pt.x - interaction.startCanvas.x;
+          const dy = pt.y - interaction.startCanvas.y;
+          Object.keys(interaction.initialPositions).forEach(id => {
+            const ent = state.entities.find(x => x.id === id);
+            if (ent) {
+              ent.x = Math.round(interaction.initialPositions[id].x + dx);
+              ent.y = Math.round(interaction.initialPositions[id].y + dy);
+            }
+          });
+          renderLinks();
+          renderEntities();
+          renderTextboxes();
+          return;
+        }
+
+        if (interaction.mode === 'drag-waypoint') {
+          const link = state.links.find(l => l.id === interaction.targetId);
+          if (link && link.waypoints[interaction.waypointIndex]) {
+            link.waypoints[interaction.waypointIndex] = {
+              x: Math.round(pt.x),
+              y: Math.round(pt.y)
+            };
+            renderLinks();
+            renderTextboxes();
+          }
+          return;
+        }
+
+        if (interaction.mode === 'drag-link-label') {
+          const link = state.links.find(l => l.id === interaction.targetId);
+          if (link) {
+            const dx = pt.x - interaction.startCanvas.x;
+            const dy = pt.y - interaction.startCanvas.y;
+            link.labelOffset = {
+              x: Math.round(interaction.initialPositions.x + dx),
+              y: Math.round(interaction.initialPositions.y + dy)
+            };
+            renderLinks();
+          }
+          return;
+        }
+
+        if (interaction.mode === 'drag-textbox') {
+          const tb = state.textboxes.find(t => t.id === interaction.targetId);
+          if (tb) {
+            const dx = pt.x - interaction.startCanvas.x;
+            const dy = pt.y - interaction.startCanvas.y;
+            if (tb.attachedLinkId) {
+              tb.attachOffset = {
+                x: Math.round(interaction.initialPositions.x + dx),
+                y: Math.round(interaction.initialPositions.y + dy)
+              };
+            } else {
+              tb.x = Math.round(interaction.initialPositions.x + dx);
+              tb.y = Math.round(interaction.initialPositions.y + dy);
+            }
+            renderTextboxes();
+          }
+          return;
+        }
+
+        if (interaction.mode === 'resize') {
+          const dx = pt.x - interaction.startCanvas.x;
+          const dy = pt.y - interaction.startCanvas.y;
+          if (interaction.targetType === 'entity') {
+            const ent = state.entities.find(x => x.id === interaction.targetId);
+            if (ent) {
+              ent.width = Math.max(40, Math.round(interaction.initialPositions.width + dx * 2));
+              ent.height = Math.max(40, Math.round(interaction.initialPositions.height + dy * 2));
+              renderLinks();
+              renderEntities();
+            }
+          } else {
+            const tb = state.textboxes.find(x => x.id === interaction.targetId);
+            if (tb) {
+              tb.width = Math.max(80, Math.round(interaction.initialPositions.width + dx * 2));
+              tb.height = Math.max(30, Math.round(interaction.initialPositions.height + dy * 2));
+              renderTextboxes();
+            }
+          }
+          return;
+        }
+
+        if (interaction.mode === 'rotate') {
+          if (interaction.targetType === 'entity') {
+            const ent = state.entities.find(x => x.id === interaction.targetId);
+            if (ent) {
+              const angle = Math.round((Math.atan2(pt.y - ent.y, pt.x - ent.x) * 180) / Math.PI + 90);
+              ent.rotation = (angle + 360) % 360;
+              renderEntities();
+            }
+          } else {
+            const tb = state.textboxes.find(x => x.id === interaction.targetId);
+            if (tb) {
+              const angle = Math.round((Math.atan2(pt.y - tb.y, pt.x - tb.x) * 180) / Math.PI + 90);
+              tb.rotation = (angle + 360) % 360;
+              renderTextboxes();
+            }
+          }
+          return;
+        }
+
+        if (interaction.mode === 'marquee') {
+          const x = Math.min(interaction.startCanvas.x, pt.x);
+          const y = Math.min(interaction.startCanvas.y, pt.y);
+          const width = Math.abs(pt.x - interaction.startCanvas.x);
+          const height = Math.abs(pt.y - interaction.startCanvas.y);
+          interaction.marqueeRect = { x, y, width, height };
+          renderOverlays();
+        }
+      });
+
+      // Pointer Up
+      window.addEventListener('pointerup', () => {
+        if (interaction.mode === 'pan') {
+          svg.classList.remove('panning');
+          scheduleAutosave();
+        } else if (interaction.mode === 'marquee' && interaction.marqueeRect) {
+          const r = interaction.marqueeRect;
+          if (r.width > 6 && r.height > 6) {
+            const selectedIds = state.entities
+              .filter(e => isLayerVisible(e.layerId) && e.x >= r.x && e.x <= r.x + r.width && e.y >= r.y && e.y <= r.y + r.height)
+              .map(e => e.id);
+            if (selectedIds.length > 0) {
+              state.selection = {
+                type: selectedIds.length > 1 ? 'multi' : 'entity',
+                ids: selectedIds
+              };
+            }
+          }
+          interaction.marqueeRect = null;
+          renderAll();
+        } else if (interaction.mode) {
+          scheduleAutosave();
+        }
+        interaction.mode = null;
+      });
+
+      // Mouse Wheel Zoom
+      svg.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const factor = e.deltaY < 0 ? 1.1 : 0.9;
+        const rect = svg.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+
+        const newScale = Math.max(0.2, Math.min(3.5, state.viewport.scale * factor));
+        state.viewport.x = mx - (mx - state.viewport.x) * (newScale / state.viewport.scale);
+        state.viewport.y = my - (my - state.viewport.y) * (newScale / state.viewport.scale);
+        state.viewport.scale = newScale;
+        updateViewportTransform();
+        scheduleAutosave();
+      }, { passive: false });
+    }
+
+    function detectHitTarget(domEl) {
+      let el = domEl;
+      while (el && el.id !== 'diagram-svg') {
+        if (el.dataset) {
+          if (el.dataset.waypointIndex !== undefined) {
+            return {
+              type: 'waypoint',
+              linkId: el.dataset.linkId,
+              waypointIndex: parseInt(el.dataset.waypointIndex, 10)
+            };
+          }
+          if (el.dataset.resizeId) {
+            return { type: 'resize', id: el.dataset.resizeId, targetType: el.dataset.targetType };
+          }
+          if (el.dataset.rotateId) {
+            return { type: 'rotate', id: el.dataset.rotateId, targetType: el.dataset.targetType };
+          }
+          if (el.dataset.linkLabelId) {
+            return { type: 'link-label', id: el.dataset.linkLabelId };
+          }
+          if (el.dataset.linkId) {
+            return { type: 'link', id: el.dataset.linkId };
+          }
+          if (el.dataset.entityId) {
+            return { type: 'entity', id: el.dataset.entityId };
+          }
+          if (el.dataset.textboxId) {
+            return { type: 'textbox', id: el.dataset.textboxId };
+          }
+        }
+        el = el.parentNode;
+      }
+      return { type: 'canvas' };
+    }
+
+    function setupKeyboardEvents() {
+      window.addEventListener('keydown', (e) => {
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+
+        if (e.code === 'Space') {
+          interaction.spacePressed = true;
+          document.getElementById('diagram-svg').classList.add('mode-pan');
+        } else if (e.key === 'Escape') {
+          closeAllMenus();
+          finishOrCancelLinkDrawing(true);
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+          e.preventDefault();
+          undo();
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+          e.preventDefault();
+          redo();
+        } else if (e.key === 'Delete' || e.key === 'Backspace') {
+          deleteSelected();
+        } else if (e.key.toLowerCase() === 'v') {
+          setTool('select');
+        } else if (e.key.toLowerCase() === 'h') {
+          setTool('pan');
+        } else if (e.key.toLowerCase() === 'l') {
+          setTool('link');
+        } else if (e.key.toLowerCase() === 'e') {
+          setTool('add-entity');
+        } else if (e.key.toLowerCase() === 't') {
+          setTool('add-text');
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        if (e.code === 'Space') {
+          interaction.spacePressed = false;
+          if (state.tool !== 'pan') {
+            document.getElementById('diagram-svg').classList.remove('mode-pan');
+          }
+        }
+      });
+    }
+
+    /*************************************************************************
+     * FLOATING SHORTCUT / CONTEXT MENU (Right-Click & Double-Click)
+     *************************************************************************/
+    function showContextMenu(clientX, clientY, targetType, id) {
+      const menu = document.getElementById('context-menu');
+      let html = '';
+
+      if (targetType === 'entity') {
+        const ent = state.entities.find(e => e.id === id);
+        if (!ent) return;
+        html = `
+          <div class="px-2.5 py-1 text-[11px] font-bold opacity-60 truncate">${ent.icon} ${ent.name}</div>
+          <button onclick="openEditModal('entity', '${id}')" class="ctx-item"><span>✏️ Chỉnh sửa Nội dung, Viền, Màu & Hình</span></button>
+          <button onclick="startLinkFromEntity('${id}')" class="ctx-item"><span>🔗 Vẽ Liên kết từ đối tượng này</span></button>
+          <div class="ctx-divider"></div>
+          <button onclick="toggleConfirm('entity', '${id}')" class="ctx-item">
+            <span>${ent.confirmed ? '⋯ Chuyển sang Chưa xác nhận (Dashed)' : '✓ Chuyển sang Đã xác nhận (Solid)'}</span>
+          </button>
+          <button onclick="cycleEntityShape('${id}')" class="ctx-item"><span>⬡ Đổi hình dạng bao (Tròn/Chữ nhật/Tam giác/Thoi...)</span></button>
+          <button onclick="triggerEntityImageUpload('${id}')" class="ctx-item"><span>🖼️ Tải ảnh chân dung / vật chứng thay thế</span></button>
+          <div class="ctx-divider"></div>
+          <button onclick="duplicateEntity('${id}')" class="ctx-item"><span>📋 Nhân bản thực thể</span></button>
+          <button onclick="bringToFront('entity', '${id}')" class="ctx-item"><span>⬆️ Đưa lên trên cùng</span></button>
+          <button onclick="toggleLock('entity', '${id}')" class="ctx-item"><span>${ent.locked ? '🔓 Mở khóa vị trí' : '🔒 Khóa cố định đối tượng'}</span></button>
+          <div class="ctx-divider"></div>
+          <button onclick="deleteSelected()" class="ctx-item danger"><span>🗑️ Xóa thực thể</span></button>
+        `;
+      } else if (targetType === 'link') {
+        const lnk = state.links.find(l => l.id === id);
+        if (!lnk) return;
+        html = `
+          <div class="px-2.5 py-1 text-[11px] font-bold opacity-60">🔗 Tùy chọn Đường Liên kết</div>
+          <button onclick="openEditModal('link', '${id}')" class="ctx-item"><span>✏️ Sửa Nhãn, Góc xoay & Màu dây</span></button>
+          <button onclick="toggleConfirm('link', '${id}')" class="ctx-item">
+            <span>${lnk.confirmed ? '⋯ Đặt Unconfirm (Nét gạch đứt)' : '✓ Đặt Confirm (Nét liền Solid)'}</span>
+          </button>
+          <div class="ctx-divider"></div>
+          <button onclick="setLinkArrow('${id}', 'right')" class="ctx-item"><span>➡️ Mũi tên phải (→)</span></button>
+          <button onclick="setLinkArrow('${id}', 'left')" class="ctx-item"><span>⬅️ Mũi tên trái (←)</span></button>
+          <button onclick="setLinkArrow('${id}', 'both')" class="ctx-item"><span>↔️ Mũi tên hai chiều (↔)</span></button>
+          <button onclick="setLinkArrow('${id}', 'none')" class="ctx-item"><span>➖ Xóa mũi tên (Không mũi tên)</span></button>
+          <button onclick="reverseLinkDirection('${id}')" class="ctx-item"><span>⇄ Đảo chiều liên kết (Nguồn ↔ Đích)</span></button>
+          <div class="ctx-divider"></div>
+          <button onclick="toggleLinkCurved('${id}')" class="ctx-item"><span>${lnk.curved !== false ? '📐 Chuyển nét gấp khúc thẳng' : '〰️ Chuyển nét uốn cong mềm mại'}</span></button>
+          <button onclick="alignLinkLabel('${id}')" class="ctx-item"><span>🧭 Xoay nhãn song song đường dây</span></button>
+          <button onclick="attachTextboxToLink('${id}')" class="ctx-item"><span>📎 Gắn thêm Hộp văn bản đi theo dây</span></button>
+          <button onclick="clearLinkWaypoints('${id}')" class="ctx-item"><span>🧹 Xóa các điểm uốn trên dây</span></button>
+          <div class="ctx-divider"></div>
+          <button onclick="deleteSelected()" class="ctx-item danger"><span>🗑️ Xóa liên kết</span></button>
+        `;
+      } else if (targetType === 'textbox') {
+        const tb = state.textboxes.find(t => t.id === id);
+        if (!tb) return;
+        html = `
+          <div class="px-2.5 py-1 text-[11px] font-bold opacity-60">🏷️ Hộp Văn bản / Ghi chú</div>
+          <button onclick="openEditModal('textbox', '${id}')" class="ctx-item"><span>✏️ Sửa nội dung, màu sắc & liên kết dây</span></button>
+          <button onclick="toggleConfirm('textbox', '${id}')" class="ctx-item"><span>${tb.confirmed ? '⋯ Đặt viền gạch đứt' : '✓ Đặt viền liền'}</span></button>
+          <button onclick="toggleLock('textbox', '${id}')" class="ctx-item"><span>${tb.locked ? '🔓 Mở khóa' : '🔒 Khóa vị trí'}</span></button>
+          <div class="ctx-divider"></div>
+          <button onclick="deleteSelected()" class="ctx-item danger"><span>🗑️ Xóa hộp văn bản</span></button>
+        `;
+      }
+
+      menu.innerHTML = html;
+      menu.style.display = 'block';
+
+      const rect = menu.getBoundingClientRect();
+      const left = Math.min(clientX, window.innerWidth - rect.width - 12);
+      const top = Math.min(clientY, window.innerHeight - rect.height - 12);
+      menu.style.left = `${Math.max(8, left)}px`;
+      menu.style.top = `${Math.max(8, top)}px`;
+    }
+
+    function showCanvasContextMenu(clientX, clientY, canvasPt) {
+      const menu = document.getElementById('context-menu');
+      const x = Math.round(canvasPt.x);
+      const y = Math.round(canvasPt.y);
+      menu.innerHTML = `
+        <div class="px-2.5 py-1 text-[11px] font-bold opacity-60">➕ Thêm nhanh tại vị trí này</div>
+        <button onclick="spawnEntityAt(${x}, ${y}, 'person_male')" class="ctx-item"><span>👨 Thêm Đối tượng Nam</span></button>
+        <button onclick="spawnEntityAt(${x}, ${y}, 'person_female')" class="ctx-item"><span>👩 Thêm Đối tượng Nữ</span></button>
+        <button onclick="spawnEntityAt(${x}, ${y}, 'person_anon')" class="ctx-item"><span>👤 Thêm Nhân vật Ẩn danh</span></button>
+        <button onclick="spawnEntityAt(${x}, ${y}, 'phone')" class="ctx-item"><span>📱 Thêm Số điện thoại</span></button>
+        <button onclick="spawnEntityAt(${x}, ${y}, 'vehicle')" class="ctx-item"><span>🚗 Thêm Phương tiện</span></button>
+        <button onclick="spawnEntityAt(${x}, ${y}, 'location')" class="ctx-item"><span>📍 Thêm Địa điểm</span></button>
+        <button onclick="spawnEntityAt(${x}, ${y}, 'org')" class="ctx-item"><span>🏢 Thêm Tổ chức / Công ty</span></button>
+        <button onclick="spawnTextboxAt(${x}, ${y})" class="ctx-item"><span>🏷️ Thêm Hộp văn bản / Ghi chú</span></button>
+        <div class="ctx-divider"></div>
+        <button onclick="fitToScreen()" class="ctx-item"><span>⊡ Căn giữa toàn bộ sơ đồ</span></button>
+      `;
+      menu.style.display = 'block';
+      const rect = menu.getBoundingClientRect();
+      menu.style.left = `${Math.max(8, Math.min(clientX, window.innerWidth - rect.width - 12))}px`;
+      menu.style.top = `${Math.max(8, Math.min(clientY, window.innerHeight - rect.height - 12))}px`;
+    }
+
+    function closeAllMenus() {
+      document.getElementById('context-menu').style.display = 'none';
+      ['templates-menu', 'excel-menu', 'export-menu'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+    }
+
+    /*************************************************************************
+     * ENTITY, LINK & TEXTBOX OPERATIONS
+     *************************************************************************/
+    function setTool(toolName) {
+      state.tool = toolName;
+      if (toolName !== 'link') {
+        finishOrCancelLinkDrawing(true);
+      }
+      document.querySelectorAll('.tool-btn').forEach(btn => {
+        const active = btn.dataset.tool === toolName;
+        btn.classList.toggle('bg-blue-600', active);
+        btn.classList.toggle('text-white', active);
+        btn.classList.toggle('shadow-sm', active);
+      });
+      const svg = document.getElementById('diagram-svg');
+      svg.classList.remove('mode-pan', 'mode-link', 'mode-add-entity', 'mode-add-text');
+      if (toolName === 'pan') svg.classList.add('mode-pan');
+      if (toolName === 'link') svg.classList.add('mode-link');
+      if (toolName === 'add-entity') svg.classList.add('mode-add-entity');
+      if (toolName === 'add-text') svg.classList.add('mode-add-text');
+    }
+
+    function finishOrCancelLinkDrawing(cancel) {
+      if (cancel) {
+        state.linkDraft = null;
+        document.getElementById('link-drawing-banner').classList.add('hidden');
+        renderOverlays();
+      }
+    }
+
+    function startLinkFromEntity(entityId) {
+      closeAllMenus();
+      const ent = state.entities.find(e => e.id === entityId);
+      if (!ent) return;
+      setTool('link');
+      state.linkDraft = {
+        sourceId: entityId,
+        waypoints: [],
+        cursor: { x: ent.x + 60, y: ent.y }
+      };
+      document.getElementById('link-drawing-banner').classList.remove('hidden');
+      renderOverlays();
+    }
+
+    function getEntityPresetConfig(presetType) {
+      const map = {
+        person_male: { name: 'Đối tượng Nam', subtitle: 'CCCD / Năm sinh', icon: '👨', strokeColor: '#2563eb' },
+        person_female: { name: 'Đối tượng Nữ', subtitle: 'CCCD / Vai trò', icon: '👩', strokeColor: '#2563eb' },
+        person_anon: { name: 'Nhân vật Ẩn danh', subtitle: 'Chưa rõ giới tính', icon: '👤', strokeColor: '#d97706' },
+        phone: { name: '09xx.xxx.xxx', subtitle: 'Nhà mạng', icon: '📱', strokeColor: '#059669' },
+        vehicle: { name: 'Biển kiểm soát', subtitle: 'Loại xe / Màu sơn', icon: '🚗', strokeColor: '#d97706' },
+        location: { name: 'Địa điểm nghi vấn', subtitle: 'Phường/Xã, Tỉnh/TP', icon: '📍', strokeColor: '#dc2626' },
+        org: { name: 'Công ty / Tổ chức', subtitle: 'MST / Người đại diện', icon: '🏢', strokeColor: '#7c3aed' },
+        bank: { name: 'STK Ngân hàng', subtitle: 'Chủ tài khoản', icon: '💳', strokeColor: '#0284c7' }
+      };
+      return map[presetType] || map.person_anon;
+    }
+
+    function spawnEntityAt(x, y, presetType) {
+      closeAllMenus();
+      pushHistory();
+      const cfg = getEntityPresetConfig(presetType);
+      const newEnt = {
+        id: 'e_' + Date.now() + '_' + Math.floor(Math.random() * 999),
+        name: cfg.name,
+        subtitle: cfg.subtitle,
+        type: presetType,
+        shape: 'circle',
+        icon: cfg.icon,
+        imageUrl: '',
+        x: Math.round(x),
+        y: Math.round(y),
+        width: 74,
+        height: 74,
+        rotation: 0,
+        strokeColor: cfg.strokeColor,
+        fillColor: '#ffffff',
+        labelBorderColor: '#cbd5e1',
+        textColor: '#0f172a',
+        confirmed: true,
+        locked: false,
+        layerId: state.activeLayerId
+      };
+      state.entities.push(newEnt);
+      state.selection = { type: 'entity', ids: [newEnt.id] };
+      renderAll();
+      syncCanvasToMermaid();
+      scheduleAutosave();
+    }
+
+    function quickSpawnEntity(presetType) {
+      const container = document.getElementById('canvas-container');
+      const rect = container.getBoundingClientRect();
+      const center = clientToCanvas(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      const jitterX = (Math.random() - 0.5) * 90;
+      const jitterY = (Math.random() - 0.5) * 90;
+      spawnEntityAt(center.x + jitterX, center.y + jitterY, presetType);
+    }
+
+    function spawnTextboxAt(x, y, attachedLinkId = null) {
+      closeAllMenus();
+      pushHistory();
+      const newTb = {
+        id: 'tb_' + Date.now(),
+        text: 'Ghi chú phân tích',
+        x: Math.round(x),
+        y: Math.round(y),
+        width: 165,
+        height: 44,
+        rotation: 0,
+        bgColor: '#ffffff',
+        borderColor: '#3b82f6',
+        textColor: '#0f172a',
+        confirmed: true,
+        attachedLinkId,
+        attachOffset: { x: 0, y: -36 },
+        locked: false,
+        layerId: state.activeLayerId
+      };
+      state.textboxes.push(newTb);
+      state.selection = { type: 'textbox', ids: [newTb.id] };
+      renderAll();
+      scheduleAutosave();
+    }
+
+    function quickSpawnTextbox() {
+      const container = document.getElementById('canvas-container');
+      const rect = container.getBoundingClientRect();
+      const center = clientToCanvas(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      spawnTextboxAt(center.x, center.y);
+    }
+
+    function attachTextboxToLink(linkId) {
+      closeAllMenus();
+      spawnTextboxAt(0, 0, linkId);
+      showToast('Đã gắn hộp văn bản theo đường liên kết');
+    }
+
+    function toggleConfirm(type, id) {
+      closeAllMenus();
+      pushHistory();
+      if (type === 'entity') {
+        const e = state.entities.find(x => x.id === id);
+        if (e) e.confirmed = !e.confirmed;
+      } else if (type === 'link') {
+        const l = state.links.find(x => x.id === id);
+        if (l) l.confirmed = !l.confirmed;
+      } else if (type === 'textbox') {
+        const t = state.textboxes.find(x => x.id === id);
+        if (t) t.confirmed = !t.confirmed;
+      }
+      renderAll();
+      syncCanvasToMermaid();
+      scheduleAutosave();
+    }
+
+    function batchSetConfirm(confirmedVal) {
+      pushHistory();
+      state.selection.ids.forEach(id => {
+        const e = state.entities.find(x => x.id === id);
+        if (e) e.confirmed = confirmedVal;
+      });
+      renderAll();
+      syncCanvasToMermaid();
+      scheduleAutosave();
+    }
+
+    function setLinkArrow(linkId, arrowMode) {
+      closeAllMenus();
+      pushHistory();
+      const l = state.links.find(x => x.id === linkId);
+      if (l) {
+        l.arrowMode = arrowMode;
+        renderAll();
+        syncCanvasToMermaid();
+        scheduleAutosave();
+      }
+    }
+
+    function reverseLinkDirection(linkId) {
+      closeAllMenus();
+      pushHistory();
+      const l = state.links.find(x => x.id === linkId);
+      if (l) {
+        const tmp = l.source;
+        l.source = l.target;
+        l.target = tmp;
+        if (Array.isArray(l.waypoints)) l.waypoints.reverse();
+        renderAll();
+        syncCanvasToMermaid();
+        scheduleAutosave();
+        showToast('Đã đảo chiều mũi tên liên kết');
+      }
+    }
+
+    function toggleLinkCurved(linkId) {
+      closeAllMenus();
+      pushHistory();
+      const l = state.links.find(x => x.id === linkId);
+      if (l) {
+        l.curved = l.curved === false ? true : false;
+        renderAll();
+        scheduleAutosave();
+      }
+    }
+
+    function alignLinkLabel(linkId) {
+      closeAllMenus();
+      pushHistory();
+      const l = state.links.find(x => x.id === linkId);
+      if (l) {
+        const pts = getLinkFullPoints(l);
+        const mid = getPolylineMidpointAndAngle(pts);
+        l.labelAngle = Math.round(mid.angle);
+        renderAll();
+        scheduleAutosave();
+        showToast(`Đã xoay nhãn theo góc dây (${l.labelAngle}°)`);
+      }
+    }
+
+    function clearLinkWaypoints(linkId) {
+      closeAllMenus();
+      pushHistory();
+      const l = state.links.find(x => x.id === linkId);
+      if (l) {
+        l.waypoints = [];
+        renderAll();
+        scheduleAutosave();
+      }
+    }
+
+    function cycleEntityShape(entityId) {
+      closeAllMenus();
+      pushHistory();
+      const shapes = ['circle', 'rect', 'triangle', 'diamond', 'hexagon'];
+      const e = state.entities.find(x => x.id === entityId);
+      if (e) {
+        const idx = shapes.indexOf(e.shape || 'circle');
+        e.shape = shapes[(idx + 1) % shapes.length];
+        renderAll();
+        scheduleAutosave();
+      }
+    }
+
+    function duplicateEntity(entityId) {
+      closeAllMenus();
+      const orig = state.entities.find(x => x.id === entityId);
+      if (!orig) return;
+      pushHistory();
+      const copy = JSON.parse(JSON.stringify(orig));
+      copy.id = 'e_' + Date.now();
+      copy.x += 55;
+      copy.y += 55;
+      copy.name += ' (Bản sao)';
+      state.entities.push(copy);
+      state.selection = { type: 'entity', ids: [copy.id] };
+      renderAll();
+      syncCanvasToMermaid();
+      scheduleAutosave();
+    }
+
+    function bringToFront(type, id) {
+      closeAllMenus();
+      if (type === 'entity') {
+        const idx = state.entities.findIndex(x => x.id === id);
+        if (idx > -1) {
+          const [item] = state.entities.splice(idx, 1);
+          state.entities.push(item);
+          renderEntities();
+        }
+      }
+    }
+
+    function toggleLock(type, id) {
+      closeAllMenus();
+      pushHistory();
+      if (type === 'entity') {
+        const e = state.entities.find(x => x.id === id);
+        if (e) e.locked = !e.locked;
+      } else if (type === 'textbox') {
+        const t = state.textboxes.find(x => x.id === id);
+        if (t) t.locked = !t.locked;
+      }
+      renderAll();
+      scheduleAutosave();
+    }
+
+    function batchToggleLock() {
+      pushHistory();
+      state.selection.ids.forEach(id => {
+        const e = state.entities.find(x => x.id === id);
+        if (e) e.locked = !e.locked;
+      });
+      renderAll();
+      scheduleAutosave();
+    }
+
+    function deleteSelected() {
+      closeAllMenus();
+      const sel = state.selection;
+      if (!sel.type || sel.ids.length === 0) return;
+      pushHistory();
+
+      if (sel.type === 'entity' || sel.type === 'multi') {
+        const idSet = new Set(sel.ids);
+        state.entities = state.entities.filter(e => !idSet.has(e.id));
+        state.links = state.links.filter(l => !idSet.has(l.source) && !idSet.has(l.target));
+      } else if (sel.type === 'link') {
+        const idSet = new Set(sel.ids);
+        state.links = state.links.filter(l => !idSet.has(l.id));
+      } else if (sel.type === 'textbox') {
+        const idSet = new Set(sel.ids);
+        state.textboxes = state.textboxes.filter(t => !idSet.has(t.id));
+      }
+
+      state.selection = { type: null, ids: [] };
+      renderAll();
+      syncCanvasToMermaid();
+      scheduleAutosave();
+      showToast('Đã xóa đối tượng');
+    }
+
+    /*************************************************************************
+     * COMPREHENSIVE EDIT MODAL (Entity, Link, Textbox)
+     *************************************************************************/
+    function openEditModal(type, id) {
+      closeAllMenus();
+      currentEditTarget = { type, id };
+      const modal = document.getElementById('edit-modal');
+      const titleEl = document.getElementById('edit-modal-title');
+      const bodyEl = document.getElementById('edit-modal-body');
+
+      if (type === 'entity') {
+        const e = state.entities.find(x => x.id === id);
+        if (!e) return;
+        titleEl.textContent = `✏️ Chỉnh sửa Thực thể: ${e.name}`;
+
+        const emojiGrid = EMOJI_PRESETS.map(em =>
+          `<button type="button" onclick="document.getElementById('ed-ent-icon').value='${em}'; document.getElementById('ed-ent-img').value='';"
+            class="w-8 h-8 rounded-lg border hover:bg-blue-50 text-base flex items-center justify-center">${em}</button>`
+        ).join('');
+
+        const paletteSwatches = COLOR_PALETTES.map(p =>
+          `<button type="button" onclick="applyPaletteToModalEntity('${p.entityStroke}', '${p.entityFill}', '${p.labelStroke}', '${p.textColor}')"
+            class="px-2 py-1 rounded border text-[11px] flex items-center gap-1 hover:bg-slate-100">
+            <span class="w-3 h-3 rounded-full inline-block" style="background:${p.entityStroke}"></span>${p.name.split(' ')[0]}
+          </button>`
+        ).join('');
+
+        bodyEl.innerHTML = `
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="font-semibold block mb-1">Tên chính / Định danh</label>
+              <textarea id="ed-ent-name" rows="2" class="w-full p-2 rounded-lg border outline-none focus:border-blue-500" style="background:var(--bg-canvas); border-color:var(--panel-border);">${escapeHTML(e.name)}</textarea>
+            </div>
+            <div>
+              <label class="font-semibold block mb-1">Thông tin phụ (CCCD, Vai trò, MST...)</label>
+              <textarea id="ed-ent-sub" rows="2" class="w-full p-2 rounded-lg border outline-none focus:border-blue-500" style="background:var(--bg-canvas); border-color:var(--panel-border);">${escapeHTML(e.subtitle || '')}</textarea>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div>
+              <label class="font-semibold block mb-1">Hình dạng viền</label>
+              <select id="ed-ent-shape" class="w-full p-2 rounded-lg border" style="background:var(--bg-canvas); border-color:var(--panel-border);">
+                <option value="circle" ${e.shape === 'circle' ? 'selected' : ''}>Hình Tròn / Ovan</option>
+                <option value="rect" ${e.shape === 'rect' ? 'selected' : ''}>Hình Chữ nhật</option>
+                <option value="triangle" ${e.shape === 'triangle' ? 'selected' : ''}>Hình Tam giác</option>
+                <option value="diamond" ${e.shape === 'diamond' ? 'selected' : ''}>Hình Thoi (Diamond)</option>
+                <option value="hexagon" ${e.shape === 'hexagon' ? 'selected' : ''}>Hình Lục giác</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-semibold block mb-1">Trạng thái</label>
+              <select id="ed-ent-confirmed" class="w-full p-2 rounded-lg border" style="background:var(--bg-canvas); border-color:var(--panel-border);">
+                <option value="true" ${e.confirmed ? 'selected' : ''}>✓ Xác nhận (Viền liền)</option>
+                <option value="false" ${!e.confirmed ? 'selected' : ''}>⋯ Nghi vấn (Viền đứt)</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-semibold block mb-1">Rộng × Cao (px)</label>
+              <div class="flex gap-1">
+                <input id="ed-ent-w" type="number" value="${e.width || 74}" class="w-1/2 p-2 rounded-lg border" style="background:var(--bg-canvas); border-color:var(--panel-border);" />
+                <input id="ed-ent-h" type="number" value="${e.height || 74}" class="w-1/2 p-2 rounded-lg border" style="background:var(--bg-canvas); border-color:var(--panel-border);" />
+              </div>
+            </div>
+            <div>
+              <label class="font-semibold block mb-1">Góc xoay (°)</label>
+              <input id="ed-ent-rot" type="number" value="${e.rotation || 0}" class="w-full p-2 rounded-lg border" style="background:var(--bg-canvas); border-color:var(--panel-border);" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-4 gap-2">
+            <div>
+              <label class="font-semibold block mb-1">Màu viền</label>
+              <input id="ed-ent-stroke" type="color" value="${e.strokeColor || '#2563eb'}" class="w-full h-9 rounded cursor-pointer" />
+            </div>
+            <div>
+              <label class="font-semibold block mb-1">Màu nền</label>
+              <input id="ed-ent-fill" type="color" value="${e.fillColor || '#ffffff'}" class="w-full h-9 rounded cursor-pointer" />
+            </div>
+            <div>
+              <label class="font-semibold block mb-1">Viền nhãn</label>
+              <input id="ed-ent-lborder" type="color" value="${e.labelBorderColor || '#cbd5e1'}" class="w-full h-9 rounded cursor-pointer" />
+            </div>
+            <div>
+              <label class="font-semibold block mb-1">Màu chữ</label>
+              <input id="ed-ent-text" type="color" value="${e.textColor || '#0f172a'}" class="w-full h-9 rounded cursor-pointer" />
+            </div>
+          </div>
+
+          <div>
+            <label class="font-semibold block mb-1">Bảng màu nhanh:</label>
+            <div class="flex flex-wrap gap-1.5">${paletteSwatches}</div>
+          </div>
+
+          <div class="border-t pt-2.5" style="border-color:var(--panel-border);">
+            <label class="font-semibold block mb-1">Biểu tượng Emoji hoặc Ảnh thật bên ngoài</label>
+            <div class="flex gap-2 mb-2">
+              <input id="ed-ent-icon" type="text" value="${e.icon || '👤'}" class="w-16 p-2 rounded-lg border text-center text-lg" style="background:var(--bg-canvas); border-color:var(--panel-border);" />
+              <input id="ed-ent-img" type="text" placeholder="Dán URL ảnh hoặc chọn file từ máy..." value="${e.imageUrl || ''}" class="flex-1 p-2 rounded-lg border" style="background:var(--bg-canvas); border-color:var(--panel-border);" />
+              <button type="button" onclick="triggerEntityImageUpload('${e.id}', true)" class="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 font-medium">📁 Chọn ảnh</button>
+            </div>
+            <div class="flex flex-wrap gap-1">${emojiGrid}</div>
+          </div>
+        `;
+      } else if (type === 'link') {
+        const l = state.links.find(x => x.id === id);
+        if (!l) return;
+        titleEl.textContent = '🔗 Chỉnh sửa Quan hệ / Liên kết';
+        bodyEl.innerHTML = `
+          <div>
+            <label class="font-semibold block mb-1">Nội dung Nhãn liên kết</label>
+            <input id="ed-lnk-label" type="text" value="${l.label || ''}" class="w-full p-2.5 rounded-lg border outline-none focus:border-blue-500" style="background:var(--bg-canvas); border-color:var(--panel-border);" />
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div>
+              <label class="font-semibold block mb-1">Độ tin cậy</label>
+              <select id="ed-lnk-confirmed" class="w-full p-2 rounded-lg border" style="background:var(--bg-canvas); border-color:var(--panel-border);">
+                <option value="true" ${l.confirmed ? 'selected' : ''}>✓ Confirm (Nét liền)</option>
+                <option value="false" ${!l.confirmed ? 'selected' : ''}>⋯ Unconfirm (Nét đứt)</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-semibold block mb-1">Chiều mũi tên</label>
+              <select id="ed-lnk-arrow" class="w-full p-2 rounded-lg border" style="background:var(--bg-canvas); border-color:var(--panel-border);">
+                <option value="right" ${l.arrowMode === 'right' ? 'selected' : ''}>Mũi tên phải (→)</option>
+                <option value="left" ${l.arrowMode === 'left' ? 'selected' : ''}>Mũi tên trái (←)</option>
+                <option value="both" ${l.arrowMode === 'both' ? 'selected' : ''}>Hai chiều (↔)</option>
+                <option value="none" ${l.arrowMode === 'none' ? 'selected' : ''}>Không mũi tên (—)</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-semibold block mb-1">Kiểu đường dây</label>
+              <select id="ed-lnk-curved" class="w-full p-2 rounded-lg border" style="background:var(--bg-canvas); border-color:var(--panel-border);">
+                <option value="true" ${l.curved !== false ? 'selected' : ''}>〰️ Uốn cong mềm mại</option>
+                <option value="false" ${l.curved === false ? 'selected' : ''}>📐 Đoạn thẳng gấp khúc</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="font-semibold block mb-1">Màu dây</label>
+              <input id="ed-lnk-color" type="color" value="${l.color || '#1e293b'}" class="w-full h-9 rounded cursor-pointer" />
+            </div>
+            <div>
+              <label class="font-semibold block mb-1">Độ dày nét (px)</label>
+              <input id="ed-lnk-width" type="number" step="0.5" min="1" max="8" value="${l.width || 2.5}" class="w-full p-2 rounded-lg border" style="background:var(--bg-canvas); border-color:var(--panel-border);" />
+            </div>
+            <div>
+              <label class="font-semibold block mb-1">Góc xoay nhãn (°)</label>
+              <input id="ed-lnk-angle" type="number" value="${l.labelAngle || 0}" class="w-full p-2 rounded-lg border" style="background:var(--bg-canvas); border-color:var(--panel-border);" />
+            </div>
+          </div>
+        `;
+      } else if (type === 'textbox') {
+        const tb = state.textboxes.find(x => x.id === id);
+        if (!tb) return;
+        titleEl.textContent = '🏷️ Chỉnh sửa Hộp Văn bản';
+        const linkOptions = [`<option value="">-- Độc lập trên màn hình --</option>`]
+          .concat(state.links.map(l => `<option value="${escapeHTML(l.id)}" ${tb.attachedLinkId === l.id ? 'selected' : ''}>Gắn theo dây: ${escapeHTML(l.label || l.id)}</option>`))
+          .join('');
+
+        bodyEl.innerHTML = `
+          <div>
+            <label class="font-semibold block mb-1">Nội dung văn bản</label>
+            <textarea id="ed-tb-text" rows="3" class="w-full p-2.5 rounded-lg border outline-none focus:border-blue-500" style="background:var(--bg-canvas); border-color:var(--panel-border);">${escapeHTML(tb.text)}</textarea>
+          </div>
+          <div>
+            <label class="font-semibold block mb-1">Gắn theo Đường liên kết (Tự di chuyển theo dây)</label>
+            <select id="ed-tb-link" class="w-full p-2 rounded-lg border" style="background:var(--bg-canvas); border-color:var(--panel-border);">
+              ${linkOptions}
+            </select>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="font-semibold block mb-1">Màu nền</label>
+              <input id="ed-tb-bg" type="color" value="${tb.bgColor || '#ffffff'}" class="w-full h-9 rounded cursor-pointer" />
+            </div>
+            <div>
+              <label class="font-semibold block mb-1">Màu viền</label>
+              <input id="ed-tb-border" type="color" value="${tb.borderColor || '#3b82f6'}" class="w-full h-9 rounded cursor-pointer" />
+            </div>
+            <div>
+              <label class="font-semibold block mb-1">Góc xoay (°)</label>
+              <input id="ed-tb-rot" type="number" value="${tb.rotation || 0}" class="w-full p-2 rounded-lg border" style="background:var(--bg-canvas); border-color:var(--panel-border);" />
+            </div>
+          </div>
+        `;
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function applyPaletteToModalEntity(stroke, fill, lborder, text) {
+      document.getElementById('ed-ent-stroke').value = stroke;
+      document.getElementById('ed-ent-fill').value = fill;
+      document.getElementById('ed-ent-lborder').value = lborder;
+      document.getElementById('ed-ent-text').value = text;
+    }
+
+    function saveEditModal() {
+      if (!currentEditTarget) return;
+      pushHistory();
+      const { type, id } = currentEditTarget;
+
+      if (type === 'entity') {
+        const e = state.entities.find(x => x.id === id);
+        if (e) {
+          e.name = document.getElementById('ed-ent-name').value;
+          e.subtitle = document.getElementById('ed-ent-sub').value;
+          e.shape = document.getElementById('ed-ent-shape').value;
+          e.confirmed = document.getElementById('ed-ent-confirmed').value === 'true';
+          e.width = Math.max(40, parseInt(document.getElementById('ed-ent-w').value, 10) || 74);
+          e.height = Math.max(40, parseInt(document.getElementById('ed-ent-h').value, 10) || 74);
+          e.rotation = parseInt(document.getElementById('ed-ent-rot').value, 10) || 0;
+          e.strokeColor = document.getElementById('ed-ent-stroke').value;
+          e.fillColor = document.getElementById('ed-ent-fill').value;
+          e.labelBorderColor = document.getElementById('ed-ent-lborder').value;
+          e.textColor = document.getElementById('ed-ent-text').value;
+          e.icon = document.getElementById('ed-ent-icon').value || '👤';
+          e.imageUrl = document.getElementById('ed-ent-img').value.trim();
+        }
+      } else if (type === 'link') {
+        const l = state.links.find(x => x.id === id);
+        if (l) {
+          l.label = document.getElementById('ed-lnk-label').value;
+          l.confirmed = document.getElementById('ed-lnk-confirmed').value === 'true';
+          l.arrowMode = document.getElementById('ed-lnk-arrow').value;
+          l.curved = document.getElementById('ed-lnk-curved').value === 'true';
+          l.color = document.getElementById('ed-lnk-color').value;
+          l.width = parseFloat(document.getElementById('ed-lnk-width').value) || 2.5;
+          l.labelAngle = parseInt(document.getElementById('ed-lnk-angle').value, 10) || 0;
+        }
+      } else if (type === 'textbox') {
+        const tb = state.textboxes.find(x => x.id === id);
+        if (tb) {
+          tb.text = document.getElementById('ed-tb-text').value;
+          const linkVal = document.getElementById('ed-tb-link').value;
+          tb.attachedLinkId = linkVal || null;
+          tb.bgColor = document.getElementById('ed-tb-bg').value;
+          tb.borderColor = document.getElementById('ed-tb-border').value;
+          tb.rotation = parseInt(document.getElementById('ed-tb-rot').value, 10) || 0;
+        }
+      }
+
+      closeEditModal();
+      renderAll();
+      syncCanvasToMermaid();
+      scheduleAutosave();
+    }
+
+    function closeEditModal() {
+      document.getElementById('edit-modal').classList.add('hidden');
+      currentEditTarget = null;
+    }
+
+    // Local image upload to replace entity emoji
+    function triggerEntityImageUpload(entityId, fromModal = false) {
+      closeAllMenus();
+      pendingImageUploadEntityId = { entityId, fromModal };
+      document.getElementById('entity-image-input').click();
+    }
+
+    function handleEntityImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file || !pendingImageUploadEntityId) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        const { entityId, fromModal } = pendingImageUploadEntityId;
+        if (fromModal && document.getElementById('ed-ent-img')) {
+          document.getElementById('ed-ent-img').value = dataUrl;
+        } else {
+          pushHistory();
+          const ent = state.entities.find(x => x.id === entityId);
+          if (ent) {
+            ent.imageUrl = dataUrl;
+            renderAll();
+            scheduleAutosave();
+            showToast('Đã cập nhật ảnh đại diện thực thể');
+          }
+        }
+        event.target.value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    /*************************************************************************
+     * LAYERS & COLOR PALETTES
+     *************************************************************************/
+    function renderLayersList() {
+      const list = document.getElementById('layers-list');
+      if (!list) return;
+      list.innerHTML = state.layers.map(layer => {
+        const isActive = layer.id === state.activeLayerId;
+        return `
+          <div class="flex items-center justify-between p-1.5 rounded-lg border ${isActive ? 'border-blue-500 bg-blue-50/60 dark:bg-blue-900/20' : ''}" style="border-color: ${isActive ? '#3b82f6' : 'var(--panel-border)'}">
+            <button onclick="setActiveLayer(decodeURIComponent('${encodeURIComponent(layer.id)}'))" class="flex-1 text-left truncate font-medium pr-1">${escapeHTML(layer.name)}</button>
+            <div class="flex items-center gap-1">
+              <button onclick="toggleLayerProp(decodeURIComponent('${encodeURIComponent(layer.id)}'), 'visible')" title="Ẩn/Hiện lớp" class="px-1.5 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700">${layer.visible ? '👁️' : '🚫'}</button>
+              <button onclick="toggleLayerProp(decodeURIComponent('${encodeURIComponent(layer.id)}'), 'locked')" title="Khóa/Mở lớp" class="px-1.5 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700">${layer.locked ? '🔒' : '🔓'}</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setActiveLayer(layerId) {
+      if (!state.layers.some(layer => layer.id === layerId)) return;
+      if (state.activeLayerId !== layerId) pushHistory();
+      state.activeLayerId = layerId;
+      renderLayersList();
+    }
+
+    function toggleLayerProp(layerId, prop) {
+      if (!['visible', 'locked'].includes(prop)) return;
+      const layer = state.layers.find(l => l.id === layerId);
+      if (layer) {
+        pushHistory();
+        layer[prop] = !layer[prop];
+        renderAll();
+        scheduleAutosave();
+      }
+    }
+
+    function addLayer() {
+      const idx = state.layers.length + 1;
+      const newLayer = {
+        id: 'layer_' + Date.now(),
+        name: `Lớp phân tích #${idx}`,
+        visible: true,
+        locked: false
+      };
+      pushHistory();
+      state.layers.push(newLayer);
+      state.activeLayerId = newLayer.id;
+      updateStatsAndBars();
+      scheduleAutosave();
+    }
+
+    function renderPalettePresets() {
+      const container = document.getElementById('palette-presets-list');
+      if (!container) return;
+      container.innerHTML = COLOR_PALETTES.map(p => `
+        <div class="p-2 rounded-xl border space-y-1.5" style="border-color: var(--panel-border);">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold">${p.name}</span>
+            <div class="flex gap-1">
+              <span class="w-3.5 h-3.5 rounded-full border" style="background:${p.entityStroke}"></span>
+              <span class="w-3.5 h-3.5 rounded-full border" style="background:${p.linkColor}"></span>
+              <span class="w-3.5 h-3.5 rounded-full border" style="background:${p.unconfirmedColor}"></span>
+            </div>
+          </div>
+          <div class="flex gap-1.5">
+            <button onclick="applyColorPalette('${p.id}', false)" class="flex-1 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white font-medium">Áp dụng đang chọn</button>
+            <button onclick="applyColorPalette('${p.id}', true)" class="flex-1 py-1 rounded border hover:bg-slate-100 dark:hover:bg-slate-800" style="border-color:var(--panel-border);">Toàn sơ đồ</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function applyColorPalette(paletteId, applyAll) {
+      const pal = COLOR_PALETTES.find(p => p.id === paletteId);
+      if (!pal) return;
+      pushHistory();
+
+      if (applyAll) {
+        state.entities.forEach(e => {
+          e.strokeColor = pal.entityStroke;
+          e.fillColor = pal.entityFill;
+          e.labelBorderColor = pal.labelStroke;
+          e.textColor = pal.textColor;
+        });
+        state.links.forEach(l => {
+          l.color = l.confirmed ? pal.linkColor : pal.unconfirmedColor;
+        });
+      } else {
+        const sel = state.selection;
+        if (sel.type === 'entity' || sel.type === 'multi') {
+          sel.ids.forEach(id => {
+            const e = state.entities.find(x => x.id === id);
+            if (e) {
+              e.strokeColor = pal.entityStroke;
+              e.fillColor = pal.entityFill;
+              e.labelBorderColor = pal.labelStroke;
+              e.textColor = pal.textColor;
+            }
+          });
+        } else if (sel.type === 'link') {
+          sel.ids.forEach(id => {
+            const l = state.links.find(x => x.id === id);
+            if (l) l.color = l.confirmed ? pal.linkColor : pal.unconfirmedColor;
+          });
+        } else if (sel.type === 'textbox') {
+          sel.ids.forEach(id => {
+            const tb = state.textboxes.find(x => x.id === id);
+            if (tb) {
+              tb.bgColor = pal.entityFill;
+              tb.borderColor = pal.entityStroke;
+              tb.textColor = pal.textColor;
+            }
+          });
+        }
+      }
+      renderAll();
+      scheduleAutosave();
+      showToast(`Đã áp dụng bảng màu: ${pal.name}`);
+    }
+
+    /*************************************************************************
+     * MERMAID.JS TWO-WAY SYNCHRONIZATION
+     *************************************************************************/
+    function syncCanvasToMermaid() {
+      const lines = ['graph TD'];
+      const idMap = {};
+      state.entities.forEach((e, idx) => {
+        const safeId = `N${idx + 1}`;
+        idMap[e.id] = safeId;
+        const cleanLabel = `${e.icon || ''} ${e.name}`.replace(/\n/g, ' ').replace(/"/g, "'").trim();
+        lines.push(`  ${safeId}["${cleanLabel}"]`);
+      });
+
+      state.links.forEach(l => {
+        const s = idMap[l.source];
+        const t = idMap[l.target];
+        if (!s || !t) return;
+        const lbl = (l.label || '').replace(/"/g, "'").trim();
+        const arrow = l.confirmed
+          ? (l.arrowMode === 'both' ? '<-->' : (l.arrowMode === 'none' ? '---' : '-->'))
+          : '-.->';
+        if (lbl) {
+          lines.push(`  ${s} ${arrow}|"${lbl}"| ${t}`);
+        } else {
+          lines.push(`  ${s} ${arrow} ${t}`);
+        }
+      });
+
+      const ta = document.getElementById('mermaid-code-textarea');
+      if (ta) ta.value = lines.join('\n');
+    }
+
+    function applyMermaidToCanvas() {
+      const code = document.getElementById('mermaid-code-textarea').value;
+      const lines = code.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('%%') && !l.startsWith('graph ') && !l.startsWith('flowchart '));
+      if (lines.length === 0) return showToast('Chưa có cú pháp Mermaid hợp lệ');
+
+      pushHistory();
+      const nodeMap = new Map();
+      const parsedLinks = [];
+
+      const ensureNode = (rawId, rawLabel) => {
+        if (!nodeMap.has(rawId)) {
+          const clean = (rawLabel || rawId).replace(/^["'\[\(\{]+|["'\]\)\}]+$/g, '').trim();
+          let icon = '👤';
+          let strokeColor = '#2563eb';
+          if (/0\d{8,10}|\+84/.test(clean)) { icon = '📱'; strokeColor = '#059669'; }
+          else if (/\d{2}[A-Z]-\d{4,5}/.test(clean)) { icon = '🚗'; strokeColor = '#d97706'; }
+          else if (/công ty|tập đoàn|ngân hàng/i.test(clean)) { icon = '🏢'; strokeColor = '#7c3aed'; }
+          else if (/đường|phố|quận|hà nội|hcm|cầu giấy/i.test(clean)) { icon = '📍'; strokeColor = '#dc2626'; }
+
+          nodeMap.set(rawId, {
+            id: 'e_m_' + rawId,
+            name: clean,
+            subtitle: '',
+            type: 'person_anon',
+            shape: 'circle',
+            icon,
+            imageUrl: '',
+            x: 200,
+            y: 200,
+            width: 74,
+            height: 74,
+            rotation: 0,
+            strokeColor,
+            fillColor: '#ffffff',
+            labelBorderColor: '#cbd5e1',
+            textColor: '#0f172a',
+            confirmed: true,
+            locked: false,
+            layerId: state.activeLayerId
+          });
+        } else if (rawLabel) {
+          nodeMap.get(rawId).name = rawLabel.replace(/^["'\[\(\{]+|["'\]\)\}]+$/g, '').trim();
+        }
+        return nodeMap.get(rawId).id;
+      };
+
+      lines.forEach((line, idx) => {
+        // Match link patterns: A --> B, A -.->|label| B, A <--> B, A --- B
+        const linkMatch = line.match(/^([A-Za-z0-9_]+)(?:\[(.*?)\])?\s*(<-->|-->|-\.->|---)\s*(?:\|"?(.*?)"?\|)?\s*([A-Za-z0-9_]+)(?:\[(.*?)\])?/);
+        if (linkMatch) {
+          const [, srcKey, srcLbl, connector, relLbl, tgtKey, tgtLbl] = linkMatch;
+          const srcId = ensureNode(srcKey, srcLbl);
+          const tgtId = ensureNode(tgtKey, tgtLbl);
+          const confirmed = connector !== '-.->';
+          const arrowMode = connector === '<-->' ? 'both' : (connector === '---' ? 'none' : 'right');
+          parsedLinks.push({
+            id: 'l_m_' + idx + '_' + Date.now(),
+            source: srcId,
+            target: tgtId,
+            label: relLbl || '',
+            confirmed,
+            arrowMode,
+            curved: true,
+            color: confirmed ? '#1e293b' : '#d97706',
+            width: 2.5,
+            waypoints: [],
+            labelOffset: { x: 0, y: 0 },
+            labelAngle: 0,
+            layerId: state.activeLayerId
+          });
+          return;
+        }
+
+        // Match standalone node definition: A["Label"]
+        const nodeMatch = line.match(/^([A-Za-z0-9_]+)\s*[\[\(\{](.*?)[\]\)\}]/);
+        if (nodeMatch) {
+          ensureNode(nodeMatch[1], nodeMatch[2]);
+        }
+      });
+
+      // Radial / Grid Auto-layout
+      const entArr = Array.from(nodeMap.values());
+      const cols = Math.max(2, Math.ceil(Math.sqrt(entArr.length)));
+      entArr.forEach((ent, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        ent.x = 220 + col * 240;
+        ent.y = 180 + row * 210;
+      });
+
+      state.entities = entArr;
+      state.links = parsedLinks;
+      state.selection = { type: null, ids: [] };
+      renderAll();
+      fitToScreen();
+      scheduleAutosave();
+      showToast(`Đã dựng ${entArr.length} thực thể & ${parsedLinks.length} liên kết từ Mermaid!`);
+    }
+
+    function copyMermaidCode() {
+      const ta = document.getElementById('mermaid-code-textarea');
+      ta.select();
+      document.execCommand('copy');
+      showToast('Đã sao chép mã Mermaid.js');
+    }
+
+    /*************************************************************************
+     * EXCEL / CSV IMPORT & RELATIONAL ANB EXPORT (SheetJS)
+     *************************************************************************/
+    function triggerExcelImport() {
+      closeAllMenus();
+      document.getElementById('excel-file-input').click();
+    }
+
+    function handleExcelFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          if (typeof XLSX === 'undefined') {
+            return showToast('Thư viện Excel đang tải, vui lòng thử lại sau giây lát');
+          }
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+          buildAnbDiagramFromRows(rows);
+        } catch (err) {
+          showToast('Lỗi đọc file Excel: ' + err.message);
+        }
+        event.target.value = '';
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function buildAnbDiagramFromRows(rows) {
+      if (!rows || rows.length === 0) return showToast('File Excel trống');
+      pushHistory();
+
+      const entityMap = new Map();
+      const newLinks = [];
+
+      const getOrCreateEntity = (key, props) => {
+        const norm = String(key).trim();
+        if (!norm) return null;
+        if (!entityMap.has(norm)) {
+          entityMap.set(norm, {
+            id: 'e_xl_' + entityMap.size + '_' + Date.now(),
+            name: norm,
+            subtitle: props.subtitle || '',
+            type: props.type || 'person_anon',
+            shape: 'circle',
+            icon: props.icon || '👤',
+            imageUrl: '',
+            x: 250,
+            y: 250,
+            width: 74,
+            height: 74,
+            rotation: 0,
+            strokeColor: props.strokeColor || '#2563eb',
+            fillColor: '#ffffff',
+            labelBorderColor: '#cbd5e1',
+            textColor: '#0f172a',
+            confirmed: props.confirmed !== false,
+            locked: false,
+            layerId: state.activeLayerId
+          });
+        }
+        return entityMap.get(norm).id;
+      };
+
+      rows.forEach((row, idx) => {
+        // Normalize column headers case-insensitively
+        const normRow = {};
+        Object.keys(row).forEach(k => {
+          normRow[k.toLowerCase().trim()] = String(row[k]).trim();
+        });
+
+        const name = normRow.name || normRow.ten || normRow['họ tên'] || normRow.subject || '';
+        const tel = normRow.tel || normRow.phone || normRow.sdt || normRow['số điện thoại'] || '';
+        const address = normRow.address || normRow.diachi || normRow['địa chỉ'] || '';
+        const car = normRow.car || normRow.vehicle || normRow.xe || normRow['biển số'] || '';
+        const org = normRow.company || normRow.org || normRow['công ty'] || '';
+        const gender = (normRow.gender || normRow.gioitinh || normRow['giới tính'] || '').toLowerCase();
+        const role = normRow.role || normRow.vaitro || normRow['vai trò'] || normRow.note || normRow['ghi chú'] || '';
+        const target = normRow.target || normRow.lienhe || normRow['đối tượng liên hệ'] || '';
+        const relation = normRow.relation || normRow.quanhe || normRow['quan hệ'] || 'Liên hệ';
+        const confirmedStr = (normRow.confirmed || normRow.xacnhan || 'true').toLowerCase();
+        const isConfirmed = !['false', '0', 'no', 'unconfirm', 'nghi vấn', 'chưa xác nhận'].includes(confirmedStr);
+
+        if (!name) return;
+
+        // Gender-aware icon selection (Male / Female / Anonymous if unknown)
+        let personIcon = '👤';
+        let personColor = '#d97706';
+        if (['nam', 'male', 'm', 'trai'].includes(gender)) {
+          personIcon = '👨';
+          personColor = '#2563eb';
+        } else if (['nữ', 'nu', 'female', 'f', 'gái'].includes(gender)) {
+          personIcon = '👩';
+          personColor = '#2563eb';
+        }
+
+        const personId = getOrCreateEntity(name, {
+          subtitle: role || (personIcon === '👤' ? 'Chưa rõ giới tính' : ''),
+          icon: personIcon,
+          strokeColor: personColor,
+          confirmed: isConfirmed
+        });
+
+        if (tel) {
+          const telId = getOrCreateEntity(tel, { subtitle: 'Số điện thoại', icon: '📱', strokeColor: '#059669', confirmed: true });
+          newLinks.push({ id: `xl_tel_${idx}`, source: personId, target: telId, label: 'Sử dụng SĐT', confirmed: true, arrowMode: 'right', curved: true, color: '#1e293b', width: 2.2, waypoints: [], labelOffset: { x: 0, y: 0 }, labelAngle: 0, layerId: state.activeLayerId });
+        }
+        if (car) {
+          const carId = getOrCreateEntity(car, { subtitle: 'Phương tiện', icon: '🚗', strokeColor: '#d97706', confirmed: true });
+          newLinks.push({ id: `xl_car_${idx}`, source: personId, target: carId, label: 'Sở hữu xe', confirmed: true, arrowMode: 'right', curved: true, color: '#1e293b', width: 2.2, waypoints: [], labelOffset: { x: 0, y: 0 }, labelAngle: 0, layerId: state.activeLayerId });
+        }
+        if (address) {
+          const addrId = getOrCreateEntity(address, { subtitle: 'Địa chỉ', icon: '📍', strokeColor: '#dc2626', confirmed: true });
+          newLinks.push({ id: `xl_addr_${idx}`, source: personId, target: addrId, label: 'Cư trú / Lui tới', confirmed: true, arrowMode: 'right', curved: true, color: '#1e293b', width: 2.2, waypoints: [], labelOffset: { x: 0, y: 0 }, labelAngle: 0, layerId: state.activeLayerId });
+        }
+        if (org) {
+          const orgId = getOrCreateEntity(org, { subtitle: 'Tổ chức / Pháp nhân', icon: '🏢', strokeColor: '#7c3aed', confirmed: true });
+          newLinks.push({ id: `xl_org_${idx}`, source: personId, target: orgId, label: 'Liên quan tổ chức', confirmed: true, arrowMode: 'right', curved: true, color: '#1e293b', width: 2.2, waypoints: [], labelOffset: { x: 0, y: 0 }, labelAngle: 0, layerId: state.activeLayerId });
+        }
+        if (target) {
+          const tgtId = getOrCreateEntity(target, { subtitle: 'Đối tượng liên quan', icon: '👤', strokeColor: '#d97706', confirmed: isConfirmed });
+          newLinks.push({ id: `xl_rel_${idx}`, source: personId, target: tgtId, label: relation, confirmed: isConfirmed, arrowMode: 'right', curved: true, color: isConfirmed ? '#1e293b' : '#d97706', width: 2.2, waypoints: [], labelOffset: { x: 0, y: 0 }, labelAngle: 0, layerId: state.activeLayerId });
+        }
+      });
+
+      // Arrange entities nicely in concentric / grid coordinates
+      const entList = Array.from(entityMap.values());
+      const cols = Math.max(3, Math.ceil(Math.sqrt(entList.length)));
+      entList.forEach((ent, i) => {
+        ent.x = 200 + (i % cols) * 240;
+        ent.y = 160 + Math.floor(i / cols) * 210;
+      });
+
+      state.entities = entList;
+      state.links = newLinks;
+      state.selection = { type: null, ids: [] };
+      renderAll();
+      fitToScreen();
+      syncCanvasToMermaid();
+      scheduleAutosave();
+      showToast(`Đã tự dựng sơ đồ ANB: ${entList.length} thực thể, ${newLinks.length} quan hệ`);
+    }
+
+    function downloadSampleExcel() {
+      closeAllMenus();
+      if (typeof XLSX === 'undefined') return showToast('Đang tải thư viện Excel...');
+      const sampleRows = [
+        { name: 'Nguyễn Văn Hùng', gender: 'Nam', role: 'Đối tượng chính', tel: '0912.345.678', car: '30H-886.68', address: '120 Cầu Giấy, HN', company: '', target: 'Trần Thị Mai', relation: 'Chuyển khoản 450tr', confirmed: 'false' },
+        { name: 'Trần Thị Mai', gender: 'Nữ', role: 'Kế toán', tel: '', car: '', address: '', company: 'Công ty Hoàng Kim', target: 'Nhân vật Ẩn danh #3', relation: 'Nghi vấn gặp mặt', confirmed: 'false' },
+        { name: 'Nhân vật Ẩn danh #3', gender: '', role: 'Chưa rõ giới tính', tel: '', car: '', address: '', company: '', target: '', relation: '', confirmed: 'true' }
+      ];
+      const ws = XLSX.utils.json_to_sheet(sampleRows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'DuLieu_ANB');
+      XLSX.writeFile(wb, 'Mau_Nhap_Lieu_ANB.xlsx');
+    }
+
+    function exportRelationalExcel() {
+      closeAllMenus();
+      if (typeof XLSX === 'undefined') return showToast('Đang tải thư viện Excel...');
+      const idToName = {};
+      state.entities.forEach(e => { idToName[e.id] = e.name.replace(/\n/g, ' '); });
+
+      const entitySheetRows = state.entities.map((e, idx) => ({
+        STT: idx + 1,
+        ID: e.id,
+        Ten_Thuc_The: e.name.replace(/\n/g, ' '),
+        Thong_Tin_Phu: (e.subtitle || '').replace(/\n/g, ' | '),
+        Bieu_Tuong: e.icon,
+        Hinh_Dang: e.shape,
+        Trang_Thai: e.confirmed ? 'Confirmed' : 'Unconfirmed'
+      }));
+
+      const linkSheetRows = state.links.map((l, idx) => ({
+        STT: idx + 1,
+        Doi_Tuong_Nguon: idToName[l.source] || l.source,
+        Quan_He: l.label || '',
+        Doi_Tuong_Dich: idToName[l.target] || l.target,
+        Chieu_Mui_Ten: l.arrowMode,
+        Do_Tin_Cay: l.confirmed ? 'Confirmed (Xác nhận)' : 'Unconfirmed (Nghi vấn)'
+      }));
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(entitySheetRows), 'Thuc_The_Entities');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(linkSheetRows), 'Quan_He_Links');
+      const safeName = (state.title || 'So_do_ANB').replace(/[^a-zA-Z0-9_\u00C0-\u1EF9]/g, '_');
+      XLSX.writeFile(wb, `${safeName}_QuanHe_ANB.xlsx`);
+      showToast('Đã xuất file Excel quan hệ thành công');
+    }
+
+    /*************************************************************************
+     * CLEAN EXPORT (SVG, PNG, JPG, PDF, JSON) & SAVED LIBRARY
+     *************************************************************************/
+    function buildCleanExportSVGData() {
+      // Compute tight bounding box around all entities, links, and textboxes
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      state.entities.forEach(e => {
+        minX = Math.min(minX, e.x - 110);
+        maxX = Math.max(maxX, e.x + 110);
+        minY = Math.min(minY, e.y - 70);
+        maxY = Math.max(maxY, e.y + 120);
+      });
+      state.textboxes.forEach(tb => {
+        minX = Math.min(minX, tb.x - (tb.width || 160) / 2 - 20);
+        maxX = Math.max(maxX, tb.x + (tb.width || 160) / 2 + 20);
+        minY = Math.min(minY, tb.y - (tb.height || 50) / 2 - 20);
+        maxY = Math.max(maxY, tb.y + (tb.height || 50) / 2 + 20);
+      });
+      if (!isFinite(minX)) {
+        minX = 0; minY = 0; maxX = 1000; maxY = 700;
+      }
+
+      const width = Math.max(400, Math.round(maxX - minX + 80));
+      const height = Math.max(300, Math.round(maxY - minY + 80));
+      const viewBox = `${Math.round(minX - 40)} ${Math.round(minY - 40)} ${width} ${height}`;
+
+      // Temporarily clear selection & grid for a crisp export
+      const prevSel = state.selection;
+      state.selection = { type: null, ids: [] };
+      renderAll();
+
+      const defsHtml = document.getElementById('svg-defs').innerHTML;
+      const linksHtml = document.getElementById('layer-links').innerHTML;
+      const entitiesHtml = document.getElementById('layer-entities').innerHTML;
+      const textboxesHtml = document.getElementById('layer-textboxes').innerHTML;
+
+      state.selection = prevSel;
+      renderAll();
+
+      const svgString = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="${width}" height="${height}" style="font-family: Inter, Arial, sans-serif; background: #ffffff;">
+  <defs>${defsHtml}</defs>
+  <rect x="${Math.round(minX - 40)}" y="${Math.round(minY - 40)}" width="${width}" height="${height}" fill="#ffffff" />
+  <g>${linksHtml}</g>
+  <g>${entitiesHtml}</g>
+  <g>${textboxesHtml}</g>
+</svg>`;
+
+      return { svgString, width, height };
+    }
+
+    function exportSVG() {
+      closeAllMenus();
+      const { svgString } = buildCleanExportSVGData();
+      const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      triggerDownload(url, `${getSafeFileName()}.svg`);
+      showToast('Đã xuất file vector SVG');
+    }
+
+    function exportRaster(format = 'png', callback = null) {
+      closeAllMenus();
+      const { svgString, width, height } = buildCleanExportSVGData();
+      const scaleFactor = 2; // Crisp 2x Retina resolution
+      const img = new Image();
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = width * scaleFactor;
+        canvas.height = height * scaleFactor;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+
+        const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png';
+        const dataUrl = canvas.toDataURL(mime, 0.95);
+        if (callback) {
+          callback(dataUrl, width, height);
+        } else {
+          triggerDownload(dataUrl, `${getSafeFileName()}.${format === 'jpeg' ? 'jpg' : 'png'}`);
+          showToast(`Đã xuất ảnh ${format.toUpperCase()} chất lượng cao`);
+        }
+      };
+      img.src = url;
+    }
+
+    function exportPDF() {
+      closeAllMenus();
+      exportRaster('png', (pngDataUrl, w, h) => {
+        if (window.jspdf && window.jspdf.jsPDF) {
+          const orientation = w >= h ? 'landscape' : 'portrait';
+          const pdf = new window.jspdf.jsPDF({ orientation, unit: 'px', format: [w, h] });
+          pdf.addImage(pngDataUrl, 'PNG', 0, 0, w, h);
+          pdf.save(`${getSafeFileName()}.pdf`);
+          showToast('Đã xuất tài liệu PDF');
+        } else {
+          window.print();
+        }
+      });
+    }
+
+    function exportJSON() {
+      closeAllMenus();
+      const payload = JSON.stringify({
+        app: 'LinkBoard ANB Studio',
+        schemaVersion: PROJECT_SCHEMA_VERSION,
+        exportedAt: new Date().toISOString(),
+        title: state.title,
+        layers: state.layers,
+        entities: state.entities,
+        links: state.links,
+        textboxes: state.textboxes
+      }, null, 2);
+      const blob = new Blob([payload], { type: 'application/json' });
+      triggerDownload(URL.createObjectURL(blob), `${getSafeFileName()}.json`);
+      showToast('Đã lưu file dự án JSON');
+    }
+
+    function triggerJSONImport() {
+      closeAllMenus();
+      document.getElementById('json-file-input').click();
+    }
+
+    function handleJSONFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (file.size > 50 * 1024 * 1024) { showToast('File vượt quá giới hạn 50 MB.'); event.target.value = ''; return; }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          const validationError = validateProjectData(parsed);
+          if (validationError) { showToast(validationError); event.target.value = ''; return; }
+          pushHistory();
+          state.title = String(parsed.title || 'Sơ đồ đã nhập').slice(0, 200);
+          state.layers = parsed.layers || state.layers;
+          state.entities = parsed.entities;
+          state.links = parsed.links;
+          state.textboxes = parsed.textboxes || [];
+          state.activeLayerId = state.layers.some(layer => layer.id === parsed.activeLayerId) ? parsed.activeLayerId : (state.layers[0]?.id || null);
+          state.selection = { type: null, ids: [] };
+          document.getElementById('project-title-input').value = state.title;
+          renderAll();
+          fitToScreen();
+          syncCanvasToMermaid();
+          scheduleAutosave();
+          showToast('Đã mở dự án thành công');
+        } catch (err) {
+          showToast('File JSON không hợp lệ');
+        }
+        event.target.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    function getSafeFileName() {
+      return (state.title || 'So_do_ANB').replace(/[^a-zA-Z0-9_\u00C0-\u1EF9]/g, '_');
+    }
+
+    function triggerDownload(url, filename) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // Saved Library Modal
+    function openLibraryModal() {
+      closeAllMenus();
+      renderSavedDiagramsList();
+      document.getElementById('library-modal').classList.remove('hidden');
+    }
+
+    function closeLibraryModal() {
+      document.getElementById('library-modal').classList.add('hidden');
+    }
+
+    function getSavedLibrary() {
+      try {
+        return JSON.parse(safeLocalStorageGet(STORAGE_KEY_LIBRARY, '[]') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveCurrentToLibrary() {
+      const lib = getSavedLibrary();
+      lib.unshift({
+        id: 'lib_' + Date.now(),
+        title: state.title || 'Sơ đồ không tên',
+        updatedAt: new Date().toLocaleString('vi-VN'),
+        entityCount: state.entities.length,
+        linkCount: state.links.length,
+        data: {
+          title: state.title,
+          layers: state.layers,
+          activeLayerId: state.activeLayerId,
+          entities: state.entities,
+          links: state.links,
+          textboxes: state.textboxes
+        }
+      });
+      if (!safeLocalStorageSet(STORAGE_KEY_LIBRARY, JSON.stringify(lib.slice(0, 25)))) { showToast('Không đủ bộ nhớ để lưu thư viện. Hãy xuất dự án JSON.'); return; }
+      renderSavedDiagramsList();
+      showToast('Đã lưu vào Kho sơ đồ trên trình duyệt');
+    }
+
+    function renderSavedDiagramsList() {
+      const container = document.getElementById('saved-diagrams-list');
+      const lib = getSavedLibrary();
+      if (lib.length === 0) {
+        container.innerHTML = `<div class="text-center py-6 opacity-60">Chưa có sơ đồ nào được lưu trong kho.</div>`;
+        return;
+      }
+      container.innerHTML = lib.map(item => `
+        <div class="flex items-center justify-between p-2.5 rounded-xl border" style="border-color: var(--panel-border);">
+          <div class="min-w-0 pr-2">
+            <div class="font-bold truncate">${escapeHTML(item.title)}</div>
+            <div class="text-[11px] opacity-65">${escapeHTML(item.updatedAt)} • ${Number(item.entityCount)||0} thực thể, ${Number(item.linkCount)||0} liên kết</div>
+          </div>
+          <div class="flex gap-1.5 shrink-0">
+            <button onclick="loadFromLibrary(decodeURIComponent('${encodeURIComponent(item.id)}'))" class="px-2.5 py-1.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700">Mở sửa</button>
+            <button onclick="deleteFromLibrary(decodeURIComponent('${encodeURIComponent(item.id)}'))" class="px-2 py-1.5 rounded-lg bg-rose-50 text-rose-600 border border-rose-200">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function loadFromLibrary(libId) {
+      const item = getSavedLibrary().find(x => x.id === libId);
+      if (!item) return;
+      const validationError = validateProjectData(item.data);
+      if (validationError) return showToast('Dữ liệu trong thư viện lỗi: ' + validationError);
+      pushHistory();
+      Object.assign(state, JSON.parse(JSON.stringify(item.data)));
+      state.selection = { type: null, ids: [] };
+      document.getElementById('project-title-input').value = state.title;
+      closeLibraryModal();
+      renderAll();
+      fitToScreen();
+      syncCanvasToMermaid();
+      showToast(`Đã tải sơ đồ: ${state.title}`);
+    }
+
+    function deleteFromLibrary(libId) {
+      const lib = getSavedLibrary().filter(x => x.id !== libId);
+      safeLocalStorageSet(STORAGE_KEY_LIBRARY, JSON.stringify(lib));
+      renderSavedDiagramsList();
+    }
+
+    /*************************************************************************
+     * ZOOM, PAN, FIT-TO-SCREEN & UI HELPERS
+     *************************************************************************/
+    function zoomBy(factor) {
+      const container = document.getElementById('canvas-container');
+      const rect = container.getBoundingClientRect();
+      const cx = rect.width / 2;
+      const cy = rect.height / 2;
+      const newScale = Math.max(0.2, Math.min(3.5, state.viewport.scale * factor));
+      state.viewport.x = cx - (cx - state.viewport.x) * (newScale / state.viewport.scale);
+      state.viewport.y = cy - (cy - state.viewport.y) * (newScale / state.viewport.scale);
+      state.viewport.scale = newScale;
+      updateViewportTransform();
+      scheduleAutosave();
+    }
+
+    function resetZoom() {
+      state.viewport = { x: 0, y: 0, scale: 1 };
+      updateViewportTransform();
+      scheduleAutosave();
+    }
+
+    function fitToScreen() {
+      if (state.entities.length === 0) return resetZoom();
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      state.entities.forEach(e => {
+        minX = Math.min(minX, e.x - 100);
+        maxX = Math.max(maxX, e.x + 100);
+        minY = Math.min(minY, e.y - 70);
+        maxY = Math.max(maxY, e.y + 115);
+      });
+      const container = document.getElementById('canvas-container');
+      const rect = container.getBoundingClientRect();
+      const contentW = Math.max(200, maxX - minX);
+      const contentH = Math.max(200, maxY - minY);
+
+      const scale = Math.max(0.25, Math.min(1.25, Math.min((rect.width - 80) / contentW, (rect.height - 80) / contentH)));
+      state.viewport.scale = scale;
+      state.viewport.x = (rect.width - contentW * scale) / 2 - minX * scale;
+      state.viewport.y = (rect.height - contentH * scale) / 2 - minY * scale;
+      updateViewportTransform();
+      scheduleAutosave();
+    }
+
+    function toggleGrid() {
+      state.showGrid = !state.showGrid;
+      applyThemeAndGrid();
+      scheduleAutosave();
+    }
+
+    function toggleTheme() {
+      state.theme = state.theme === 'dark' ? 'light' : 'dark';
+      renderAll();
+      scheduleAutosave();
+    }
+
+    function toggleDropdown(id) {
+      const target = document.getElementById(id);
+      const wasHidden = target.classList.contains('hidden');
+      closeAllMenus();
+      if (wasHidden) target.classList.remove('hidden');
+    }
+
+    function togglePanel(id) {
+      const el = document.getElementById(id);
+      el.classList.toggle('hidden');
+    }
+
+    function toggleDrawer(id) {
+      const el = document.getElementById(id);
+      el.classList.toggle('hidden');
+      if (!el.classList.contains('hidden')) {
+        syncCanvasToMermaid();
+      }
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const box = document.getElementById('toast-box');
+      box.textContent = msg;
+      box.classList.remove('hidden');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        box.classList.add('hidden');
+      }, 2600);
+    }
+  </script>
+</body>
+</html>

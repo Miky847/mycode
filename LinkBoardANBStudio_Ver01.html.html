@@ -1,0 +1,2254 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LinkBoard ANB Studio — Diagram &amp; Intelligence Analysis</title>
+<!-- Optional CDNs with graceful offline fallbacks -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js" defer></script>
+<style>
+  :root {
+    --bg-app: #0f172a;
+    --bg-panel: #1e293b;
+    --bg-panel-alt: #273549;
+    --border: #334155;
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-hover: #0284c7;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --warn: #f59e0b;
+    --canvas-bg: #f8fafc;
+    --grid-dot: #cbd5e1;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, sans-serif;
+    background: var(--bg-app); color: var(--text-main); overflow: hidden;
+    user-select: none;
+  }
+  /* Top Toolbar */
+  #topbar {
+    height: 48px; background: var(--bg-panel); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 10px; gap: 6px;
+    overflow-x: auto; white-space: nowrap; z-index: 30;
+  }
+  #topbar::-webkit-scrollbar { height: 4px; }
+  #topbar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .brand {
+    font-weight: 700; font-size: 14px; color: var(--accent);
+    display: flex; align-items: center; gap: 6px; padding-right: 8px;
+    border-right: 1px solid var(--border);
+  }
+  .btn {
+    background: var(--bg-panel-alt); color: var(--text-main);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 5px 9px; font-size: 12px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .btn:hover { background: #334155; border-color: #475569; }
+  .btn.active { background: var(--accent-hover); border-color: var(--accent); color: #fff; }
+  .btn-primary { background: #0284c7; border-color: #38bdf8; color: #fff; font-weight: 600; }
+  .btn-primary:hover { background: #0369a1; }
+  .btn-danger { background: #7f1d1d; border-color: #ef4444; color: #fecaca; }
+  .sep { width: 1px; height: 24px; background: var(--border); margin: 0 2px; flex-shrink: 0; }
+  select.ui-select {
+    background: var(--bg-panel-alt); color: var(--text-main);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 4px 7px; font-size: 12px; cursor: pointer;
+  }
+
+  /* Main Layout */
+  #workspace {
+    display: flex; width: 100%; height: calc(100% - 48px); position: relative;
+  }
+  .sidebar {
+    width: 260px; background: var(--bg-panel); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; z-index: 20; transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+  .sidebar.right {
+    width: 285px; border-right: none; border-left: 1px solid var(--border);
+  }
+  .sidebar-tabs {
+    display: flex; border-bottom: 1px solid var(--border); background: #162032;
+  }
+  .sidebar-tab {
+    flex: 1; padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 600;
+    color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent;
+  }
+  .sidebar-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--bg-panel); }
+  .sidebar-body {
+    flex: 1; overflow-y: auto; padding: 10px; font-size: 12px;
+  }
+  .section-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--text-muted); margin: 10px 0 6px;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  /* Entity Palette Grid */
+  .palette-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+  }
+  .palette-item {
+    background: var(--bg-panel-alt); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; text-align: center; font-size: 11px; transition: 0.15s;
+  }
+  .palette-item:hover { border-color: var(--accent); background: #2d3e56; transform: translateY(-1px); }
+  .palette-icon { font-size: 20px; line-height: 1; }
+
+  /* Template Cards */
+  .tpl-card {
+    background: var(--bg-panel-alt); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; margin-bottom: 7px; cursor: pointer; transition: 0.15s;
+  }
+  .tpl-card:hover { border-color: var(--accent); background: #2d3e56; }
+  .tpl-card-title { font-weight: 600; color: #f8fafc; margin-bottom: 2px; display: flex; justify-content: space-between; }
+  .tpl-card-desc { font-size: 11px; color: var(--text-muted); }
+
+  /* Canvas Area */
+  #canvas-wrap {
+    flex: 1; position: relative; background: var(--canvas-bg); overflow: hidden;
+    touch-action: none;
+  }
+  #diagram-svg {
+    width: 100%; height: 100%; display: block; cursor: grab;
+  }
+  #diagram-svg.panning { cursor: grabbing; }
+  #diagram-svg.connect-mode { cursor: crosshair; }
+
+  /* Floating Status / HUD */
+  #hud-bottom {
+    position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.9); color: #f8fafc;
+    border: 1px solid var(--border); border-radius: 20px;
+    padding: 5px 14px; font-size: 12px; display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3); z-index: 15; backdrop-filter: blur(6px);
+  }
+  #hud-bottom button {
+    background: transparent; border: none; color: var(--accent); font-weight: 700;
+    cursor: pointer; padding: 2px 5px; font-size: 13px;
+  }
+
+  /* Inspector Controls */
+  .prop-row { margin-bottom: 8px; }
+  .prop-row label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 3px; }
+  .prop-input, .prop-select, .prop-textarea {
+    width: 100%; background: #0f172a; color: #f8fafc;
+    border: 1px solid var(--border); border-radius: 5px; padding: 5px 7px; font-size: 12px;
+  }
+  .prop-textarea { resize: vertical; min-height: 54px; font-family: inherit; }
+  .prop-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .prop-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .swatch-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+  .swatch {
+    width: 20px; height: 20px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3);
+    cursor: pointer;
+  }
+  .swatch:hover { transform: scale(1.15); }
+
+  /* Layers List */
+  .layer-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg-panel-alt); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 8px; margin-bottom: 5px;
+  }
+  .layer-item.active { border-color: var(--accent); }
+
+  /* Context Menu */
+  #ctx-menu {
+    position: fixed; display: none; background: #1e293b; border: 1px solid #475569;
+    border-radius: 8px; padding: 5px; min-width: 185px; z-index: 100;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.45); font-size: 12px;
+  }
+  .ctx-item {
+    padding: 6px 10px; border-radius: 5px; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .ctx-item:hover { background: #334155; color: var(--accent); }
+  .ctx-sep { height: 1px; background: var(--border); margin: 4px 0; }
+
+  /* Quick Inline Modal */
+  #quick-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: none;
+    align-items: center; justify-content: center; z-index: 120; padding: 16px;
+  }
+  .modal-card {
+    background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px;
+    width: 100%; max-width: 440px; padding: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  }
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    font-weight: 700; font-size: 14px; margin-bottom: 12px; color: var(--accent);
+  }
+
+  /* SVG Interactive Elements */
+  .node-group { cursor: move; }
+  .node-group.locked { cursor: not-allowed; }
+  .node-selected-ring { pointer-events: none; }
+  .port-dot {
+    fill: #38bdf8; stroke: #0f172a; stroke-width: 1.5; cursor: crosshair;
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .node-group:hover .port-dot, .connect-active .port-dot { opacity: 1; }
+  .resize-handle {
+    fill: #ffffff; stroke: #0284c7; stroke-width: 2; cursor: nwse-resize;
+  }
+  .rotate-handle {
+    fill: #f59e0b; stroke: #0f172a; stroke-width: 1.5; cursor: grab;
+  }
+  .link-hit {
+    fill: none; stroke: transparent; stroke-width: 16; cursor: pointer;
+  }
+  .waypoint-dot {
+    fill: #f59e0b; stroke: #0f172a; stroke-width: 1.5; cursor: move;
+    transform-box: fill-box; transform-origin: center; transition: transform 0.12s;
+  }
+  .waypoint-dot:hover { transform: scale(1.35); }
+  .link-label-group { cursor: move; }
+
+  /* Mobile Responsive */
+  @media (max-width: 860px) {
+    .sidebar {
+      position: absolute; top: 0; bottom: 0; left: 0;
+      transform: translateX(-100%); box-shadow: 6px 0 20px rgba(0,0,0,0.4);
+    }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar.right {
+      left: auto; right: 0; transform: translateX(100%);
+      box-shadow: -6px 0 20px rgba(0,0,0,0.4);
+    }
+    .sidebar.right.open { transform: translateX(0); }
+  }
+  @media print {
+    #topbar, .sidebar, #hud-bottom, #ctx-menu, #quick-modal { display: none !important; }
+    #workspace { height: 100vh; }
+    #canvas-wrap { background: #fff !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="brand">🕸️ LinkBoard ANB</div>
+  <button class="btn" id="btn-toggle-left" title="Entities & Templates">☰ <span data-i18n="panelLeft">Công cụ</span></button>
+  <button class="btn" id="btn-connect-mode" title="Link Mode">🔗 <span data-i18n="connectMode">Nối liên kết</span></button>
+  <div class="sep"></div>
+  <button class="btn" id="btn-undo" title="Undo">↩️</button>
+  <button class="btn" id="btn-redo" title="Redo">↪️</button>
+  <button class="btn" id="btn-auto-layout" title="Auto Layout">✨ <span data-i18n="autoLayout">Sắp xếp</span></button>
+  <button class="btn" id="btn-fit" title="Fit Screen">🎯 <span data-i18n="fitView">Vừa khung</span></button>
+  <div class="sep"></div>
+  <button class="btn" id="btn-save-browser">💾 <span data-i18n="save">Lưu</span></button>
+  <button class="btn" id="btn-load-browser">📂 <span data-i18n="reload">Tải lại</span></button>
+  <button class="btn" id="btn-json-export">⬇️ JSON</button>
+  <button class="btn" id="btn-json-import">⬆️ JSON</button>
+  <input type="file" id="file-json-input" accept=".json" style="display:none">
+  <div class="sep"></div>
+  <button class="btn" id="btn-xlsx-import">📊 <span data-i18n="importXlsx">Nhập Excel</span></button>
+  <button class="btn" id="btn-xlsx-export">📗 <span data-i18n="exportXlsx">Xuất Excel</span></button>
+  <input type="file" id="file-xlsx-input" accept=".xlsx,.xls,.csv" style="display:none">
+  <div class="sep"></div>
+  <select class="ui-select" id="export-format">
+    <option value="">📤 Export...</option>
+    <option value="svg">SVG Vector (.svg)</option>
+    <option value="png">PNG Image (.png)</option>
+    <option value="jpg">JPG Image (.jpg)</option>
+    <option value="pdf">PDF / Print (.pdf)</option>
+  </select>
+  <select class="ui-select" id="lang-select" title="Language">
+    <option value="vi">🇻🇳 VI</option>
+    <option value="en">🇬🇧 EN</option>
+    <option value="lo">🇱🇦 LO</option>
+  </select>
+  <button class="btn" id="btn-toggle-right" title="Properties & Layers">🎛️ <span data-i18n="panelRight">Thuộc tính</span></button>
+</div>
+
+<!-- WORKSPACE -->
+<div id="workspace">
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar left open" id="sidebar-left">
+    <div class="sidebar-tabs">
+      <div class="sidebar-tab active" data-ltab="entities" data-i18n="tabEntities">Thực thể</div>
+      <div class="sidebar-tab" data-ltab="templates" data-i18n="tabTemplates">Mẫu sơ đồ</div>
+      <div class="sidebar-tab" data-ltab="mermaid" data-i18n="tabMermaid">Mermaid</div>
+    </div>
+    <div class="sidebar-body">
+      <!-- Entities Tab -->
+      <div id="ltab-entities">
+        <div class="section-title" data-i18n="anbEntities">Thực thể i2 ANB</div>
+        <div class="palette-grid" id="palette-grid"></div>
+        <div class="section-title" style="margin-top:14px;" data-i18n="quickAdd">Thêm nhanh</div>
+        <div class="prop-row">
+          <input type="text" class="prop-input" id="quick-node-label" placeholder="Tên / Nhãn thực thể...">
+        </div>
+        <div class="prop-grid-2">
+          <button class="btn btn-primary" id="btn-add-custom-node">+ Thêm nút</button>
+          <button class="btn" id="btn-add-zone">+ Khung nhóm</button>
+        </div>
+        <div class="section-title" style="margin-top:14px;" data-i18n="tipsTitle">Mẹo thao tác</div>
+        <div style="font-size:11px; color:var(--text-muted); line-height:1.45;">
+          • <b>Click đúp</b> nút/đường nối để sửa nhanh.<br>
+          • <b>Chuột phải</b> mở menu ngữ cảnh.<br>
+          • <b>Click đúp lên dây nối</b> để thêm điểm uốn.<br>
+          • <b>Shift + Kéo</b> hoặc <b>Ctrl + Click</b> chọn nhiều.
+        </div>
+      </div>
+
+      <!-- Templates Tab -->
+      <div id="ltab-templates" style="display:none;">
+        <div class="section-title" data-i18n="analyticalTemplates">Mẫu Phân tích Tội phạm &amp; Mạng lưới</div>
+        <div id="templates-list"></div>
+      </div>
+
+      <!-- Mermaid Tab -->
+      <div id="ltab-mermaid" style="display:none;">
+        <div class="section-title">Mermaid.js Code → Sơ đồ</div>
+        <textarea class="prop-textarea" id="mermaid-code" style="min-height:150px; font-family:monospace; font-size:11px;">graph TD
+  A[Suspect A - Nghi phạm] -->|Confirmed: Gọi điện| B[Broker B - Môi giới]
+  B -.->|Unconfirmed: Nghi vấn| C[Warehouse - Kho hàng]
+  A -->|Chuyển tiền| D[Account 9981]
+  C --> E[Border Gate - Cửa khẩu]</textarea>
+        <div class="prop-grid-2" style="margin-top:6px;">
+          <button class="btn btn-primary" id="btn-mermaid-to-canvas">⚡ Chuyển lên Canvas</button>
+          <button class="btn" id="btn-canvas-to-mermaid">📋 Xuất mã Mermaid</button>
+        </div>
+        <div id="mermaid-preview" style="margin-top:10px; background:#fff; border-radius:6px; padding:6px; overflow:auto; max-height:220px; color:#0f172a;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div id="canvas-wrap">
+    <svg id="diagram-svg" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="grid-pattern" width="24" height="24" patternUnits="userSpaceOnUse">
+          <circle cx="2" cy="2" r="1.2" fill="#cbd5e1" />
+        </pattern>
+        <marker id="arrow-end" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="context-stroke" />
+        </marker>
+        <marker id="arrow-start" viewBox="0 0 10 10" refX="2" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M 10 1.5 L 1 5 L 10 8.5 z" fill="context-stroke" />
+        </marker>
+      </defs>
+      <rect id="bg-rect" x="-5000" y="-5000" width="10000" height="10000" fill="url(#grid-pattern)" />
+      <g id="viewport">
+        <g id="layer-zones"></g>
+        <g id="layer-links"></g>
+        <g id="layer-nodes"></g>
+        <g id="layer-overlay"></g>
+      </g>
+    </svg>
+
+    <div id="hud-bottom">
+      <button id="btn-zoom-out">−</button>
+      <span id="zoom-label">100%</span>
+      <button id="btn-zoom-in">+</button>
+      <span style="color:var(--border)">|</span>
+      <span id="status-text">Sẵn sàng</span>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="sidebar right open" id="sidebar-right">
+    <div class="sidebar-tabs">
+      <div class="sidebar-tab active" data-rtab="props" data-i18n="tabProps">Thuộc tính</div>
+      <div class="sidebar-tab" data-rtab="layers" data-i18n="tabLayers">Lớp (Layers)</div>
+    </div>
+    <div class="sidebar-body">
+      <div id="rtab-props">
+        <div id="no-selection-msg" style="color:var(--text-muted); text-align:center; padding:24px 8px;">
+          Chọn một thực thể hoặc đường liên kết để chỉnh sửa kiểu dáng, trạng thái xác nhận, nhãn, mũi tên và hình ảnh.
+        </div>
+
+        <!-- Node Inspector -->
+        <div id="node-inspector" style="display:none;">
+          <div class="section-title">Thông tin Thực thể</div>
+          <div class="prop-row">
+            <label>Tên / Nhãn chính</label>
+            <input type="text" class="prop-input" id="inp-node-label">
+          </div>
+          <div class="prop-row">
+            <label>Ghi chú / Thuộc tính phụ (SĐT, Biển số, Địa chỉ)</label>
+            <textarea class="prop-textarea" id="inp-node-sub"></textarea>
+          </div>
+          <div class="prop-grid-2">
+            <div class="prop-row">
+              <label>Loại / Giới tính</label>
+              <select class="prop-select" id="inp-node-type">
+                <option value="person_m">👨 Nam (Male)</option>
+                <option value="person_f">👩 Nữ (Female)</option>
+                <option value="person_u">🕵️ Ẩn danh (Anon)</option>
+                <option value="phone">📱 Điện thoại (Tel)</option>
+                <option value="address">📍 Địa chỉ (Address)</option>
+                <option value="car">🚗 Phương tiện (Car)</option>
+                <option value="org">🏢 Tổ chức (Org)</option>
+                <option value="bank">💰 Tài chính (Bank)</option>
+                <option value="wildlife">🦏 Tang vật / ĐVHD</option>
+                <option value="doc">📄 Tài liệu / Hồ sơ</option>
+                <option value="zone">⬜ Khung / Vùng</option>
+              </select>
+            </div>
+            <div class="prop-row">
+              <label>Hình dạng khung</label>
+              <select class="prop-select" id="inp-node-shape">
+                <option value="circle">Hình tròn (Circle)</option>
+                <option value="roundrect">Bo góc (Rounded)</option>
+                <option value="rect">Chữ nhật (Rect)</option>
+                <option value="diamond">Hình thoi (Diamond)</option>
+                <option value="hexagon">Lục giác (Hexagon)</option>
+                <option value="triangle">Tam giác (Triangle)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="prop-grid-2">
+            <div class="prop-row">
+              <label>Emoji tùy chỉnh</label>
+              <input type="text" class="prop-input" id="inp-node-emoji" placeholder="VD: 🦁 🚢 📦">
+            </div>
+            <div class="prop-row">
+              <label>Lớp (Layer)</label>
+              <select class="prop-select" id="inp-node-layer"></select>
+            </div>
+          </div>
+
+          <div class="prop-row">
+            <label>Ảnh thay thế (URL hoặc tải ảnh lên)</label>
+            <div style="display:flex; gap:4px;">
+              <input type="text" class="prop-input" id="inp-node-img" placeholder="https://...">
+              <button class="btn" id="btn-upload-node-img" title="Tải ảnh từ máy">🖼️</button>
+              <button class="btn" id="btn-clear-node-img" title="Xóa ảnh">✕</button>
+            </div>
+            <input type="file" id="file-node-img" accept="image/*" style="display:none">
+          </div>
+
+          <div class="section-title">Kích thước, Góc xoay &amp; Màu sắc</div>
+          <div class="prop-grid-2">
+            <div class="prop-row">
+              <label>Rộng (W)</label>
+              <input type="number" class="prop-input" id="inp-node-w" min="36" max="800">
+            </div>
+            <div class="prop-row">
+              <label>Cao (H)</label>
+              <input type="number" class="prop-input" id="inp-node-h" min="36" max="800">
+            </div>
+          </div>
+          <div class="prop-grid-2">
+            <div class="prop-row">
+              <label>Góc xoay (°)</label>
+              <input type="number" class="prop-input" id="inp-node-rot" min="-360" max="360">
+            </div>
+            <div class="prop-row">
+              <label>Độ dày viền</label>
+              <input type="number" class="prop-input" id="inp-node-sw" min="1" max="10">
+            </div>
+          </div>
+          <div class="prop-grid-2">
+            <div class="prop-row">
+              <label>Màu nền</label>
+              <input type="color" class="prop-input" id="inp-node-fill" style="height:30px; padding:2px;">
+            </div>
+            <div class="prop-row">
+              <label>Màu viền</label>
+              <input type="color" class="prop-input" id="inp-node-stroke" style="height:30px; padding:2px;">
+            </div>
+          </div>
+          <div class="swatch-row" id="node-swatches"></div>
+
+          <div class="prop-grid-2" style="margin-top:12px;">
+            <button class="btn" id="btn-node-lock">🔒 Khóa / Mở</button>
+            <button class="btn" id="btn-node-dup">📑 Nhân bản</button>
+          </div>
+          <button class="btn btn-danger" id="btn-node-del" style="width:100%; margin-top:6px; justify-content:center;">🗑️ Xóa thực thể</button>
+        </div>
+
+        <!-- Link Inspector -->
+        <div id="link-inspector" style="display:none;">
+          <div class="section-title">Thuộc tính Liên kết (Link)</div>
+          <div class="prop-row">
+            <label>Nhãn liên kết</label>
+            <input type="text" class="prop-input" id="inp-link-label" placeholder="VD: Giao dịch, Gọi điện, Sở hữu...">
+          </div>
+          <div class="prop-grid-2">
+            <div class="prop-row">
+              <label>Trạng thái xác minh</label>
+              <select class="prop-select" id="inp-link-confirmed">
+                <option value="confirmed">✅ Đã xác nhận (Nét liền)</option>
+                <option value="unconfirmed">❓ Chưa xác nhận (Nét đứt)</option>
+              </select>
+            </div>
+            <div class="prop-row">
+              <label>Kiểu đường nối</label>
+              <select class="prop-select" id="inp-link-curve">
+                <option value="smooth">〰️ Uốn cong mềm (Spline)</option>
+                <option value="straight">📏 Đoạn thẳng / Gấp khúc</option>
+              </select>
+            </div>
+          </div>
+          <div class="prop-grid-2">
+            <div class="prop-row">
+              <label>Hướng mũi tên</label>
+              <select class="prop-select" id="inp-link-arrows">
+                <option value="end">➡️ Một chiều (A → B)</option>
+                <option value="start">⬅️ Ngược lại (A ← B)</option>
+                <option value="both">↔️ Hai chiều (A ↔ B)</option>
+                <option value="none">➖ Không mũi tên (A — B)</option>
+              </select>
+            </div>
+            <div class="prop-row">
+              <label>Đảo chiều nhanh</label>
+              <button class="btn" id="btn-link-reverse" style="width:100%; justify-content:center;">⇄ Đảo hướng</button>
+            </div>
+          </div>
+          <div class="prop-grid-2">
+            <div class="prop-row">
+              <label>Màu đường nối</label>
+              <input type="color" class="prop-input" id="inp-link-color" style="height:30px; padding:2px;">
+            </div>
+            <div class="prop-row">
+              <label>Độ dày nét</label>
+              <input type="number" class="prop-input" id="inp-link-width" min="1" max="10">
+            </div>
+          </div>
+          <div class="swatch-row" id="link-swatches"></div>
+
+          <div class="section-title" style="margin-top:10px;">Nhãn liên kết (Kéo thả &amp; Xoay)</div>
+          <div class="prop-grid-2">
+            <div class="prop-row">
+              <label>Góc xoay nhãn (°)</label>
+              <input type="number" class="prop-input" id="inp-link-label-rot" min="-180" max="180">
+            </div>
+            <div class="prop-row">
+              <label>Vị trí nhãn</label>
+              <button class="btn" id="btn-link-reset-label" style="width:100%; justify-content:center;">🎯 Đặt lại tâm</button>
+            </div>
+          </div>
+
+          <div class="prop-grid-2" style="margin-top:10px;">
+            <button class="btn" id="btn-link-add-wp">+ Điểm uốn</button>
+            <button class="btn" id="btn-link-clear-wp">🧹 Xóa điểm uốn</button>
+          </div>
+          <button class="btn btn-danger" id="btn-link-del" style="width:100%; margin-top:8px; justify-content:center;">🗑️ Xóa liên kết</button>
+        </div>
+      </div>
+
+      <!-- Layers Tab -->
+      <div id="rtab-layers" style="display:none;">
+        <div class="section-title">Quản lý Lớp (Layers)</div>
+        <div style="display:flex; gap:5px; margin-bottom:8px;">
+          <input type="text" class="prop-input" id="new-layer-name" placeholder="Tên lớp mới...">
+          <button class="btn btn-primary" id="btn-add-layer">+</button>
+        </div>
+        <div id="layers-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div id="ctx-menu"></div>
+
+<!-- QUICK EDIT MODAL -->
+<div id="quick-modal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <span id="modal-title">Chỉnh sửa nhanh</span>
+      <button class="btn" id="btn-close-modal">✕</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  "use strict";
+
+  // ==================== I18N DICTIONARY ====================
+  const I18N = {
+    vi: {
+      panelLeft: "Công cụ", connectMode: "Nối liên kết", autoLayout: "Sắp xếp", fitView: "Vừa khung",
+      save: "Lưu", reload: "Tải lại", importXlsx: "Nhập Excel", exportXlsx: "Xuất Excel",
+      panelRight: "Thuộc tính", tabEntities: "Thực thể", tabTemplates: "Mẫu sơ đồ", tabMermaid: "Mermaid",
+      anbEntities: "Thực thể i2 ANB", quickAdd: "Thêm nhanh", tipsTitle: "Mẹo thao tác",
+      analyticalTemplates: "Mẫu Phân tích Tội phạm & Mạng lưới", tabProps: "Thuộc tính", tabLayers: "Lớp (Layers)"
+    },
+    en: {
+      panelLeft: "Tools", connectMode: "Connect", autoLayout: "Auto Layout", fitView: "Fit View",
+      save: "Save", reload: "Reload", importXlsx: "Import Excel", exportXlsx: "Export Excel",
+      panelRight: "Inspector", tabEntities: "Entities", tabTemplates: "Templates", tabMermaid: "Mermaid",
+      anbEntities: "i2 ANB Entities", quickAdd: "Quick Add", tipsTitle: "Quick Tips",
+      analyticalTemplates: "Crime & Link Analysis Templates", tabProps: "Properties", tabLayers: "Layers"
+    },
+    lo: {
+      panelLeft: "ເຄື່ອງມື", connectMode: "ເຊື່ອມຕໍ່", autoLayout: "ຈັດລຽງ", fitView: "ພໍດີໜ້າຈໍ",
+      save: "ບັນທຶກ", reload: "ໂຫຼດຄືນ", importXlsx: "ນຳເຂົ້າ Excel", exportXlsx: "ສົ່ງອອກ Excel",
+      panelRight: "ຄຸນສົມບັດ", tabEntities: "ເປົ້າໝາຍ", tabTemplates: "ແມ່ແບບ", tabMermaid: "Mermaid",
+      anbEntities: "ສັນຍາລັກ i2 ANB", quickAdd: "ເພີ່ມໄວ", tipsTitle: "ຄຳແນະນຳ",
+      analyticalTemplates: "ແມ່ແບບການວິເຄາະອາຊະຍາກຳ", tabProps: "ຄຸນສົມບັດ", tabLayers: "ຊັ້ນຂໍ້ມູນ"
+    }
+  };
+
+  // ==================== ENTITY DEFINITIONS ====================
+  const ENTITY_TYPES = [
+    { type: "person_m", label: "Nam", emoji: "👨", fill: "#dbeafe", stroke: "#1d4ed8", shape: "circle" },
+    { type: "person_f", label: "Nữ", emoji: "👩", fill: "#fce7f3", stroke: "#be185d", shape: "circle" },
+    { type: "person_u", label: "Ẩn danh", emoji: "🕵️", fill: "#e2e8f0", stroke: "#334155", shape: "circle" },
+    { type: "phone", label: "Điện thoại", emoji: "📱", fill: "#fef3c7", stroke: "#b45309", shape: "roundrect" },
+    { type: "address", label: "Địa chỉ", emoji: "📍", fill: "#dcfce7", stroke: "#15803d", shape: "roundrect" },
+    { type: "car", label: "Xe / Tàu", emoji: "🚗", fill: "#ffedd5", stroke: "#c2410c", shape: "roundrect" },
+    { type: "org", label: "Tổ chức", emoji: "🏢", fill: "#e0e7ff", stroke: "#4338ca", shape: "hexagon" },
+    { type: "bank", label: "Tài chính", emoji: "💰", fill: "#fef9c3", stroke: "#a16207", shape: "diamond" },
+    { type: "wildlife", label: "Tang vật", emoji: "🦏", fill: "#fee2e2", stroke: "#b91c1c", shape: "roundrect" }
+  ];
+
+  const PALETTE_COLORS = [
+    { fill: "#dbeafe", stroke: "#1d4ed8" },
+    { fill: "#fce7f3", stroke: "#be185d" },
+    { fill: "#dcfce7", stroke: "#15803d" },
+    { fill: "#fef3c7", stroke: "#b45309" },
+    { fill: "#fee2e2", stroke: "#b91c1c" },
+    { fill: "#e0e7ff", stroke: "#4338ca" },
+    { fill: "#f3e8ff", stroke: "#7e22ce" },
+    { fill: "#f1f5f9", stroke: "#334155" }
+  ];
+
+  const LINK_COLORS = ["#1e293b", "#dc2626", "#2563eb", "#16a34a", "#d97706", "#7c3aed"];
+
+  // ==================== ANALYTICAL TEMPLATES ====================
+  const TEMPLATES = [
+    {
+      id: "crime_triangle",
+      title: "🔺 Crime Triangle (Tam giác Tội phạm)",
+      desc: "Phân tích Đối tượng (Offender), Mục tiêu (Target), Địa điểm (Place) & Tác nhân kiểm soát.",
+      build: () => ({
+        layers: [{ id: "L1", name: "Crime Triangle", visible: true, locked: false }],
+        nodes: [
+          { id: "n1", type: "person_u", label: "OFFENDER\n(Đối tượng phạm tội)", sub: "Động cơ & Năng lực", emoji: "🕵️", shape: "roundrect", x: 420, y: 180, w: 150, h: 74, rot: 0, fill: "#fee2e2", stroke: "#b91c1c", sw: 2.5, layer: "L1" },
+          { id: "n2", type: "wildlife", label: "TARGET / VICTIM\n(Mục tiêu / Nạn nhân)", sub: "Giá trị & Mức độ dễ tổn thương", emoji: "🎯", shape: "roundrect", x: 240, y: 450, w: 155, h: 74, rot: 0, fill: "#fef3c7", stroke: "#b45309", sw: 2.5, layer: "L1" },
+          { id: "n3", type: "address", label: "PLACE / LOCATION\n(Địa điểm / Tuyến đường)", sub: "Không gian hội tụ", emoji: "📍", shape: "roundrect", x: 600, y: 450, w: 155, h: 74, rot: 0, fill: "#dbeafe", stroke: "#1d4ed8", sw: 2.5, layer: "L1" },
+          { id: "n4", type: "person_m", label: "HANDLER\n(Người quản lý đối tượng)", sub: "Kiểm soát hành vi", emoji: "🧑‍⚖️", shape: "circle", x: 420, y: 50, w: 120, h: 70, rot: 0, fill: "#dcfce7", stroke: "#15803d", sw: 2, layer: "L1" },
+          { id: "n5", type: "org", label: "GUARDIAN\n(Người bảo vệ mục tiêu)", sub: "Giám sát / Bảo vệ", emoji: "🛡️", shape: "circle", x: 90, y: 530, w: 125, h: 70, rot: 0, fill: "#dcfce7", stroke: "#15803d", sw: 2, layer: "L1" },
+          { id: "n6", type: "org", label: "PLACE MANAGER\n(Quản lý địa bàn)", sub: "Kiểm soát không gian", emoji: "🏢", shape: "circle", x: 750, y: 530, w: 125, h: 70, rot: 0, fill: "#dcfce7", stroke: "#15803d", sw: 2, layer: "L1" }
+        ],
+        links: [
+          { id: "e1", source: "n1", target: "n2", label: "Tác động / Xâm hại", confirmed: "confirmed", curve: "straight", arrows: "both", color: "#b91c1c", width: 3, waypoints: [], labelOffset: { x: -35, y: 0 }, labelRot: 0 },
+          { id: "e2", source: "n2", target: "n3", label: "Hiện diện tại", confirmed: "confirmed", curve: "straight", arrows: "both", color: "#1d4ed8", width: 3, waypoints: [], labelOffset: { x: 0, y: 16 }, labelRot: 0 },
+          { id: "e3", source: "n3", target: "n1", label: "Cơ hội phạm tội", confirmed: "confirmed", curve: "straight", arrows: "both", color: "#b45309", width: 3, waypoints: [], labelOffset: { x: 40, y: 0 }, labelRot: 0 },
+          { id: "e4", source: "n4", target: "n1", label: "Kiểm soát / Ngăn chặn", confirmed: "unconfirmed", curve: "smooth", arrows: "end", color: "#15803d", width: 2, waypoints: [], labelOffset: { x: 55, y: 0 }, labelRot: 0 },
+          { id: "e5", source: "n5", target: "n2", label: "Bảo vệ", confirmed: "unconfirmed", curve: "smooth", arrows: "end", color: "#15803d", width: 2, waypoints: [], labelOffset: { x: 0, y: -15 }, labelRot: 0 },
+          { id: "e6", source: "n6", target: "n3", label: "Quản lý", confirmed: "unconfirmed", curve: "smooth", arrows: "end", color: "#15803d", width: 2, waypoints: [], labelOffset: { x: 0, y: -15 }, labelRot: 0 }
+        ]
+      })
+    },
+    {
+      id: "crime_script",
+      title: "🎬 Crime Script (Kịch bản Tội phạm)",
+      desc: "Chuỗi 6 giai đoạn từ Chuẩn bị → Tiếp cận → Thực hiện → Tiêu thụ → Rút lui.",
+      build: () => ({
+        layers: [{ id: "L1", name: "Crime Script Stages", visible: true, locked: false }],
+        nodes: [
+          { id: "s1", type: "doc", label: "1. PREPARATION\n(Chuẩn bị)", sub: "Vốn, công cụ, liên hệ", emoji: "🧰", shape: "roundrect", x: 110, y: 150, w: 145, h: 72, rot: 0, fill: "#e0e7ff", stroke: "#4338ca", sw: 2, layer: "L1" },
+          { id: "s2", type: "car", label: "2. ENTRY / TRANSIT\n(Xâm nhập / Vận chuyển)", sub: "Tuyến đường & Vượt biên", emoji: "🚚", shape: "roundrect", x: 310, y: 150, w: 155, h: 72, rot: 0, fill: "#dbeafe", stroke: "#1d4ed8", sw: 2, layer: "L1" },
+          { id: "s3", type: "address", label: "3. PRE-CONDITION\n(Tập kết / Lưu kho)", sub: "Kho trung chuyển", emoji: "🏚️", shape: "roundrect", x: 520, y: 150, w: 150, h: 72, rot: 0, fill: "#fef3c7", stroke: "#b45309", sw: 2, layer: "L1" },
+          { id: "s4", type: "wildlife", label: "4. DOING (ACTION)\n(Thực hiện giao dịch)", sub: "Trao đổi hàng & Tiền", emoji: "🤝", shape: "roundrect", x: 520, y: 330, w: 150, h: 72, rot: 0, fill: "#fee2e2", stroke: "#b91c1c", sw: 2.5, layer: "L1" },
+          { id: "s5", type: "bank", label: "5. POST-CONDITION\n(Rửa tiền / Phân phối)", sub: "Chuyển khoản & Chia lợi nhuận", emoji: "💰", shape: "roundrect", x: 310, y: 330, w: 155, h: 72, rot: 0, fill: "#dcfce7", stroke: "#15803d", sw: 2, layer: "L1" },
+          { id: "s6", type: "person_u", label: "6. EXIT\n(Xóa dấu vết / Rút lui)", sub: "Hủy SIM, đổi phương tiện", emoji: "🚪", shape: "roundrect", x: 110, y: 330, w: 145, h: 72, rot: 0, fill: "#f1f5f9", stroke: "#334155", sw: 2, layer: "L1" }
+        ],
+        links: [
+          { id: "sl1", source: "s1", target: "s2", label: "Bước 1→2", confirmed: "confirmed", curve: "straight", arrows: "end", color: "#334155", width: 2.2, waypoints: [], labelOffset: { x: 0, y: -12 }, labelRot: 0 },
+          { id: "sl2", source: "s2", target: "s3", label: "Bước 2→3", confirmed: "confirmed", curve: "straight", arrows: "end", color: "#334155", width: 2.2, waypoints: [], labelOffset: { x: 0, y: -12 }, labelRot: 0 },
+          { id: "sl3", source: "s3", target: "s4", label: "Bước 3→4", confirmed: "confirmed", curve: "straight", arrows: "end", color: "#b91c1c", width: 2.2, waypoints: [], labelOffset: { x: 36, y: 0 }, labelRot: 0 },
+          { id: "sl4", source: "s4", target: "s5", label: "Bước 4→5", confirmed: "confirmed", curve: "straight", arrows: "end", color: "#15803d", width: 2.2, waypoints: [], labelOffset: { x: 0, y: 14 }, labelRot: 0 },
+          { id: "sl5", source: "s5", target: "s6", label: "Bước 5→6", confirmed: "unconfirmed", curve: "straight", arrows: "end", color: "#334155", width: 2.2, waypoints: [], labelOffset: { x: 0, y: 14 }, labelRot: 0 }
+        ]
+      })
+    },
+    {
+      id: "anb_network",
+      title: "🕸️ ANB Link Chart (Mạng lưới Đối tượng)",
+      desc: "Sơ đồ liên kết điều tra chuẩn i2 ANB với thực thể Người, SĐT, Xe, Địa điểm & Liên kết xác nhận/nghi vấn.",
+      build: () => ({
+        layers: [{ id: "L1", name: "Main Network", visible: true, locked: false }],
+        nodes: [
+          { id: "a1", type: "person_m", label: "Nguyễn Văn A", sub: "Chủ mưu | SN 1982", emoji: "👨", shape: "circle", x: 380, y: 140, w: 110, h: 76, rot: 0, fill: "#dbeafe", stroke: "#1d4ed8", sw: 2.5, layer: "L1" },
+          { id: "a2", type: "person_f", label: "Trần Thị B", sub: "Thủ quỹ | SN 1988", emoji: "👩", shape: "circle", x: 610, y: 180, w: 110, h: 76, rot: 0, fill: "#fce7f3", stroke: "#be185d", sw: 2.5, layer: "L1" },
+          { id: "a3", type: "phone", label: "+84 912 345 678", sub: "SIM rác đăng ký ảo", emoji: "📱", shape: "roundrect", x: 200, y: 260, w: 135, h: 64, rot: 0, fill: "#fef3c7", stroke: "#b45309", sw: 2, layer: "L1" },
+          { id: "a4", type: "car", label: "30H-889.99", sub: "Toyota Fortuner Đen", emoji: "🚗", shape: "roundrect", x: 390, y: 340, w: 135, h: 64, rot: 0, fill: "#ffedd5", stroke: "#c2410c", sw: 2, layer: "L1" },
+          { id: "a5", type: "address", label: "Kho bãi Cửa khẩu", sub: "Khu vực biên giới", emoji: "📍", shape: "roundrect", x: 610, y: 360, w: 145, h: 66, rot: 0, fill: "#dcfce7", stroke: "#15803d", sw: 2, layer: "L1" }
+        ],
+        links: [
+          { id: "al1", source: "a1", target: "a2", label: "Chỉ đạo / Chuyển tiền", confirmed: "confirmed", curve: "smooth", arrows: "end", color: "#dc2626", width: 2.5, waypoints: [], labelOffset: { x: 0, y: -12 }, labelRot: 0 },
+          { id: "al2", source: "a1", target: "a3", label: "Sử dụng (142 cuộc)", confirmed: "confirmed", curve: "smooth", arrows: "none", color: "#1e293b", width: 2, waypoints: [], labelOffset: { x: -20, y: -10 }, labelRot: 0 },
+          { id: "al3", source: "a1", target: "a4", label: "Sở hữu / Điều khiển", confirmed: "confirmed", curve: "smooth", arrows: "end", color: "#1e293b", width: 2, waypoints: [], labelOffset: { x: 42, y: 0 }, labelRot: 0 },
+          { id: "al4", source: "a4", target: "a5", label: "Nghi vấn tập kết", confirmed: "unconfirmed", curve: "smooth", arrows: "end", color: "#d97706", width: 2.2, waypoints: [], labelOffset: { x: 0, y: 14 }, labelRot: 0 },
+          { id: "al5", source: "a2", target: "a5", label: "Thuê kho", confirmed: "unconfirmed", curve: "smooth", arrows: "end", color: "#2563eb", width: 2, waypoints: [], labelOffset: { x: 35, y: 0 }, labelRot: 0 }
+        ]
+      })
+    },
+    {
+      id: "sara_model",
+      title: "🔄 SARA Model (Scanning - Analysis - Response - Assessment)",
+      desc: "Quy trình giải quyết vấn đề trật tự & phân tích tình báo vòng lặp 4 bước.",
+      build: () => ({
+        layers: [{ id: "L1", name: "SARA", visible: true, locked: false }],
+        nodes: [
+          { id: "sr1", type: "doc", label: "1. SCANNING\n(Rà soát & Nhận diện)", sub: "Phát hiện vấn đề lặp lại", emoji: "🔍", shape: "roundrect", x: 240, y: 130, w: 165, h: 76, rot: 0, fill: "#dbeafe", stroke: "#1d4ed8", sw: 2.5, layer: "L1" },
+          { id: "sr2", type: "org", label: "2. ANALYSIS\n(Phân tích nguyên nhân)", sub: "Dữ liệu, không gian, tác nhân", emoji: "📊", shape: "roundrect", x: 540, y: 130, w: 165, h: 76, rot: 0, fill: "#e0e7ff", stroke: "#4338ca", sw: 2.5, layer: "L1" },
+          { id: "sr3", type: "wildlife", label: "3. RESPONSE\n(Can thiệp & Ứng phó)", sub: "Biện pháp phòng ngừa mục tiêu", emoji: "⚡", shape: "roundrect", x: 540, y: 340, w: 165, h: 76, rot: 0, fill: "#fef3c7", stroke: "#b45309", sw: 2.5, layer: "L1" },
+          { id: "sr4", type: "bank", label: "4. ASSESSMENT\n(Đánh giá hiệu quả)", sub: "Đo lường tác động & Điều chỉnh", emoji: "✅", shape: "roundrect", x: 240, y: 340, w: 165, h: 76, rot: 0, fill: "#dcfce7", stroke: "#15803d", sw: 2.5, layer: "L1" }
+        ],
+        links: [
+          { id: "srl1", source: "sr1", target: "sr2", label: "Dữ liệu đầu vào", confirmed: "confirmed", curve: "smooth", arrows: "end", color: "#1d4ed8", width: 2.5, waypoints: [], labelOffset: { x: 0, y: -12 }, labelRot: 0 },
+          { id: "srl2", source: "sr2", target: "sr3", label: "Giải pháp trọng tâm", confirmed: "confirmed", curve: "smooth", arrows: "end", color: "#4338ca", width: 2.5, waypoints: [], labelOffset: { x: 45, y: 0 }, labelRot: 0 },
+          { id: "srl3", source: "sr3", target: "sr4", label: "Kết quả thực thi", confirmed: "confirmed", curve: "smooth", arrows: "end", color: "#b45309", width: 2.5, waypoints: [], labelOffset: { x: 0, y: 14 }, labelRot: 0 },
+          { id: "srl4", source: "sr4", target: "sr1", label: "Phản hồi vòng lặp", confirmed: "unconfirmed", curve: "smooth", arrows: "end", color: "#15803d", width: 2.5, waypoints: [], labelOffset: { x: -48, y: 0 }, labelRot: 0 }
+        ]
+      })
+    },
+    {
+      id: "indicator_map",
+      title: "🗺️ Indicator Map & Spatial Grid",
+      desc: "Khung đánh giá chỉ số không gian & mức độ rủi ro theo vùng.",
+      build: () => ({
+        layers: [{ id: "L1", name: "Spatial Grid", visible: true, locked: false }],
+        nodes: [
+          { id: "z1", type: "zone", label: "VÙNG LÕI / ĐIỂM NÓNG (HOTSPOT)", sub: "Mức độ tập trung cao", emoji: "", shape: "rect", x: 380, y: 270, w: 460, h: 280, rot: 0, fill: "#fee2e2", stroke: "#ef4444", sw: 2, layer: "L1" },
+          { id: "im1", type: "address", label: "Chỉ số 1: Giao điểm tuyến", sub: "Lưu lượng lớn", emoji: "📍", shape: "diamond", x: 270, y: 220, w: 130, h: 80, rot: 0, fill: "#fef3c7", stroke: "#b45309", sw: 2, layer: "L1" },
+          { id: "im2", type: "org", label: "Chỉ số 2: Cơ sở trung gian", sub: "Thiếu giám sát", emoji: "🏢", shape: "hexagon", x: 490, y: 220, w: 135, h: 80, rot: 0, fill: "#dbeafe", stroke: "#1d4ed8", sw: 2, layer: "L1" },
+          { id: "im3", type: "wildlife", label: "Chỉ số 3: Điểm tiêu thụ", sub: "Nhu cầu cao", emoji: "📦", shape: "roundrect", x: 380, y: 340, w: 145, h: 68, rot: 0, fill: "#dcfce7", stroke: "#15803d", sw: 2, layer: "L1" }
+        ],
+        links: [
+          { id: "iml1", source: "im1", target: "im2", label: "Kết nối hạ tầng", confirmed: "confirmed", curve: "smooth", arrows: "both", color: "#334155", width: 2, waypoints: [], labelOffset: { x: 0, y: -12 }, labelRot: 0 },
+          { id: "iml2", source: "im2", target: "im3", label: "Luồng dịch chuyển", confirmed: "confirmed", curve: "smooth", arrows: "end", color: "#b91c1c", width: 2, waypoints: [], labelOffset: { x: 38, y: 0 }, labelRot: 0 }
+        ]
+      })
+    }
+  ];
+
+  // ==================== APPLICATION STATE ====================
+  let state = {
+    nodes: [],
+    links: [],
+    layers: [{ id: "L1", name: "Layer 1 (Mặc định)", visible: true, locked: false }],
+    activeLayer: "L1",
+    selectedIds: new Set(),
+    connectMode: false,
+    connectSourceId: null,
+    view: { x: 0, y: 0, scale: 1 }
+  };
+
+  let history = [];
+  let historyIdx = -1;
+
+  // DOM References
+  const svg = document.getElementById("diagram-svg");
+  const viewport = document.getElementById("viewport");
+  const layerZones = document.getElementById("layer-zones");
+  const layerLinks = document.getElementById("layer-links");
+  const layerNodes = document.getElementById("layer-nodes");
+  const layerOverlay = document.getElementById("layer-overlay");
+  const ctxMenu = document.getElementById("ctx-menu");
+  const quickModal = document.getElementById("quick-modal");
+
+  function uid(prefix) {
+    return prefix + "_" + Math.random().toString(36).slice(2, 9);
+  }
+
+  function setStatus(msg) {
+    document.getElementById("status-text").textContent = msg;
+  }
+
+  // ==================== HISTORY (UNDO/REDO) ====================
+  function pushHistory() {
+    const snap = JSON.stringify({
+      nodes: state.nodes,
+      links: state.links,
+      layers: state.layers,
+      activeLayer: state.activeLayer
+    });
+    if (historyIdx >= 0 && history[historyIdx] === snap) return;
+    history = history.slice(0, historyIdx + 1);
+    history.push(snap);
+    if (history.length > 40) history.shift();
+    historyIdx = history.length - 1;
+  }
+
+  function restoreSnapshot(snapStr) {
+    const data = JSON.parse(snapStr);
+    state.nodes = data.nodes || [];
+    state.links = data.links || [];
+    state.layers = data.layers || [{ id: "L1", name: "Layer 1", visible: true, locked: false }];
+    state.activeLayer = data.activeLayer || "L1";
+    state.selectedIds.clear();
+    renderAll();
+    updateInspector();
+    renderLayers();
+  }
+
+  // ==================== COORDINATE CONVERSION ====================
+  function screenToCanvas(clientX, clientY) {
+    const rect = svg.getBoundingClientRect();
+    return {
+      x: (clientX - rect.left - state.view.x) / state.view.scale,
+      y: (clientY - rect.top - state.view.y) / state.view.scale
+    };
+  }
+
+  function applyViewportTransform() {
+    viewport.setAttribute("transform", `translate(${state.view.x}, ${state.view.y}) scale(${state.view.scale})`);
+    document.getElementById("zoom-label").textContent = Math.round(state.view.scale * 100) + "%";
+  }
+
+  // ==================== GEOMETRY & PATH HELPERS ====================
+  function getNodeAnchor(node, targetPt) {
+    const dx = targetPt.x - node.x;
+    const dy = targetPt.y - node.y;
+    const angle = Math.atan2(dy, dx);
+    const rx = node.w / 2;
+    const ry = node.h / 2;
+    if (node.shape === "circle") {
+      return { x: node.x + rx * Math.cos(angle), y: node.y + ry * Math.sin(angle) };
+    }
+    const absCos = Math.abs(Math.cos(angle));
+    const absSin = Math.abs(Math.sin(angle));
+    let t = 1;
+    if (rx * absSin <= ry * absCos) {
+      t = rx / (absCos || 0.0001);
+    } else {
+      t = ry / (absSin || 0.0001);
+    }
+    return { x: node.x + t * Math.cos(angle), y: node.y + t * Math.sin(angle) };
+  }
+
+  function buildLinkPath(link, srcNode, tgtNode) {
+    const wps = link.waypoints || [];
+    const firstTarget = wps.length > 0 ? wps[0] : { x: tgtNode.x, y: tgtNode.y };
+    const lastSource = wps.length > 0 ? wps[wps.length - 1] : { x: srcNode.x, y: srcNode.y };
+    const pStart = getNodeAnchor(srcNode, firstTarget);
+    const pEnd = getNodeAnchor(tgtNode, lastSource);
+    const pts = [pStart, ...wps, pEnd];
+
+    let d = "";
+    if (link.curve === "smooth" && pts.length === 2) {
+      const mx = (pStart.x + pEnd.x) / 2;
+      const my = (pStart.y + pEnd.y) / 2;
+      const dx = pEnd.x - pStart.x;
+      const dy = pEnd.y - pStart.y;
+      const cx = mx - dy * 0.12;
+      const cy = my + dx * 0.12;
+      d = `M ${pStart.x} ${pStart.y} Q ${cx} ${cy} ${pEnd.x} ${pEnd.y}`;
+      return { d, mid: { x: (pStart.x + 2 * cx + pEnd.x) / 4, y: (pStart.y + 2 * cy + pEnd.y) / 4 }, pts };
+    } else if (link.curve === "smooth" && pts.length > 2) {
+      d = `M ${pts[0].x} ${pts[0].y}`;
+      for (let i = 1; i < pts.length - 1; i++) {
+        const xc = (pts[i].x + pts[i + 1].x) / 2;
+        const yc = (pts[i].y + pts[i + 1].y) / 2;
+        d += ` Q ${pts[i].x} ${pts[i].y} ${xc} ${yc}`;
+      }
+      const last = pts[pts.length - 1];
+      d += ` T ${last.x} ${last.y}`;
+    } else {
+      d = pts.map((p, idx) => (idx === 0 ? "M" : "L") + ` ${p.x} ${p.y}`).join(" ");
+    }
+
+    const midIdx = Math.floor(pts.length / 2);
+    const mid = pts.length % 2 === 1
+      ? pts[midIdx]
+      : { x: (pts[midIdx - 1].x + pts[midIdx].x) / 2, y: (pts[midIdx - 1].y + pts[midIdx].y) / 2 };
+    return { d, mid, pts };
+  }
+
+  // ==================== SVG RENDERING ====================
+  function createSvgEl(tag, attrs) {
+    const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      el.setAttribute(k, v);
+    }
+    return el;
+  }
+
+  function isLayerVisible(layerId) {
+    const l = state.layers.find(x => x.id === layerId);
+    return l ? l.visible : true;
+  }
+
+  function isLayerLocked(layerId) {
+    const l = state.layers.find(x => x.id === layerId);
+    return l ? l.locked : false;
+  }
+
+  function renderAll() {
+    layerZones.innerHTML = "";
+    layerLinks.innerHTML = "";
+    layerNodes.innerHTML = "";
+    layerOverlay.innerHTML = "";
+
+    const nodeMap = new Map(state.nodes.map(n => [n.id, n]));
+
+    // 1. Render Links
+    state.links.forEach(link => {
+      const src = nodeMap.get(link.source);
+      const tgt = nodeMap.get(link.target);
+      if (!src || !tgt) return;
+      if (!isLayerVisible(src.layer) || !isLayerVisible(tgt.layer)) return;
+
+      const { d, mid } = buildLinkPath(link, src, tgt);
+      const isSel = state.selectedIds.has(link.id);
+      const g = createSvgEl("g", { "data-link-id": link.id });
+
+      const strokeColor = isSel ? "#0284c7" : (link.color || "#1e293b");
+      const strokeW = (link.width || 2) + (isSel ? 1 : 0);
+
+      const pathAttrs = {
+        d,
+        fill: "none",
+        stroke: strokeColor,
+        "stroke-width": strokeW,
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round"
+      };
+      if (link.confirmed === "unconfirmed") {
+        pathAttrs["stroke-dasharray"] = "7,5";
+      }
+      if (link.arrows === "end" || link.arrows === "both") {
+        pathAttrs["marker-end"] = "url(#arrow-end)";
+      }
+      if (link.arrows === "start" || link.arrows === "both") {
+        pathAttrs["marker-start"] = "url(#arrow-start)";
+      }
+
+      const visPath = createSvgEl("path", pathAttrs);
+      const hitPath = createSvgEl("path", { d, class: "link-hit" });
+
+      // Pointer & double click events on link
+      hitPath.addEventListener("pointerdown", e => onLinkPointerDown(e, link));
+      hitPath.addEventListener("dblclick", e => onLinkDblClick(e, link));
+      hitPath.addEventListener("contextmenu", e => onContextMenu(e, "link", link));
+
+      g.appendChild(visPath);
+      g.appendChild(hitPath);
+
+      // Link Label (movable & rotatable)
+      if (link.label) {
+        const off = link.labelOffset || { x: 0, y: 0 };
+        const lx = mid.x + off.x;
+        const ly = mid.y + off.y;
+        const lRot = link.labelRot || 0;
+        const lg = createSvgEl("g", {
+          class: "link-label-group",
+          transform: `translate(${lx}, ${ly}) rotate(${lRot})`
+        });
+        const textW = Math.max(44, link.label.length * 6.8 + 14);
+        const bg = createSvgEl("rect", {
+          x: -textW / 2, y: -11, width: textW, height: 22, rx: 5,
+          fill: "#ffffff", stroke: isSel ? "#0284c7" : "#cbd5e1", "stroke-width": 1.2, opacity: "0.95"
+        });
+        const txt = createSvgEl("text", {
+          x: 0, y: 4, "text-anchor": "middle", "font-size": "11", "font-weight": "600",
+          fill: strokeColor
+        });
+        txt.textContent = link.label;
+        lg.appendChild(bg);
+        lg.appendChild(txt);
+
+        lg.addEventListener("pointerdown", e => onLinkLabelPointerDown(e, link));
+        lg.addEventListener("dblclick", e => { e.stopPropagation(); openQuickModal("link", link); });
+        lg.addEventListener("contextmenu", e => onContextMenu(e, "link", link));
+        g.appendChild(lg);
+      }
+
+      // Waypoint handles if selected
+      if (isSel) {
+        (link.waypoints || []).forEach((wp, idx) => {
+          const dot = createSvgEl("circle", {
+            cx: wp.x, cy: wp.y, r: 6, class: "waypoint-dot"
+          });
+          dot.addEventListener("pointerdown", e => onWaypointPointerDown(e, link, idx));
+          dot.addEventListener("dblclick", e => {
+            e.stopPropagation();
+            link.waypoints.splice(idx, 1);
+            pushHistory();
+            renderAll();
+          });
+          layerOverlay.appendChild(dot);
+        });
+      }
+
+      layerLinks.appendChild(g);
+    });
+
+    // 2. Render Nodes (Zones go to layerZones, regular nodes to layerNodes)
+    state.nodes.forEach(node => {
+      if (!isLayerVisible(node.layer)) return;
+      const isSel = state.selectedIds.has(node.id);
+      const locked = node.locked || isLayerLocked(node.layer);
+      const targetContainer = node.type === "zone" ? layerZones : layerNodes;
+
+      const g = createSvgEl("g", {
+        class: "node-group" + (locked ? " locked" : ""),
+        transform: `translate(${node.x}, ${node.y}) rotate(${node.rot || 0})`,
+        "data-node-id": node.id
+      });
+
+      const hw = node.w / 2;
+      const hh = node.h / 2;
+      const fill = node.fill || "#dbeafe";
+      const stroke = isSel ? "#0284c7" : (node.stroke || "#1d4ed8");
+      const sw = (node.sw || 2) + (isSel ? 1 : 0);
+
+      let shapeEl;
+      if (node.shape === "circle") {
+        shapeEl = createSvgEl("ellipse", { cx: 0, cy: 0, rx: hw, ry: hh, fill, stroke, "stroke-width": sw });
+      } else if (node.shape === "diamond") {
+        shapeEl = createSvgEl("polygon", {
+          points: `0,${-hh} ${hw},0 0,${hh} ${-hw},0`,
+          fill, stroke, "stroke-width": sw
+        });
+      } else if (node.shape === "hexagon") {
+        const dx = hw * 0.28;
+        shapeEl = createSvgEl("polygon", {
+          points: `${-hw + dx},${-hh} ${hw - dx},${-hh} ${hw},0 ${hw - dx},${hh} ${-hw + dx},${hh} ${-hw},0`,
+          fill, stroke, "stroke-width": sw
+        });
+      } else if (node.shape === "triangle") {
+        shapeEl = createSvgEl("polygon", {
+          points: `0,${-hh} ${hw},${hh} ${-hw},${hh}`,
+          fill, stroke, "stroke-width": sw
+        });
+      } else {
+        const rx = node.shape === "rect" ? 3 : 12;
+        shapeEl = createSvgEl("rect", {
+          x: -hw, y: -hh, width: node.w, height: node.h, rx,
+          fill, stroke, "stroke-width": sw,
+          opacity: node.type === "zone" ? "0.45" : "1"
+        });
+      }
+      g.appendChild(shapeEl);
+
+      // Image or Emoji inside node
+      if (node.img) {
+        const clipId = "clip_" + node.id;
+        const clip = createSvgEl("clipPath", { id: clipId });
+        clip.appendChild(createSvgEl("circle", { cx: 0, cy: -8, r: Math.min(hw, hh) * 0.55 }));
+        g.appendChild(clip);
+        const imgEl = createSvgEl("image", {
+          href: node.img,
+          x: -Math.min(hw, hh) * 0.55,
+          y: -8 - Math.min(hw, hh) * 0.55,
+          width: Math.min(hw, hh) * 1.1,
+          height: Math.min(hw, hh) * 1.1,
+          "clip-path": `url(#${clipId})`,
+          preserveAspectRatio: "xMidYMid slice"
+        });
+        g.appendChild(imgEl);
+      } else if (node.emoji && node.type !== "zone") {
+        const em = createSvgEl("text", {
+          x: 0, y: node.type === "zone" ? -hh + 20 : -6,
+          "text-anchor": "middle", "font-size": "22"
+        });
+        em.textContent = node.emoji;
+        g.appendChild(em);
+      }
+
+      // Label lines
+      const lines = (node.label || "").split("\n");
+      const baseTextY = node.type === "zone" ? (-hh + 18) : (node.emoji || node.img ? 16 : 4);
+      lines.forEach((line, i) => {
+        const t = createSvgEl("text", {
+          x: 0, y: baseTextY + i * 14,
+          "text-anchor": "middle", "font-size": "12", "font-weight": "700",
+          fill: "#0f172a"
+        });
+        t.textContent = line;
+        g.appendChild(t);
+      });
+
+      // Sub-label below node
+      if (node.sub && node.type !== "zone") {
+        const subT = createSvgEl("text", {
+          x: 0, y: hh + 14,
+          "text-anchor": "middle", "font-size": "10.5", "font-weight": "500",
+          fill: "#475569"
+        });
+        subT.textContent = node.sub;
+        g.appendChild(subT);
+      }
+
+      // Lock indicator
+      if (locked) {
+        const lk = createSvgEl("text", { x: hw - 10, y: -hh + 12, "font-size": "11" });
+        lk.textContent = "🔒";
+        g.appendChild(lk);
+      }
+
+      // Connection ports (4 cardinal points)
+      const ports = [
+        { x: 0, y: -hh }, { x: hw, y: 0 }, { x: 0, y: hh }, { x: -hw, y: 0 }
+      ];
+      ports.forEach(pt => {
+        const pDot = createSvgEl("circle", { cx: pt.x, cy: pt.y, r: 5, class: "port-dot" });
+        pDot.addEventListener("pointerdown", e => {
+          e.stopPropagation();
+          startConnectFrom(node.id);
+        });
+        g.appendChild(pDot);
+      });
+
+      // Selection Handles (Resize & Rotate)
+      if (isSel && !locked) {
+        const selBox = createSvgEl("rect", {
+          x: -hw - 4, y: -hh - 4, width: node.w + 8, height: node.h + 8,
+          fill: "none", stroke: "#0284c7", "stroke-width": 1.2, "stroke-dasharray": "4,3",
+          class: "node-selected-ring"
+        });
+        g.appendChild(selBox);
+
+        // Resize Handle (bottom-right)
+        const rHandle = createSvgEl("rect", {
+          x: hw - 1, y: hh - 1, width: 10, height: 10, rx: 2, class: "resize-handle"
+        });
+        rHandle.addEventListener("pointerdown", e => onResizePointerDown(e, node));
+        g.appendChild(rHandle);
+
+        // Rotate Handle (top-center stem)
+        const rotLine = createSvgEl("line", {
+          x1: 0, y1: -hh - 4, x2: 0, y2: -hh - 22, stroke: "#f59e0b", "stroke-width": 1.5
+        });
+        const rotHandle = createSvgEl("circle", {
+          cx: 0, cy: -hh - 24, r: 6, class: "rotate-handle"
+        });
+        rotHandle.addEventListener("pointerdown", e => onRotatePointerDown(e, node));
+        g.appendChild(rotLine);
+        g.appendChild(rotHandle);
+      }
+
+      // Node Pointer & Double Click Events
+      g.addEventListener("pointerdown", e => onNodePointerDown(e, node));
+      g.addEventListener("dblclick", e => { e.stopPropagation(); openQuickModal("node", node); });
+      g.addEventListener("contextmenu", e => onContextMenu(e, "node", node));
+
+      targetContainer.appendChild(g);
+    });
+
+    applyViewportTransform();
+  }
+
+  // ==================== INTERACTION HANDLERS ====================
+  let dragState = null;
+
+  function onNodePointerDown(e, node) {
+    if (e.button === 2) return;
+    e.stopPropagation();
+    hideContextMenu();
+
+    // Connect mode handling
+    if (state.connectMode || state.connectSourceId) {
+      if (!state.connectSourceId) {
+        startConnectFrom(node.id);
+      } else if (state.connectSourceId !== node.id) {
+        finishConnectTo(node.id);
+      }
+      return;
+    }
+
+    if (e.shiftKey || e.ctrlKey || e.metaKey) {
+      if (state.selectedIds.has(node.id)) state.selectedIds.delete(node.id);
+      else state.selectedIds.add(node.id);
+    } else if (!state.selectedIds.has(node.id)) {
+      state.selectedIds.clear();
+      state.selectedIds.add(node.id);
+    }
+    updateInspector();
+    renderAll();
+
+    if (node.locked || isLayerLocked(node.layer)) return;
+
+    const startPt = screenToCanvas(e.clientX, e.clientY);
+    const movingNodes = state.nodes.filter(n => state.selectedIds.has(n.id) && !n.locked && !isLayerLocked(n.layer));
+    dragState = {
+      type: "move-nodes",
+      startPt,
+      origins: movingNodes.map(n => ({ node: n, x: n.x, y: n.y })),
+      moved: false
+    };
+  }
+
+  function onResizePointerDown(e, node) {
+    e.stopPropagation();
+    const startPt = screenToCanvas(e.clientX, e.clientY);
+    dragState = {
+      type: "resize-node",
+      node,
+      startPt,
+      origW: node.w,
+      origH: node.h
+    };
+  }
+
+  function onRotatePointerDown(e, node) {
+    e.stopPropagation();
+    dragState = {
+      type: "rotate-node",
+      node
+    };
+  }
+
+  function onLinkPointerDown(e, link) {
+    if (e.button === 2) return;
+    e.stopPropagation();
+    hideContextMenu();
+    state.selectedIds.clear();
+    state.selectedIds.add(link.id);
+    updateInspector();
+    renderAll();
+  }
+
+  function onLinkDblClick(e, link) {
+    e.stopPropagation();
+    const pt = screenToCanvas(e.clientX, e.clientY);
+    link.waypoints = link.waypoints || [];
+    link.waypoints.push({ x: Math.round(pt.x), y: Math.round(pt.y) });
+    state.selectedIds.clear();
+    state.selectedIds.add(link.id);
+    pushHistory();
+    renderAll();
+    setStatus("Đã thêm điểm uốn (Double-click vào điểm uốn để xóa)");
+  }
+
+  function onWaypointPointerDown(e, link, idx) {
+    e.stopPropagation();
+    dragState = { type: "move-waypoint", link, idx };
+  }
+
+  function onLinkLabelPointerDown(e, link) {
+    if (e.button === 2) return;
+    e.stopPropagation();
+    state.selectedIds.clear();
+    state.selectedIds.add(link.id);
+    updateInspector();
+    const startPt = screenToCanvas(e.clientX, e.clientY);
+    const orig = link.labelOffset || { x: 0, y: 0 };
+    dragState = { type: "move-link-label", link, startPt, origX: orig.x, origY: orig.y };
+  }
+
+  // Canvas background pan & selection
+  svg.addEventListener("pointerdown", e => {
+    if (e.button === 2) return;
+    hideContextMenu();
+    if (state.connectSourceId) {
+      state.connectSourceId = null;
+      setStatus("Đã hủy nối liên kết");
+      return;
+    }
+    state.selectedIds.clear();
+    updateInspector();
+    renderAll();
+
+    dragState = {
+      type: "pan",
+      startX: e.clientX - state.view.x,
+      startY: e.clientY - state.view.y
+    };
+    svg.classList.add("panning");
+  });
+
+  window.addEventListener("pointermove", e => {
+    if (!dragState) return;
+    if (dragState.type === "pan") {
+      state.view.x = e.clientX - dragState.startX;
+      state.view.y = e.clientY - dragState.startY;
+      applyViewportTransform();
+    } else if (dragState.type === "move-nodes") {
+      const pt = screenToCanvas(e.clientX, e.clientY);
+      const dx = pt.x - dragState.startPt.x;
+      const dy = pt.y - dragState.startPt.y;
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) dragState.moved = true;
+      dragState.origins.forEach(item => {
+        item.node.x = Math.round(item.x + dx);
+        item.node.y = Math.round(item.y + dy);
+      });
+      renderAll();
+    } else if (dragState.type === "resize-node") {
+      const pt = screenToCanvas(e.clientX, e.clientY);
+      const dx = (pt.x - dragState.startPt.x) * 2;
+      const dy = (pt.y - dragState.startPt.y) * 2;
+      dragState.node.w = Math.max(44, Math.round(dragState.origW + dx));
+      dragState.node.h = Math.max(44, Math.round(dragState.origH + dy));
+      updateInspector();
+      renderAll();
+    } else if (dragState.type === "rotate-node") {
+      const pt = screenToCanvas(e.clientX, e.clientY);
+      const ang = Math.atan2(pt.y - dragState.node.y, pt.x - dragState.node.x) * (180 / Math.PI) + 90;
+      dragState.node.rot = Math.round(ang);
+      updateInspector();
+      renderAll();
+    } else if (dragState.type === "move-waypoint") {
+      const pt = screenToCanvas(e.clientX, e.clientY);
+      dragState.link.waypoints[dragState.idx] = { x: Math.round(pt.x), y: Math.round(pt.y) };
+      renderAll();
+    } else if (dragState.type === "move-link-label") {
+      const pt = screenToCanvas(e.clientX, e.clientY);
+      dragState.link.labelOffset = {
+        x: Math.round(dragState.origX + (pt.x - dragState.startPt.x)),
+        y: Math.round(dragState.origY + (pt.y - dragState.startPt.y))
+      };
+      renderAll();
+    }
+  });
+
+  window.addEventListener("pointerup", () => {
+    if (!dragState) return;
+    if (dragState.type !== "pan") {
+      pushHistory();
+    }
+    svg.classList.remove("panning");
+    dragState = null;
+  });
+
+  // Wheel Zoom
+  svg.addEventListener("wheel", e => {
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.1 : 0.9;
+    const newScale = Math.min(3, Math.max(0.25, state.view.scale * factor));
+    const rect = svg.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    state.view.x = mx - (mx - state.view.x) * (newScale / state.view.scale);
+    state.view.y = my - (my - state.view.y) * (newScale / state.view.scale);
+    state.view.scale = newScale;
+    applyViewportTransform();
+  }, { passive: false });
+
+  // ==================== CONNECT MODE ====================
+  function startConnectFrom(nodeId) {
+    state.connectSourceId = nodeId;
+    setStatus("Chọn thực thể đích để tạo liên kết...");
+  }
+
+  function finishConnectTo(targetId) {
+    const newLink = {
+      id: uid("link"),
+      source: state.connectSourceId,
+      target: targetId,
+      label: "Liên kết",
+      confirmed: "confirmed",
+      curve: "smooth",
+      arrows: "end",
+      color: "#1e293b",
+      width: 2,
+      waypoints: [],
+      labelOffset: { x: 0, y: -12 },
+      labelRot: 0
+    };
+    state.links.push(newLink);
+    state.connectSourceId = null;
+    state.selectedIds.clear();
+    state.selectedIds.add(newLink.id);
+    pushHistory();
+    updateInspector();
+    renderAll();
+    setStatus("Đã tạo liên kết mới");
+  }
+
+  // ==================== CONTEXT MENU & QUICK MODAL ====================
+  function onContextMenu(e, kind, item) {
+    e.preventDefault();
+    e.stopPropagation();
+    state.selectedIds.clear();
+    state.selectedIds.add(item.id);
+    updateInspector();
+    renderAll();
+
+    ctxMenu.innerHTML = "";
+    const addItem = (label, fn) => {
+      const div = document.createElement("div");
+      div.className = "ctx-item";
+      div.textContent = label;
+      div.onclick = () => { hideContextMenu(); fn(); };
+      ctxMenu.appendChild(div);
+    };
+    const addSep = () => {
+      const s = document.createElement("div");
+      s.className = "ctx-sep";
+      ctxMenu.appendChild(s);
+    };
+
+    if (kind === "node") {
+      addItem("✏️ Sửa nhanh nhãn & ghi chú", () => openQuickModal("node", item));
+      addItem("🔗 Nối liên kết từ nút này", () => startConnectFrom(item.id));
+      addItem("📑 Nhân bản thực thể", () => duplicateNode(item));
+      addItem(item.locked ? "🔓 Mở khóa vị trí" : "🔒 Khóa vị trí", () => {
+        item.locked = !item.locked; pushHistory(); renderAll(); updateInspector();
+      });
+      addSep();
+      addItem("🗑️ Xóa thực thể", () => deleteSelected());
+    } else if (kind === "link") {
+      addItem("✏️ Sửa nhãn liên kết", () => openQuickModal("link", item));
+      addItem("⇄ Đảo chiều mũi tên", () => reverseLink(item));
+      addItem(item.confirmed === "confirmed" ? "❓ Chuyển thành Chưa xác nhận" : "✅ Chuyển thành Đã xác nhận", () => {
+        item.confirmed = item.confirmed === "confirmed" ? "unconfirmed" : "confirmed";
+        pushHistory(); renderAll(); updateInspector();
+      });
+      addItem("➕ Thêm điểm uốn giữa dây", () => {
+        const src = state.nodes.find(n => n.id === item.source);
+        const tgt = state.nodes.find(n => n.id === item.target);
+        if (src && tgt) {
+          item.waypoints = item.waypoints || [];
+          item.waypoints.push({ x: Math.round((src.x + tgt.x) / 2), y: Math.round((src.y + tgt.y) / 2) });
+          pushHistory(); renderAll();
+        }
+      });
+      addSep();
+      addItem("🗑️ Xóa liên kết", () => deleteSelected());
+    }
+
+    ctxMenu.style.display = "block";
+    ctxMenu.style.left = Math.min(window.innerWidth - 200, e.clientX) + "px";
+    ctxMenu.style.top = Math.min(window.innerHeight - 200, e.clientY) + "px";
+  }
+
+  function hideContextMenu() {
+    ctxMenu.style.display = "none";
+  }
+  window.addEventListener("click", hideContextMenu);
+
+  function openQuickModal(kind, item) {
+    const body = document.getElementById("modal-body");
+    document.getElementById("modal-title").textContent = kind === "node" ? "✏️ Sửa nhanh Thực thể" : "🔗 Sửa nhanh Liên kết";
+    if (kind === "node") {
+      body.innerHTML = `
+        <div class="prop-row"><label>Tên / Nhãn chính</label><input type="text" class="prop-input" id="qm-label" value="${escapeHtml(item.label || "")}"></div>
+        <div class="prop-row"><label>Ghi chú / SĐT / Biển số</label><textarea class="prop-textarea" id="qm-sub">${escapeHtml(item.sub || "")}</textarea></div>
+        <div class="prop-grid-2">
+          <div class="prop-row"><label>Emoji</label><input type="text" class="prop-input" id="qm-emoji" value="${escapeHtml(item.emoji || "")}"></div>
+          <div class="prop-row"><label>Hình dạng</label>
+            <select class="prop-select" id="qm-shape">
+              <option value="circle" ${item.shape==="circle"?"selected":""}>Hình tròn</option>
+              <option value="roundrect" ${item.shape==="roundrect"?"selected":""}>Bo góc</option>
+              <option value="rect" ${item.shape==="rect"?"selected":""}>Chữ nhật</option>
+              <option value="diamond" ${item.shape==="diamond"?"selected":""}>Hình thoi</option>
+              <option value="hexagon" ${item.shape==="hexagon"?"selected":""}>Lục giác</option>
+              <option value="triangle" ${item.shape==="triangle"?"selected":""}>Tam giác</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="qm-save" style="width:100%; justify-content:center; margin-top:8px;">💾 Áp dụng</button>
+      `;
+      document.getElementById("qm-save").onclick = () => {
+        item.label = document.getElementById("qm-label").value;
+        item.sub = document.getElementById("qm-sub").value;
+        item.emoji = document.getElementById("qm-emoji").value;
+        item.shape = document.getElementById("qm-shape").value;
+        quickModal.style.display = "none";
+        pushHistory(); renderAll(); updateInspector();
+      };
+    } else {
+      body.innerHTML = `
+        <div class="prop-row"><label>Nhãn liên kết</label><input type="text" class="prop-input" id="qm-l-label" value="${escapeHtml(item.label || "")}"></div>
+        <div class="prop-grid-2">
+          <div class="prop-row"><label>Trạng thái</label>
+            <select class="prop-select" id="qm-l-conf">
+              <option value="confirmed" ${item.confirmed==="confirmed"?"selected":""}>Đã xác nhận (Nét liền)</option>
+              <option value="unconfirmed" ${item.confirmed==="unconfirmed"?"selected":""}>Chưa xác nhận (Nét đứt)</option>
+            </select>
+          </div>
+          <div class="prop-row"><label>Mũi tên</label>
+            <select class="prop-select" id="qm-l-arr">
+              <option value="end" ${item.arrows==="end"?"selected":""}>Một chiều (→)</option>
+              <option value="start" ${item.arrows==="start"?"selected":""}>Ngược lại (←)</option>
+              <option value="both" ${item.arrows==="both"?"selected":""}>Hai chiều (↔)</option>
+              <option value="none" ${item.arrows==="none"?"selected":""}>Không mũi tên (—)</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="qm-l-save" style="width:100%; justify-content:center; margin-top:8px;">💾 Áp dụng</button>
+      `;
+      document.getElementById("qm-l-save").onclick = () => {
+        item.label = document.getElementById("qm-l-label").value;
+        item.confirmed = document.getElementById("qm-l-conf").value;
+        item.arrows = document.getElementById("qm-l-arr").value;
+        quickModal.style.display = "none";
+        pushHistory(); renderAll(); updateInspector();
+      };
+    }
+    quickModal.style.display = "flex";
+  }
+
+  document.getElementById("btn-close-modal").onclick = () => { quickModal.style.display = "none"; };
+
+  function escapeHtml(str) {
+    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  // ==================== INSPECTOR BINDINGS ====================
+  function getSelectedNode() {
+    if (state.selectedIds.size !== 1) return null;
+    const id = [...state.selectedIds][0];
+    return state.nodes.find(n => n.id === id) || null;
+  }
+
+  function getSelectedLink() {
+    if (state.selectedIds.size !== 1) return null;
+    const id = [...state.selectedIds][0];
+    return state.links.find(l => l.id === id) || null;
+  }
+
+  function updateInspector() {
+    const node = getSelectedNode();
+    const link = getSelectedLink();
+    const noMsg = document.getElementById("no-selection-msg");
+    const nPanel = document.getElementById("node-inspector");
+    const lPanel = document.getElementById("link-inspector");
+
+    noMsg.style.display = (!node && !link) ? "block" : "none";
+    nPanel.style.display = node ? "block" : "none";
+    lPanel.style.display = link ? "block" : "none";
+
+    if (node) {
+      document.getElementById("inp-node-label").value = node.label || "";
+      document.getElementById("inp-node-sub").value = node.sub || "";
+      document.getElementById("inp-node-type").value = node.type || "person_u";
+      document.getElementById("inp-node-shape").value = node.shape || "circle";
+      document.getElementById("inp-node-emoji").value = node.emoji || "";
+      document.getElementById("inp-node-img").value = node.img || "";
+      document.getElementById("inp-node-w").value = node.w || 110;
+      document.getElementById("inp-node-h").value = node.h || 74;
+      document.getElementById("inp-node-rot").value = node.rot || 0;
+      document.getElementById("inp-node-sw").value = node.sw || 2;
+      document.getElementById("inp-node-fill").value = node.fill || "#dbeafe";
+      document.getElementById("inp-node-stroke").value = node.stroke || "#1d4ed8";
+
+      const lSel = document.getElementById("inp-node-layer");
+      lSel.innerHTML = state.layers.map(l => `<option value="${l.id}" ${l.id === node.layer ? "selected" : ""}>${escapeHtml(l.name)}</option>`).join("");
+    }
+
+    if (link) {
+      document.getElementById("inp-link-label").value = link.label || "";
+      document.getElementById("inp-link-confirmed").value = link.confirmed || "confirmed";
+      document.getElementById("inp-link-curve").value = link.curve || "smooth";
+      document.getElementById("inp-link-arrows").value = link.arrows || "end";
+      document.getElementById("inp-link-color").value = link.color || "#1e293b";
+      document.getElementById("inp-link-width").value = link.width || 2;
+      document.getElementById("inp-link-label-rot").value = link.labelRot || 0;
+    }
+  }
+
+  function bindNodeInputs() {
+    const bind = (id, prop, isNum) => {
+      document.getElementById(id).addEventListener("input", e => {
+        const n = getSelectedNode();
+        if (!n) return;
+        n[prop] = isNum ? Number(e.target.value) : e.target.value;
+        renderAll();
+      });
+      document.getElementById(id).addEventListener("change", () => pushHistory());
+    };
+    bind("inp-node-label", "label");
+    bind("inp-node-sub", "sub");
+    bind("inp-node-shape", "shape");
+    bind("inp-node-emoji", "emoji");
+    bind("inp-node-img", "img");
+    bind("inp-node-layer", "layer");
+    bind("inp-node-w", "w", true);
+    bind("inp-node-h", "h", true);
+    bind("inp-node-rot", "rot", true);
+    bind("inp-node-sw", "sw", true);
+    bind("inp-node-fill", "fill");
+    bind("inp-node-stroke", "stroke");
+
+    document.getElementById("inp-node-type").addEventListener("change", e => {
+      const n = getSelectedNode();
+      if (!n) return;
+      n.type = e.target.value;
+      const def = ENTITY_TYPES.find(t => t.type === n.type);
+      if (def) {
+        n.emoji = def.emoji;
+        n.fill = def.fill;
+        n.stroke = def.stroke;
+        n.shape = def.shape;
+      }
+      pushHistory(); updateInspector(); renderAll();
+    });
+
+    // Image upload from local file
+    document.getElementById("btn-upload-node-img").onclick = () => document.getElementById("file-node-img").click();
+    document.getElementById("file-node-img").onchange = e => {
+      const file = e.target.files[0];
+      const n = getSelectedNode();
+      if (!file || !n) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        n.img = ev.target.result;
+        document.getElementById("inp-node-img").value = "(Ảnh đã tải lên)";
+        pushHistory(); renderAll();
+      };
+      reader.readAsDataURL(file);
+    };
+    document.getElementById("btn-clear-node-img").onclick = () => {
+      const n = getSelectedNode();
+      if (!n) return;
+      n.img = "";
+      document.getElementById("inp-node-img").value = "";
+      pushHistory(); renderAll();
+    };
+
+    document.getElementById("btn-node-lock").onclick = () => {
+      const n = getSelectedNode();
+      if (!n) return;
+      n.locked = !n.locked;
+      pushHistory(); renderAll();
+    };
+    document.getElementById("btn-node-dup").onclick = () => {
+      const n = getSelectedNode();
+      if (n) duplicateNode(n);
+    };
+    document.getElementById("btn-node-del").onclick = deleteSelected;
+  }
+
+  function reverseLink(link) {
+    const tmp = link.source;
+    link.source = link.target;
+    link.target = tmp;
+    if (link.waypoints && link.waypoints.length > 1) {
+      link.waypoints.reverse();
+    }
+    pushHistory(); renderAll(); updateInspector();
+  }
+
+  function bindLinkInputs() {
+    const bind = (id, prop, isNum) => {
+      document.getElementById(id).addEventListener("input", e => {
+        const l = getSelectedLink();
+        if (!l) return;
+        l[prop] = isNum ? Number(e.target.value) : e.target.value;
+        renderAll();
+      });
+      document.getElementById(id).addEventListener("change", () => pushHistory());
+    };
+    bind("inp-link-label", "label");
+    bind("inp-link-confirmed", "confirmed");
+    bind("inp-link-curve", "curve");
+    bind("inp-link-arrows", "arrows");
+    bind("inp-link-color", "color");
+    bind("inp-link-width", "width", true);
+    bind("inp-link-label-rot", "labelRot", true);
+
+    document.getElementById("btn-link-reverse").onclick = () => {
+      const l = getSelectedLink();
+      if (l) reverseLink(l);
+    };
+    document.getElementById("btn-link-reset-label").onclick = () => {
+      const l = getSelectedLink();
+      if (!l) return;
+      l.labelOffset = { x: 0, y: -12 };
+      l.labelRot = 0;
+      pushHistory(); updateInspector(); renderAll();
+    };
+    document.getElementById("btn-link-add-wp").onclick = () => {
+      const l = getSelectedLink();
+      if (!l) return;
+      const src = state.nodes.find(n => n.id === l.source);
+      const tgt = state.nodes.find(n => n.id === l.target);
+      if (src && tgt) {
+        l.waypoints = l.waypoints || [];
+        l.waypoints.push({ x: Math.round((src.x + tgt.x) / 2), y: Math.round((src.y + tgt.y) / 2) });
+        pushHistory(); renderAll();
+      }
+    };
+    document.getElementById("btn-link-clear-wp").onclick = () => {
+      const l = getSelectedLink();
+      if (!l) return;
+      l.waypoints = [];
+      pushHistory(); renderAll();
+    };
+    document.getElementById("btn-link-del").onclick = deleteSelected;
+  }
+
+  // ==================== NODE CREATION & ACTIONS ====================
+  function addEntityNode(typeDef, customLabel) {
+    const rect = svg.getBoundingClientRect();
+    const center = screenToCanvas(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    const jitterX = (Math.random() - 0.5) * 60;
+    const jitterY = (Math.random() - 0.5) * 60;
+    const isZone = typeDef.type === "zone";
+    const node = {
+      id: uid("node"),
+      type: typeDef.type,
+      label: customLabel || typeDef.label,
+      sub: "",
+      emoji: typeDef.emoji,
+      shape: typeDef.shape || "roundrect",
+      x: Math.round(center.x + jitterX),
+      y: Math.round(center.y + jitterY),
+      w: isZone ? 320 : 120,
+      h: isZone ? 220 : 74,
+      rot: 0,
+      fill: typeDef.fill,
+      stroke: typeDef.stroke,
+      sw: 2,
+      layer: state.activeLayer,
+      locked: false
+    };
+    state.nodes.push(node);
+    state.selectedIds.clear();
+    state.selectedIds.add(node.id);
+    pushHistory();
+    updateInspector();
+    renderAll();
+  }
+
+  function duplicateNode(node) {
+    const copy = JSON.parse(JSON.stringify(node));
+    copy.id = uid("node");
+    copy.x += 35;
+    copy.y += 35;
+    state.nodes.push(copy);
+    state.selectedIds.clear();
+    state.selectedIds.add(copy.id);
+    pushHistory(); updateInspector(); renderAll();
+  }
+
+  function deleteSelected() {
+    if (state.selectedIds.size === 0) return;
+    state.nodes = state.nodes.filter(n => !state.selectedIds.has(n.id));
+    state.links = state.links.filter(l => !state.selectedIds.has(l.id) && !state.selectedIds.has(l.source) && !state.selectedIds.has(l.target));
+    state.selectedIds.clear();
+    pushHistory(); updateInspector(); renderAll();
+  }
+
+  window.addEventListener("keydown", e => {
+    if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
+    if (e.key === "Delete" || e.key === "Backspace") {
+      deleteSelected();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+      e.preventDefault();
+      if (historyIdx > 0) { historyIdx--; restoreSnapshot(history[historyIdx]); }
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
+      e.preventDefault();
+      if (historyIdx < history.length - 1) { historyIdx++; restoreSnapshot(history[historyIdx]); }
+    }
+  });
+
+  // ==================== LAYERS MANAGEMENT ====================
+  function renderLayers() {
+    const list = document.getElementById("layers-list");
+    list.innerHTML = "";
+    state.layers.forEach(layer => {
+      const div = document.createElement("div");
+      div.className = "layer-item" + (layer.id === state.activeLayer ? " active" : "");
+      div.innerHTML = `
+        <span style="cursor:pointer; flex:1;" class="layer-name">${escapeHtml(layer.name)}</span>
+        <div style="display:flex; gap:4px;">
+          <button class="btn btn-vis" title="Ẩn/Hiện">${layer.visible ? "👁️" : "🙈"}</button>
+          <button class="btn btn-lck" title="Khóa/Mở">${layer.locked ? "🔒" : "🔓"}</button>
+        </div>
+      `;
+      div.querySelector(".layer-name").onclick = () => {
+        state.activeLayer = layer.id;
+        renderLayers();
+      };
+      div.querySelector(".btn-vis").onclick = () => {
+        layer.visible = !layer.visible;
+        renderLayers(); renderAll();
+      };
+      div.querySelector(".btn-lck").onclick = () => {
+        layer.locked = !layer.locked;
+        renderLayers(); renderAll();
+      };
+      list.appendChild(div);
+    });
+  }
+
+  document.getElementById("btn-add-layer").onclick = () => {
+    const inp = document.getElementById("new-layer-name");
+    const name = inp.value.trim() || ("Layer " + (state.layers.length + 1));
+    const id = uid("L");
+    state.layers.push({ id, name, visible: true, locked: false });
+    state.activeLayer = id;
+    inp.value = "";
+    pushHistory(); renderLayers(); updateInspector();
+  };
+
+  // ==================== AUTO LAYOUT & FIT VIEW ====================
+  function autoLayoutForce() {
+    const nodes = state.nodes.filter(n => n.type !== "zone");
+    if (nodes.length === 0) return;
+    const cols = Math.ceil(Math.sqrt(nodes.length));
+    nodes.forEach((n, idx) => {
+      if (n.locked) return;
+      const r = Math.floor(idx / cols);
+      const c = idx % cols;
+      n.x = 180 + c * 210;
+      n.y = 140 + r * 150;
+    });
+    pushHistory(); renderAll(); fitView();
+  }
+
+  function fitView() {
+    if (state.nodes.length === 0) {
+      state.view = { x: 0, y: 0, scale: 1 };
+      applyViewportTransform();
+      return;
+    }
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    state.nodes.forEach(n => {
+      minX = Math.min(minX, n.x - n.w / 2 - 30);
+      minY = Math.min(minY, n.y - n.h / 2 - 30);
+      maxX = Math.max(maxX, n.x + n.w / 2 + 30);
+      maxY = Math.max(maxY, n.y + n.h / 2 + 40);
+    });
+    const rect = svg.getBoundingClientRect();
+    const w = Math.max(200, maxX - minX);
+    const h = Math.max(200, maxY - minY);
+    const scale = Math.min(1.35, Math.max(0.3, Math.min(rect.width / w, rect.height / h) * 0.9));
+    state.view.scale = scale;
+    state.view.x = (rect.width - w * scale) / 2 - minX * scale;
+    state.view.y = (rect.height - h * scale) / 2 - minY * scale;
+    applyViewportTransform();
+  }
+
+  // ==================== SAVE / RELOAD / JSON ====================
+  const STORAGE_KEY = "LinkBoard_ANB_Studio_Save_v1";
+
+  function saveToBrowser() {
+    const payload = JSON.stringify({
+      nodes: state.nodes,
+      links: state.links,
+      layers: state.layers,
+      activeLayer: state.activeLayer,
+      view: state.view
+    });
+    localStorage.setItem(STORAGE_KEY, payload);
+    setStatus("💾 Đã lưu sơ đồ vào trình duyệt!");
+  }
+
+  function loadFromBrowser() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      setStatus("⚠️ Chưa có dữ liệu lưu trong trình duyệt");
+      return;
+    }
+    restoreSnapshot(raw);
+    fitView();
+    setStatus("📂 Đã tải lại sơ đồ từ trình duyệt!");
+  }
+
+  document.getElementById("btn-save-browser").onclick = saveToBrowser;
+  document.getElementById("btn-load-browser").onclick = loadFromBrowser;
+
+  document.getElementById("btn-json-export").onclick = () => {
+    const data = JSON.stringify({ nodes: state.nodes, links: state.links, layers: state.layers }, null, 2);
+    downloadBlob(new Blob([data], { type: "application/json" }), "LinkBoard_ANB_Project.json");
+  };
+  document.getElementById("btn-json-import").onclick = () => document.getElementById("file-json-input").click();
+  document.getElementById("file-json-input").onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      restoreSnapshot(ev.target.result);
+      pushHistory(); fitView();
+      setStatus("⬆️ Đã nhập dự án JSON");
+    };
+    reader.readAsText(file);
+  };
+
+  // ==================== EXCEL IMPORT & EXPORT ====================
+  function detectGenderType(g) {
+    const s = String(g || "").trim().toLowerCase();
+    if (["m", "male", "nam", "1", "trai"].includes(s)) return ENTITY_TYPES[0];
+    if (["f", "female", "nữ", "nu", "2", "gái"].includes(s)) return ENTITY_TYPES[1];
+    return ENTITY_TYPES[2];
+  }
+
+  function importRowsToDiagram(rows) {
+    if (!rows || rows.length === 0) return;
+    const nodeByKey = new Map();
+    const getOrCreate = (key, typeDef, label, sub) => {
+      const k = typeDef.type + "::" + key.toLowerCase();
+      if (nodeByKey.has(k)) return nodeByKey.get(k);
+      const n = {
+        id: uid("node"),
+        type: typeDef.type,
+        label,
+        sub: sub || "",
+        emoji: typeDef.emoji,
+        shape: typeDef.shape,
+        x: 200 + (nodeByKey.size % 5) * 200,
+        y: 150 + Math.floor(nodeByKey.size / 5) * 150,
+        w: 125, h: 74, rot: 0,
+        fill: typeDef.fill, stroke: typeDef.stroke, sw: 2,
+        layer: state.activeLayer, locked: false
+      };
+      state.nodes.push(n);
+      nodeByKey.set(k, n);
+      return n;
+    };
+
+    rows.forEach(r => {
+      const name = String(r.name || r.Name || r.ten || r["Họ tên"] || "").trim();
+      const tel = String(r.tel || r.Tel || r.phone || r.Phone || r.sdt || "").trim();
+      const address = String(r.address || r.Address || r.diachi || "").trim();
+      const car = String(r.car || r.Car || r.vehicle || r.bienso || "").trim();
+      const gender = r.gender || r.Gender || r.gioitinh || "";
+
+      if (!name) return;
+      const pNode = getOrCreate(name, detectGenderType(gender), name, gender ? ("Giới tính: " + gender) : "");
+
+      const linkTo = (otherNode, lbl) => {
+        state.links.push({
+          id: uid("link"), source: pNode.id, target: otherNode.id,
+          label: lbl, confirmed: "confirmed", curve: "smooth", arrows: "end",
+          color: "#1e293b", width: 2, waypoints: [], labelOffset: { x: 0, y: -12 }, labelRot: 0
+        });
+      };
+
+      if (tel) {
+        const tNode = getOrCreate(tel, ENTITY_TYPES[3], tel, "Điện thoại");
+        linkTo(tNode, "Sử dụng SĐT");
+      }
+      if (address) {
+        const aNode = getOrCreate(address, ENTITY_TYPES[4], address, "Địa chỉ");
+        linkTo(aNode, "Cư trú / Liên quan");
+      }
+      if (car) {
+        const cNode = getOrCreate(car, ENTITY_TYPES[5], car, "Phương tiện");
+        linkTo(cNode, "Phương tiện");
+      }
+    });
+
+    pushHistory(); renderAll(); fitView();
+    setStatus(`📊 Đã nhập ${rows.length} dòng dữ liệu thành sơ đồ ANB!`);
+  }
+
+  document.getElementById("btn-xlsx-import").onclick = () => document.getElementById("file-xlsx-input").click();
+  document.getElementById("file-xlsx-input").onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      if (window.XLSX) {
+        const wb = XLSX.read(ev.target.result, { type: "array" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws);
+        importRowsToDiagram(rows);
+      } else {
+        // Offline CSV fallback parser
+        const text = new TextDecoder().decode(ev.target.result);
+        const lines = text.split(/\r?\n/).filter(Boolean);
+        const headers = lines[0].split(",").map(h => h.trim());
+        const rows = lines.slice(1).map(line => {
+          const vals = line.split(",");
+          const obj = {};
+          headers.forEach((h, i) => obj[h] = (vals[i] || "").trim());
+          return obj;
+        });
+        importRowsToDiagram(rows);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  document.getElementById("btn-xlsx-export").onclick = () => {
+    const nodeMap = new Map(state.nodes.map(n => [n.id, n]));
+    const entitiesData = state.nodes.map(n => ({
+      ID: n.id, Type: n.type, Label: n.label, SubInfo: n.sub || "",
+      Shape: n.shape, X: n.x, Y: n.y, Layer: n.layer
+    }));
+    const linksData = state.links.map(l => ({
+      ID: l.id,
+      Source: (nodeMap.get(l.source) || {}).label || l.source,
+      Target: (nodeMap.get(l.target) || {}).label || l.target,
+      Label: l.label || "",
+      Status: l.confirmed,
+      Arrows: l.arrows
+    }));
+
+    if (window.XLSX) {
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(entitiesData), "Entities");
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(linksData), "Links");
+      XLSX.writeFile(wb, "LinkBoard_ANB_Export.xlsx");
+      setStatus("📗 Đã xuất file Excel (.xlsx)");
+    } else {
+      // Offline CSV fallback
+      const csv = ["ID,Type,Label,SubInfo", ...entitiesData.map(r => `"${r.ID}","${r.Type}","${r.Label}","${r.SubInfo}"`)].join("\n");
+      downloadBlob(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }), "LinkBoard_ANB_Export.csv");
+      setStatus("📗 Đã xuất CSV (Chế độ ngoại tuyến)");
+    }
+  };
+
+  // ==================== EXPORT SVG / PNG / JPG / PDF ====================
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function exportDiagram(fmt) {
+    if (!fmt) return;
+    if (fmt === "pdf") {
+      window.print();
+      return;
+    }
+    const clone = svg.cloneNode(true);
+    const bg = clone.querySelector("#bg-rect");
+    if (bg) bg.setAttribute("fill", "#ffffff");
+    const serializer = new XMLSerializer();
+    const svgStr = serializer.serializeToString(clone);
+
+    if (fmt === "svg") {
+      downloadBlob(new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" }), "LinkBoard_ANB_Diagram.svg");
+      setStatus("📤 Đã xuất SVG");
+      return;
+    }
+
+    const img = new Image();
+    const svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
+    img.onload = () => {
+      const rect = svg.getBoundingClientRect();
+      const canvas = document.createElement("canvas");
+      canvas.width = rect.width * 2;
+      canvas.height = rect.height * 2;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      const mime = fmt === "jpg" ? "image/jpeg" : "image/png";
+      canvas.toBlob(blob => {
+        downloadBlob(blob, `LinkBoard_ANB_Diagram.${fmt}`);
+        setStatus(`📤 Đã xuất ${fmt.toUpperCase()}`);
+      }, mime, 0.95);
+    };
+    img.src = url;
+  }
+
+  document.getElementById("export-format").onchange = e => {
+    exportDiagram(e.target.value);
+    e.target.value = "";
+  };
+
+  // ==================== MERMAID INTEGRATION ====================
+  document.getElementById("btn-mermaid-to-canvas").onclick = () => {
+    const code = document.getElementById("mermaid-code").value;
+    const lines = code.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith("graph") && !l.startsWith("flowchart"));
+    const created = new Map();
+    const ensureNode = (rawId, rawLabel) => {
+      if (created.has(rawId)) return created.get(rawId);
+      const n = {
+        id: uid("node"), type: "person_u", label: rawLabel || rawId, sub: "", emoji: "🔹",
+        shape: "roundrect", x: 200 + (created.size % 4) * 210, y: 150 + Math.floor(created.size / 4) * 140,
+        w: 140, h: 68, rot: 0, fill: "#dbeafe", stroke: "#1d4ed8", sw: 2, layer: state.activeLayer, locked: false
+      };
+      state.nodes.push(n);
+      created.set(rawId, n);
+      return n;
+    };
+
+    lines.forEach(line => {
+      const m = line.match(/^([A-Za-z0-9_]+)(?:\[(.*?)\])?\s*(-->|-.->|---)\s*(?:\|(.*?)\|)?\s*([A-Za-z0-9_]+)(?:\[(.*?)\])?/);
+      if (m) {
+        const sNode = ensureNode(m[1], m[2] || m[1]);
+        const tNode = ensureNode(m[5], m[6] || m[5]);
+        state.links.push({
+          id: uid("link"), source: sNode.id, target: tNode.id,
+          label: m[4] || "", confirmed: m[3] === "-.->" ? "unconfirmed" : "confirmed",
+          curve: "smooth", arrows: m[3] === "---" ? "none" : "end",
+          color: "#1e293b", width: 2, waypoints: [], labelOffset: { x: 0, y: -12 }, labelRot: 0
+        });
+      }
+    });
+
+    if (window.mermaid) {
+      try {
+        mermaid.initialize({ startOnLoad: false });
+        mermaid.render("mmd-svg-" + Date.now(), code).then(res => {
+          document.getElementById("mermaid-preview").innerHTML = res.svg;
+        }).catch(() => {});
+      } catch (err) {}
+    }
+    pushHistory(); renderAll(); fitView();
+    setStatus("⚡ Đã chuyển mã Mermaid lên Canvas!");
+  };
+
+  document.getElementById("btn-canvas-to-mermaid").onclick = () => {
+    const idMap = new Map();
+    state.nodes.forEach((n, idx) => idMap.set(n.id, "N" + (idx + 1)));
+    const lines = ["graph TD"];
+    state.nodes.forEach(n => {
+      const safeLbl = (n.label || n.id).replace(/\n/g, " ").replace(/[\[\]]/g, "");
+      lines.push(`  ${idMap.get(n.id)}["${safeLbl}"]`);
+    });
+    state.links.forEach(l => {
+      const s = idMap.get(l.source);
+      const t = idMap.get(l.target);
+      if (!s || !t) return;
+      const arrow = l.confirmed === "unconfirmed" ? "-.->" : "-->";
+      const lbl = l.label ? `|${l.label}|` : "";
+      lines.push(`  ${s} ${arrow}${lbl} ${t}`);
+    });
+    document.getElementById("mermaid-code").value = lines.join("\n");
+    setStatus("📋 Đã xuất sơ đồ sang mã Mermaid");
+  };
+
+  // ==================== UI INITIALIZATION ====================
+  function initUI() {
+    // Populate Entity Palette
+    const pGrid = document.getElementById("palette-grid");
+    ENTITY_TYPES.forEach(t => {
+      const item = document.createElement("div");
+      item.className = "palette-item";
+      item.innerHTML = `<div class="palette-icon">${t.emoji}</div><div>${t.label}</div>`;
+      item.onclick = () => addEntityNode(t);
+      pGrid.appendChild(item);
+    });
+
+    // Populate Templates
+    const tList = document.getElementById("templates-list");
+    TEMPLATES.forEach(tpl => {
+      const card = document.createElement("div");
+      card.className = "tpl-card";
+      card.innerHTML = `<div class="tpl-card-title">${tpl.title}</div><div class="tpl-card-desc">${tpl.desc}</div>`;
+      card.onclick = () => {
+        const built = tpl.build();
+        state.layers = built.layers;
+        state.activeLayer = built.layers[0].id;
+        state.nodes = built.nodes;
+        state.links = built.links;
+        state.selectedIds.clear();
+        pushHistory(); renderLayers(); updateInspector(); renderAll(); fitView();
+        setStatus("📐 Đã tải mẫu: " + tpl.title);
+      };
+      tList.appendChild(card);
+    });
+
+    // Swatches
+    const nSw = document.getElementById("node-swatches");
+    PALETTE_COLORS.forEach(c => {
+      const s = document.createElement("div");
+      s.className = "swatch";
+      s.style.background = c.fill;
+      s.style.borderColor = c.stroke;
+      s.onclick = () => {
+        const n = getSelectedNode();
+        if (!n) return;
+        n.fill = c.fill; n.stroke = c.stroke;
+        document.getElementById("inp-node-fill").value = c.fill;
+        document.getElementById("inp-node-stroke").value = c.stroke;
+        pushHistory(); renderAll();
+      };
+      nSw.appendChild(s);
+    });
+
+    const lSw = document.getElementById("link-swatches");
+    LINK_COLORS.forEach(col => {
+      const s = document.createElement("div");
+      s.className = "swatch";
+      s.style.background = col;
+      s.onclick = () => {
+        const l = getSelectedLink();
+        if (!l) return;
+        l.color = col;
+        document.getElementById("inp-link-color").value = col;
+        pushHistory(); renderAll();
+      };
+      lSw.appendChild(s);
+    });
+
+    // Sidebar Tabs
+    document.querySelectorAll("[data-ltab]").forEach(tab => {
+      tab.onclick = () => {
+        document.querySelectorAll("[data-ltab]").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        const target = tab.getAttribute("data-ltab");
+        ["entities", "templates", "mermaid"].forEach(k => {
+          document.getElementById("ltab-" + k).style.display = k === target ? "block" : "none";
+        });
+      };
+    });
+
+    document.querySelectorAll("[data-rtab]").forEach(tab => {
+      tab.onclick = () => {
+        document.querySelectorAll("[data-rtab]").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        const target = tab.getAttribute("data-rtab");
+        ["props", "layers"].forEach(k => {
+          document.getElementById("rtab-" + k).style.display = k === target ? "block" : "none";
+        });
+      };
+    });
+
+    // Topbar buttons
+    document.getElementById("btn-toggle-left").onclick = () => document.getElementById("sidebar-left").classList.toggle("open");
+    document.getElementById("btn-toggle-right").onclick = () => document.getElementById("sidebar-right").classList.toggle("open");
+    document.getElementById("btn-connect-mode").onclick = e => {
+      state.connectMode = !state.connectMode;
+      state.connectSourceId = null;
+      e.currentTarget.classList.toggle("active", state.connectMode);
+      svg.classList.toggle("connect-mode", state.connectMode);
+      setStatus(state.connectMode ? "🔗 Chế độ nối: Chọn thực thể nguồn" : "Đã tắt chế độ nối");
+    };
+    document.getElementById("btn-undo").onclick = () => {
+      if (historyIdx > 0) { historyIdx--; restoreSnapshot(history[historyIdx]); }
+    };
+    document.getElementById("btn-redo").onclick = () => {
+      if (historyIdx < history.length - 1) { historyIdx++; restoreSnapshot(history[historyIdx]); }
+    };
+    document.getElementById("btn-auto-layout").onclick = autoLayoutForce;
+    document.getElementById("btn-fit").onclick = fitView;
+    document.getElementById("btn-zoom-in").onclick = () => { state.view.scale = Math.min(3, state.view.scale * 1.15); applyViewportTransform(); };
+    document.getElementById("btn-zoom-out").onclick = () => { state.view.scale = Math.max(0.25, state.view.scale * 0.85); applyViewportTransform(); };
+
+    document.getElementById("btn-add-custom-node").onclick = () => {
+      const inp = document.getElementById("quick-node-label");
+      const lbl = inp.value.trim() || "Thực thể mới";
+      addEntityNode(ENTITY_TYPES[2], lbl);
+      inp.value = "";
+    };
+    document.getElementById("btn-add-zone").onclick = () => {
+      addEntityNode({ type: "zone", label: "KHUNG NHÓM / VÙNG", emoji: "", shape: "rect", fill: "#e0f2fe", stroke: "#0284c7" });
+    };
+
+    // Language switcher
+    document.getElementById("lang-select").onchange = e => {
+      const dict = I18N[e.target.value] || I18N.vi;
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const k = el.getAttribute("data-i18n");
+        if (dict[k]) el.textContent = dict[k];
+      });
+    };
+
+    bindNodeInputs();
+    bindLinkInputs();
+
+    // Load default ANB template on first boot
+    const initial = TEMPLATES[2].build();
+    state.layers = initial.layers;
+    state.activeLayer = initial.layers[0].id;
+    state.nodes = initial.nodes;
+    state.links = initial.links;
+    pushHistory();
+    renderLayers();
+    renderAll();
+    setTimeout(fitView, 50);
+  }
+
+  initUI();
+})();
+</script>
+</body>
+</html>
