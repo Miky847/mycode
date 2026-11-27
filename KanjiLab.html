@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KanjiLab VN – Học Kanji bằng hiểu, chiết tự & SRS</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- HanziWriter CDN: Hỗ trợ dữ liệu thứ tự nét vẽ Kanji Nhật & luyện viết từng nét -->
+  <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+  <!-- Google Fonts: Be Vietnam Pro & Noto Serif JP -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .jp-font {
+      font-family: 'Noto Serif JP', serif;
+    }
+    /* Hiệu ứng lật thẻ 3D */
+    .perspective {
+      perspective: 1000px;
+    }
+    .preserve-3d {
+      transform-style: preserve-3d;
+      transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
+    }
+    .flipped {
+      transform: rotateY(180deg);
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    /* Khung ô vuông luyện viết Kanji 4 góc phần tư nét đứt chuẩn Nhật */
+    .kanji-grid-box {
+      position: relative;
+      background-color: #ffffff;
+      background-image:
+        linear-gradient(to right, transparent 49.5%, rgba(244, 63, 94, 0.25) 49.5%, rgba(244, 63, 94, 0.25) 50.5%, transparent 50.5%),
+        linear-gradient(to bottom, transparent 49.5%, rgba(244, 63, 94, 0.25) 49.5%, rgba(244, 63, 94, 0.25) 50.5%, transparent 50.5%),
+        linear-gradient(45deg, transparent 49.7%, rgba(203, 213, 225, 0.45) 49.7%, rgba(203, 213, 225, 0.45) 50.3%, transparent 50.3%),
+        linear-gradient(-45deg, transparent 49.7%, rgba(203, 213, 225, 0.45) 49.7%, rgba(203, 213, 225, 0.45) 50.3%, transparent 50.3%);
+    }
+    /* Ẩn thanh cuộn ngang trên mobile nav nhưng vẫn cuộn mượt */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-rose-100 selection:text-rose-900">
+
+  <!-- Header & Thanh điều hướng -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
+      <!-- Logo -->
+      <div class="flex items-center gap-2.5 cursor-pointer shrink-0" onclick="switchTab('home')">
+        <div class="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center jp-font font-bold text-xl shadow-sm">漢</div>
+        <span class="font-extrabold text-lg tracking-tight text-slate-900">KanjiLab<span class="text-rose-600">.vn</span></span>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
+        <button onclick="switchTab('home')" data-tab="home" class="nav-btn px-3.5 py-2 rounded-xl text-slate-600 hover:bg-slate-100 transition">Tổng quan</button>
+        <button onclick="switchTab('kanji')" data-tab="kanji" class="nav-btn px-3.5 py-2 rounded-xl text-slate-600 hover:bg-slate-100 transition">Kho Kanji</button>
+        <button onclick="switchTab('radicals')" data-tab="radicals" class="nav-btn px-3.5 py-2 rounded-xl text-slate-600 hover:bg-slate-100 transition">Bộ thủ</button>
+        <button onclick="switchTab('minna')" data-tab="minna" class="nav-btn px-3.5 py-2 rounded-xl text-slate-600 hover:bg-slate-100 transition">Minna</button>
+        <button onclick="switchTab('srs')" data-tab="srs" class="nav-btn px-3.5 py-2 rounded-xl text-slate-600 hover:bg-slate-100 transition flex items-center gap-1.5">
+          Flashcard SRS
+          <span id="due-badge" class="bg-rose-100 text-rose-700 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+        </button>
+        <button onclick="switchTab('quiz')" data-tab="quiz" class="nav-btn px-3.5 py-2 rounded-xl text-slate-600 hover:bg-slate-100 transition">Thi thử</button>
+      </nav>
+
+      <!-- Bộ đếm đã thuộc -->
+      <div class="flex items-center gap-2 shrink-0">
+        <span id="learned-counter" class="text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full">
+          Đã thuộc: 0/17
+        </span>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <div class="md:hidden flex overflow-x-auto no-scrollbar border-t border-slate-100 px-3 py-2 gap-1.5 text-xs font-medium bg-white">
+      <button onclick="switchTab('home')" data-tab="home" class="nav-btn shrink-0 px-3 py-1.5 rounded-lg">Tổng quan</button>
+      <button onclick="switchTab('kanji')" data-tab="kanji" class="nav-btn shrink-0 px-3 py-1.5 rounded-lg">Kho Kanji</button>
+      <button onclick="switchTab('radicals')" data-tab="radicals" class="nav-btn shrink-0 px-3 py-1.5 rounded-lg">Bộ thủ</button>
+      <button onclick="switchTab('minna')" data-tab="minna" class="nav-btn shrink-0 px-3 py-1.5 rounded-lg">Minna</button>
+      <button onclick="switchTab('srs')" data-tab="srs" class="nav-btn shrink-0 px-3 py-1.5 rounded-lg flex items-center gap-1">
+        Flashcard <span id="due-badge-mobile" class="bg-rose-100 text-rose-700 px-1.5 rounded-full font-bold">0</span>
+      </button>
+      <button onclick="switchTab('quiz')" data-tab="quiz" class="nav-btn shrink-0 px-3 py-1.5 rounded-lg">Thi thử</button>
+    </div>
+  </header>
+
+  <!-- Nội dung chính -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6 md:py-8">
+
+    <!-- ==================== TAB 1: TỔNG QUAN (HOME) ==================== -->
+    <section id="tab-home" class="tab-view space-y-10">
+      <!-- Hero Banner -->
+      <div class="grid lg:grid-cols-12 gap-8 items-center bg-white p-6 md:p-10 rounded-3xl border border-slate-200 shadow-sm">
+        <div class="lg:col-span-7 space-y-5">
+          <span class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider bg-rose-50 text-rose-600 px-3.5 py-1.5 rounded-full border border-rose-100">
+            🇯🇵 Phương pháp chiết tự dành cho người Việt
+          </span>
+          <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 leading-[1.15]">
+            Nhớ Kanji bằng <span class="text-rose-600">hiểu</span>,<br/>không phải học thuộc.
+          </h1>
+          <p class="text-slate-600 text-base md:text-lg leading-relaxed max-w-xl">
+            Phân tách từng chữ Hán thành các bộ thủ gốc, liên kết âm Hán Việt qua câu chuyện gợi nhớ sinh động và ôn tập đúng điểm rơi trí nhớ với thuật toán SRS.
+          </p>
+          <div class="flex flex-wrap gap-3 pt-1">
+            <button onclick="switchTab('kanji'); selectFeaturedKanji('三')" class="px-6 py-3.5 bg-rose-600 hover:bg-rose-700 active:scale-[0.99] text-white font-semibold rounded-xl shadow-sm transition cursor-pointer">
+              ✍️ Tập viết chữ 三 (N5) ngay →
+            </button>
+            <button onclick="switchTab('srs')" class="px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold rounded-xl transition cursor-pointer">
+              Học Flashcard SRS
+            </button>
+          </div>
+        </div>
+
+        <!-- Thẻ mẫu tương tác trên Hero -->
+        <div class="lg:col-span-5">
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5">
+            <div class="flex justify-between items-center text-xs text-slate-500 mb-3">
+              <span id="hero-card-index" class="font-semibold">Thẻ mẫu 1/4</span>
+              <button onclick="nextHeroCard()" class="text-rose-600 font-semibold hover:underline cursor-pointer">Đổi chữ khác →</button>
+            </div>
+            <div id="hero-demo-card" onclick="toggleHeroCard()" class="cursor-pointer bg-white border border-slate-200 rounded-2xl p-6 text-center shadow-2xs hover:border-rose-300 transition min-h-[245px] flex flex-col justify-center">
+              <div id="hero-front">
+                <div id="hero-char" class="jp-font text-7xl font-bold text-slate-900 mb-3">三</div>
+                <p class="text-xs text-slate-400">Chạm vào thẻ để xem chiết tự & cách nhớ</p>
+              </div>
+              <div id="hero-back" class="hidden text-left space-y-2.5">
+                <div class="flex items-baseline justify-between border-b border-slate-100 pb-2 flex-wrap gap-1">
+                  <div>
+                    <span id="hero-hanviet" class="text-xl font-extrabold text-rose-600">TAM</span>
+                    <span id="hero-meaning" class="text-sm text-slate-600 ml-1.5">(Số ba)</span>
+                  </div>
+                  <span id="hero-reading" class="text-[11px] font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">On: サン | Kun: み</span>
+                </div>
+                <div class="text-xs font-semibold text-slate-700">
+                  🧩 Cấu tạo: <span id="hero-parts" class="text-indigo-600">一 + 一 + 一</span>
+                </div>
+                <p id="hero-story" class="text-sm text-slate-600 bg-amber-50/80 border border-amber-200/80 p-3 rounded-xl leading-relaxed">
+                  Ba nét gạch ngang xếp chồng tượng trưng cho số đếm 1, 2, 3 (TAM).
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: KHO KANJI & CHI TIẾT LUYỆN VIẾT ==================== -->
+    <section id="tab-kanji" class="tab-view hidden space-y-6">
+      <!-- Bảng chi tiết & Tập vẽ nét trực tiếp (Giống kanji.vn/kanji?jlpt=N5&k=三) -->
+      <div id="kanji-workbench" class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 md:p-7 space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
+          <div class="flex items-center gap-2 text-xs text-slate-500">
+            <span class="font-semibold text-rose-600">Chi tiết Kanji & Luyện viết</span>
+            <span>/</span>
+            <span id="wb-url-badge" class="font-mono bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg">?jlpt=N5&k=三</span>
+          </div>
+          <span class="text-xs text-slate-400">Chọn bất kỳ chữ Kanji nào bên dưới để đổi chữ luyện viết</span>
+        </div>
+
+        <div class="grid lg:grid-cols-12 gap-6 items-start">
+          <!-- Cột trái: Thông tin Hán Việt, Âm đọc, Chiết tự, Câu chuyện -->
+          <div class="lg:col-span-5 space-y-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-4">
+                <div id="wb-char" class="w-20 h-20 shrink-0 kanji-grid-box border-2 border-slate-300 rounded-2xl flex items-center justify-center jp-font text-5xl font-bold text-slate-900">三</div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 id="wb-hv" class="text-3xl font-extrabold text-rose-600">TAM</h2>
+                    <span id="wb-jlpt" class="text-xs font-bold px-2.5 py-0.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-md">N5</span>
+                  </div>
+                  <p id="wb-meaning" class="text-slate-700 font-semibold text-base mt-0.5">Số ba</p>
+                  <button onclick="speakJP(document.getElementById('wb-char').innerText)" class="mt-2 inline-flex items-center gap-1.5 text-xs bg-slate-100 hover:bg-rose-100 text-slate-700 hover:text-rose-700 font-semibold px-3 py-1.5 rounded-lg transition cursor-pointer">
+                    🔊 Nghe phát âm
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-sm bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+              <div>
+                <span class="text-[11px] font-semibold uppercase text-slate-400 block">Âm Onyomi</span>
+                <span id="wb-on" class="font-mono font-bold text-slate-800">サン</span>
+              </div>
+              <div>
+                <span class="text-[11px] font-semibold uppercase text-slate-400 block">Âm Kunyomi</span>
+                <span id="wb-kun" class="font-mono font-bold text-slate-800">み・み.つ・みっ.つ</span>
+              </div>
+            </div>
+
+            <div class="text-sm">
+              <span class="text-xs font-bold uppercase text-slate-400 block mb-1">🧩 Chiết tự bộ thủ</span>
+              <div id="wb-parts" class="font-semibold text-indigo-800 bg-indigo-50 px-3.5 py-2.5 rounded-xl"></div>
+            </div>
+
+            <div class="text-sm">
+              <span class="text-xs font-bold uppercase text-slate-400 block mb-1">💡 Câu chuyện gợi nhớ</span>
+              <p id="wb-story" class="bg-amber-50 border border-amber-200 p-3.5 rounded-xl text-slate-700 leading-relaxed"></p>
+            </div>
+
+            <div class="text-sm">
+              <span class="text-xs font-bold uppercase text-slate-400 block mb-1">📚 Từ vựng ví dụ</span>
+              <div id="wb-examples" class="space-y-1.5"></div>
+            </div>
+          </div>
+
+          <!-- Cột phải: 2 Khung tương tác (Xem cách vẽ nét & Tập viết từng nét) -->
+          <div class="lg:col-span-7 grid sm:grid-cols-2 gap-4">
+            <!-- Khung 1: Xem cách vẽ nét -->
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center space-y-3">
+              <div class="w-full flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">🎬 Xem cách vẽ nét</span>
+                <span id="wb-stroke-count" class="text-[11px] font-semibold bg-white border border-slate-200 text-slate-600 px-2 py-0.5 rounded-md">3 nét</span>
+              </div>
+
+              <div id="wb-anim-target" class="w-[190px] h-[190px] kanji-grid-box border-2 border-slate-300 rounded-2xl shadow-2xs flex items-center justify-center overflow-hidden"></div>
+
+              <div class="flex flex-wrap justify-center gap-1.5 w-full pt-1">
+                <button onclick="playStrokeAnim('wb')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg transition cursor-pointer">
+                  ▶ Chạy nét
+                </button>
+                <button onclick="stepStrokeAnim('wb')" class="px-3 py-1.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition cursor-pointer">
+                  ⏭ Từng nét
+                </button>
+                <button onclick="toggleStrokeOutline('wb')" class="px-2.5 py-1.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-600 text-xs font-medium rounded-lg transition cursor-pointer" title="Hiện/Ẩn nét mờ">
+                  👁 Nét mờ
+                </button>
+              </div>
+              <p id="wb-anim-status" class="text-[11px] text-slate-500 text-center min-h-[16px]">Bấm "Chạy nét" để xem thứ tự viết chuẩn</p>
+            </div>
+
+            <!-- Khung 2: Tập viết từng nét tương tác -->
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center space-y-3">
+              <div class="w-full flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">✍️ Tập viết từng nét</span>
+                <button id="wb-mode-btn" onclick="togglePracticeMode('wb')" class="text-[11px] font-semibold text-indigo-600 hover:underline cursor-pointer">
+                  Bảng vẽ tự do
+                </button>
+              </div>
+
+              <!-- Vùng luyện viết có kiểm tra nét (HanziWriter Quiz) -->
+              <div id="wb-quiz-target" class="w-[190px] h-[190px] kanji-grid-box border-2 border-rose-300 rounded-2xl shadow-2xs flex items-center justify-center overflow-hidden touch-none"></div>
+
+              <!-- Vùng bảng vẽ tự do (Canvas) -->
+              <canvas id="wb-free-canvas" width="190" height="190" class="hidden w-[190px] h-[190px] kanji-grid-box border-2 border-indigo-300 rounded-2xl shadow-2xs touch-none cursor-crosshair"></canvas>
+
+              <div class="flex flex-wrap justify-center gap-1.5 w-full pt-1">
+                <button onclick="resetPracticeWriter('wb')" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg transition cursor-pointer">
+                  ↻ Viết lại
+                </button>
+                <button onclick="hintPracticeStroke('wb')" id="wb-hint-btn" class="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-semibold rounded-lg transition cursor-pointer">
+                  💡 Gợi ý nét
+                </button>
+              </div>
+              <p id="wb-quiz-status" class="text-[11px] font-medium text-rose-600 text-center min-h-[16px]">Dùng chuột hoặc ngón tay tô theo nét 1</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bộ lọc & Danh sách kho Kanji -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200">
+        <div class="flex flex-wrap gap-1.5" id="jlpt-filters">
+          <button onclick="filterKanji('ALL', this)" class="jlpt-btn px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-white cursor-pointer">Tất cả (17)</button>
+          <button onclick="filterKanji('N5', this)" class="jlpt-btn px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">JLPT N5</button>
+          <button onclick="filterKanji('N4', this)" class="jlpt-btn px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">JLPT N4</button>
+          <button onclick="filterKanji('N3', this)" class="jlpt-btn px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">JLPT N3</button>
+        </div>
+        <div class="relative w-full md:w-80">
+          <input id="kanji-search" oninput="renderKanjiGrid()" type="text" placeholder="Tìm chữ Kanji, Hán Việt (vd: TAM), nghĩa..." class="w-full pl-9 pr-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:border-rose-500" />
+          <span class="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
+        </div>
+      </div>
+
+      <div id="kanji-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+    </section>
+
+    <!-- ==================== TAB 3: 214 BỘ THỦ ==================== -->
+    <section id="tab-radicals" class="tab-view hidden space-y-6">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Bộ thủ Kanji nền tảng</h2>
+          <p class="text-sm text-slate-500">Nắm vững bộ thủ giúp đoán nghĩa và cấu trúc của hàng nghìn chữ Hán.</p>
+        </div>
+        <input id="radical-search" oninput="renderRadicals()" type="text" placeholder="Tìm bộ thủ (vd: Nhân, Thủy, 木)..." class="w-full sm:w-64 px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:border-rose-500" />
+      </div>
+      <div id="radicals-grid" class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+    </section>
+
+    <!-- ==================== TAB 4: MINNA NO NIHONGO ==================== -->
+    <section id="tab-minna" class="tab-view hidden space-y-6">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Từ vựng Minna no Nihongo</h2>
+          <p class="text-sm text-slate-500">Bấm vào từng chữ Kanji trong từ vựng để xem phân tích chi tiết & tập viết.</p>
+        </div>
+        <select id="minna-lesson-select" onchange="renderMinna()" class="px-4 py-2 border border-slate-300 rounded-xl text-sm font-semibold bg-white focus:outline-none focus:border-rose-500">
+          <option value="1">Bài 1 – Chào hỏi & Nghề nghiệp</option>
+          <option value="2">Bài 2 – Đồ vật & Sở hữu</option>
+          <option value="3">Bài 3 – Địa điểm & Tòa nhà</option>
+          <option value="4">Bài 4 – Thời gian & Hoạt động</option>
+        </select>
+      </div>
+      <div id="minna-list" class="grid md:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- ==================== TAB 5: FLASHCARD SRS ==================== -->
+    <section id="tab-srs" class="tab-view hidden max-w-xl mx-auto space-y-5">
+      <div class="flex items-center justify-between text-sm text-slate-600 bg-white px-4 py-3 rounded-2xl border border-slate-200">
+        <span>Cần ôn hôm nay: <strong id="srs-remaining" class="text-rose-600">0</strong> thẻ</span>
+        <button onclick="resetSRS()" class="text-xs text-slate-400 hover:text-rose-600 underline cursor-pointer">Đặt lại tiến độ</button>
+      </div>
+
+      <div id="srs-toast" class="hidden text-center text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 px-4 py-2.5 rounded-xl"></div>
+
+      <div id="srs-stage" class="perspective h-[400px] cursor-pointer" onclick="flipSRSCard()">
+        <div id="srs-card-inner" class="relative w-full h-full preserve-3d">
+          <!-- Mặt trước -->
+          <div class="absolute inset-0 backface-hidden bg-white border-2 border-slate-200 rounded-3xl shadow-sm flex flex-col items-center justify-center p-8">
+            <span id="srs-jlpt-tag" class="absolute top-5 left-5 text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600">N5</span>
+            <button onclick="event.stopPropagation(); speakJP(currentSRSCard.char)" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-slate-100 hover:bg-rose-100 text-slate-700 flex items-center justify-center transition cursor-pointer" title="Nghe phát âm">🔊</button>
+            <div id="srs-front-char" class="jp-font text-8xl font-bold text-slate-900 mb-4 select-none">三</div>
+            <p class="text-xs text-slate-400">Chạm thẻ hoặc nhấn phím <kbd class="px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200">Space</kbd> để lật</p>
+          </div>
+
+          <!-- Mặt sau -->
+          <div style="transform: rotateY(180deg);" class="absolute inset-0 backface-hidden bg-white border-2 border-rose-200 rounded-3xl shadow-sm p-6 flex flex-col justify-between overflow-y-auto">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-100 pb-3 flex-wrap gap-2">
+                <div class="flex items-baseline gap-2.5">
+                  <span id="srs-back-char" class="jp-font text-4xl font-bold text-slate-900">三</span>
+                  <span id="srs-back-hv" class="text-2xl font-extrabold text-rose-600">TAM</span>
+                  <span id="srs-back-mean" class="text-sm font-semibold text-slate-600">Số ba</span>
+                </div>
+                <button onclick="event.stopPropagation(); speakJP(currentSRSCard.exampleWord)" class="px-3 py-1.5 text-xs font-medium bg-slate-100 hover:bg-rose-100 text-slate-700 rounded-lg transition cursor-pointer">
+                  🔊 Đọc ví dụ
+                </button>
+              </div>
+
+              <div class="flex gap-4 text-xs bg-slate-50 px-3 py-2 rounded-xl">
+                <span><strong class="text-slate-500">On:</strong> <span id="srs-on" class="font-mono font-semibold text-slate-800">サン</span></span>
+                <span><strong class="text-slate-500">Kun:</strong> <span id="srs-kun" class="font-mono font-semibold text-slate-800">み</span></span>
+              </div>
+
+              <div class="text-xs bg-indigo-50 text-indigo-900 px-3.5 py-2.5 rounded-xl">
+                <strong>🧩 Chiết tự:</strong> <span id="srs-radicals">一 + 一 + 一</span>
+              </div>
+
+              <div class="bg-amber-50 border border-amber-200/80 p-3.5 rounded-2xl text-sm text-slate-700 leading-relaxed">
+                💡 <span id="srs-story">Câu chuyện gợi nhớ</span>
+              </div>
+
+              <div class="text-xs text-slate-600 pt-1">
+                <strong>Ví dụ:</strong> <span id="srs-example" class="font-semibold text-slate-900">三つ (みっつ) – Ba cái</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nút đánh giá mức độ nhớ SRS -->
+      <div id="srs-controls" class="grid grid-cols-4 gap-2.5 opacity-40 pointer-events-none transition duration-200">
+        <button onclick="rateSRS(1)" class="py-3 rounded-2xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-xs cursor-pointer">
+          Quên<br/><span class="font-normal opacity-75">Ôn lại ngay</span>
+        </button>
+        <button onclick="rateSRS(2)" class="py-3 rounded-2xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 font-bold text-xs cursor-pointer">
+          Khó<br/><span class="font-normal opacity-75">1 ngày</span>
+        </button>
+        <button onclick="rateSRS(3)" class="py-3 rounded-2xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-bold text-xs cursor-pointer">
+          Tốt<br/><span class="font-normal opacity-75">3 ngày</span>
+        </button>
+        <button onclick="rateSRS(4)" class="py-3 rounded-2xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-700 font-bold text-xs cursor-pointer">
+          Dễ<br/><span class="font-normal opacity-75">7 ngày</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 6: THI THỬ TRẮC NGHIỆM ==================== -->
+    <section id="tab-quiz" class="tab-view hidden max-w-xl mx-auto space-y-6">
+      <div class="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+        <div class="flex justify-between items-center text-xs font-bold text-slate-500">
+          <span id="quiz-progress">Câu 1 / 10</span>
+          <span class="text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">Điểm: <span id="quiz-score">0</span></span>
+        </div>
+
+        <div class="text-center py-3">
+          <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">Chọn âm Hán Việt & nghĩa đúng</p>
+          <div id="quiz-question-char" class="jp-font text-7xl font-bold text-slate-900">三</div>
+        </div>
+
+        <div id="quiz-options" class="grid grid-cols-1 gap-2.5"></div>
+
+        <div id="quiz-feedback" class="hidden p-4 rounded-2xl text-sm leading-relaxed"></div>
+
+        <button id="quiz-next-btn" onclick="nextQuizQuestion()" class="hidden w-full py-3.5 bg-slate-900 text-white font-semibold rounded-2xl hover:bg-slate-800 transition cursor-pointer">
+          Câu tiếp theo →
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-center text-xs text-slate-500">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="font-semibold text-slate-700">KanjiLab.vn – Học Kanji & Từ vựng tiếng Nhật cho người Việt</div>
+      <div>Dữ liệu lưu tự động trên trình duyệt (LocalStorage) • Hỗ trợ phát âm & luyện nét</div>
+    </div>
+  </footer>
+
+  <!-- Modal Chi tiết Kanji (Kèm Xem cách vẽ & Tập viết từng nét) -->
+  <div id="kanji-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4" onclick="closeModal()">
+    <div class="bg-white max-w-2xl w-full rounded-3xl p-6 shadow-2xl space-y-5 max-h-[92vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <div class="flex justify-between items-start gap-3">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 shrink-0 kanji-grid-box border-2 border-slate-300 rounded-2xl flex items-center justify-center jp-font text-4xl font-bold text-slate-900" id="modal-char">三</div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 id="modal-hv" class="text-2xl font-extrabold text-rose-600">TAM</h3>
+              <span id="modal-jlpt" class="text-xs font-bold px-2.5 py-0.5 bg-slate-100 text-slate-700 rounded-md">N5</span>
+            </div>
+            <p id="modal-meaning" class="text-slate-700 font-semibold text-base">Số ba</p>
+            <button onclick="speakJP(document.getElementById('modal-char').innerText)" class="mt-1 inline-flex items-center gap-1 text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold px-2.5 py-1 rounded-lg transition cursor-pointer">
+              🔊 Nghe phát âm
+            </button>
+          </div>
+        </div>
+        <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center font-bold cursor-pointer">✕</button>
+      </div>
+
+      <!-- 2 Khung Xem nét & Tập viết trong Modal -->
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 flex flex-col items-center space-y-2.5">
+          <div class="w-full flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-700">🎬 Xem cách vẽ nét</span>
+            <span id="modal-stroke-count" class="text-[11px] font-semibold bg-white border border-slate-200 text-slate-600 px-2 py-0.5 rounded">3 nét</span>
+          </div>
+          <div id="modal-anim-target" class="w-[165px] h-[165px] kanji-grid-box border-2 border-slate-300 rounded-2xl flex items-center justify-center overflow-hidden"></div>
+          <div class="flex flex-wrap justify-center gap-1.5">
+            <button onclick="playStrokeAnim('modal')" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg cursor-pointer">▶ Chạy nét</button>
+            <button onclick="stepStrokeAnim('modal')" class="px-2.5 py-1 bg-white border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg cursor-pointer">⏭ Từng nét</button>
+            <button onclick="toggleStrokeOutline('modal')" class="px-2 py-1 bg-white border border-slate-300 text-slate-600 text-xs rounded-lg cursor-pointer">👁 Nét mờ</button>
+          </div>
+          <p id="modal-anim-status" class="text-[11px] text-slate-500 text-center">Bấm "Chạy nét" để xem thứ tự viết</p>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 flex flex-col items-center space-y-2.5">
+          <div class="w-full flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-700">✍️ Tập viết từng nét</span>
+            <button id="modal-mode-btn" onclick="togglePracticeMode('modal')" class="text-[11px] font-semibold text-indigo-600 hover:underline cursor-pointer">Bảng vẽ tự do</button>
+          </div>
+          <div id="modal-quiz-target" class="w-[165px] h-[165px] kanji-grid-box border-2 border-rose-300 rounded-2xl flex items-center justify-center overflow-hidden touch-none"></div>
+          <canvas id="modal-free-canvas" width="165" height="165" class="hidden w-[165px] h-[165px] kanji-grid-box border-2 border-indigo-300 rounded-2xl touch-none cursor-crosshair"></canvas>
+          <div class="flex flex-wrap justify-center gap-1.5">
+            <button onclick="resetPracticeWriter('modal')" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg cursor-pointer">↻ Viết lại</button>
+            <button onclick="hintPracticeStroke('modal')" id="modal-hint-btn" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-semibold rounded-lg cursor-pointer">💡 Gợi ý</button>
+          </div>
+          <p id="modal-quiz-status" class="text-[11px] font-medium text-rose-600 text-center">Tô theo nét 1 để bắt đầu</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 text-sm bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+        <div>
+          <span class="text-[11px] font-semibold uppercase text-slate-400 block">Âm Onyomi</span>
+          <span id="modal-on" class="font-mono font-bold text-slate-800">サン</span>
+        </div>
+        <div>
+          <span class="text-[11px] font-semibold uppercase text-slate-400 block">Âm Kunyomi</span>
+          <span id="modal-kun" class="font-mono font-bold text-slate-800">み・み.つ・みっ.つ</span>
+        </div>
+      </div>
+
+      <div class="text-sm">
+        <span class="text-xs font-bold uppercase text-slate-400 block mb-1.5">🧩 Chiết tự bộ thủ</span>
+        <div id="modal-parts" class="font-semibold text-indigo-800 bg-indigo-50 px-3.5 py-2.5 rounded-xl"></div>
+      </div>
+
+      <div class="text-sm">
+        <span class="text-xs font-bold uppercase text-slate-400 block mb-1.5">💡 Câu chuyện gợi nhớ</span>
+        <p id="modal-story" class="bg-amber-50 border border-amber-200 p-3.5 rounded-xl text-slate-700 leading-relaxed"></p>
+      </div>
+
+      <div class="text-sm">
+        <span class="text-xs font-bold uppercase text-slate-400 block mb-1.5">📚 Từ vựng ví dụ</span>
+        <div id="modal-examples" class="space-y-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== DỮ LIỆU TÍCH HỢP SẴN ====================
+    const KANJI_DATA = [
+      { id: 0, char: '三', hv: 'TAM', meaning: 'Số ba', jlpt: 'N5', strokes: 3, on: 'サン', kun: 'み・み.つ・みっ.つ', parts: '一 (Nhất) + 一 (Nhất) + 一 (Nhất)', story: 'Ba nét gạch ngang xếp chồng từ trên xuống dưới tượng trưng cho Thiên - Địa - Nhân hoặc số đếm 1, 2, 3 (TAM).', examples: ['三つ (みっつ) – Ba cái', '三月 (さんがつ) – Tháng Ba', '三日 (みっか) – Mùng 3 / 3 ngày'] },
+      { id: 1, char: '休', hv: 'HƯU', meaning: 'Nghỉ ngơi', jlpt: 'N5', strokes: 6, on: 'キュウ', kun: 'やす.む', parts: '亻 (Nhân đứng) + 木 (Mộc - Cây)', story: 'Người (亻) đi đường mệt mỏi tựa lưng vào gốc cây (木) để nghỉ ngơi (HƯU).', examples: ['休み (やすみ) – Ngày nghỉ', '休日 (きゅうじつ) – Ngày lễ'] },
+      { id: 2, char: '明', hv: 'MINH', meaning: 'Sáng sủa, rõ ràng', jlpt: 'N5', strokes: 8, on: 'メイ・ミョウ', kun: 'あか.るい', parts: '日 (Nhật - Mặt trời) + 月 (Nguyệt - Mặt trăng)', story: 'Có cả mặt trời (日) lẫn mặt trăng (月) cùng chiếu sáng thì mọi thứ đều sáng tỏ (MINH).', examples: ['明るい (あかるい) – Sáng sủa', '明日 (あした) – Ngày mai'] },
+      { id: 3, char: '好', hv: 'HẢO', meaning: 'Thích, tốt đẹp', jlpt: 'N5', strokes: 6, on: 'コウ', kun: 'す.き・この.む', parts: '女 (Nữ - Phụ nữ) + 子 (Tử - Con cái)', story: 'Người mẹ (女) ôm đứa con (子) vào lòng là hình ảnh yêu thương, tốt đẹp (HẢO).', examples: ['好き (すき) – Thích', '大好き (だいすき) – Rất thích'] },
+      { id: 4, char: '林', hv: 'LÂM', meaning: 'Rừng thưa', jlpt: 'N5', strokes: 8, on: 'リン', kun: 'はやし', parts: '木 (Mộc) + 木 (Mộc)', story: 'Hai cái cây (木) đứng cạnh nhau tạo thành một khu rừng nhỏ (LÂM).', examples: ['林 (はやし) – Rừng cây', '森林 (しんりん) – Rừng rậm'] },
+      { id: 5, char: '森', hv: 'SÂM', meaning: 'Rừng rậm', jlpt: 'N5', strokes: 12, on: 'シン', kun: 'もり', parts: '木 + 木 + 木 (Ba cây)', story: 'Ba cái cây (木) chồng lên nhau tượng trưng cho rừng cây rậm rạp âm u (SÂM).', examples: ['森 (もり) – Rừng rậm', '森林浴 (しんりんよく) – Tắm rừng'] },
+      { id: 6, char: '男', hv: 'NAM', meaning: 'Đàn ông, con trai', jlpt: 'N5', strokes: 7, on: 'ダン・ナン', kun: 'おとこ', parts: '田 (Điền - Ruộng) + 力 (Lực - Sức mạnh)', story: 'Người dùng sức lực (力) để cày cấy ngoài ruộng đồng (田) chính là đàn ông (NAM).', examples: ['男の人 (おとこのひと) – Người đàn ông', '男性 (だんせい) – Nam giới'] },
+      { id: 7, char: '安', hv: 'AN', meaning: 'Bình an, rẻ', jlpt: 'N5', strokes: 6, on: 'アン', kun: 'やす.い', parts: '宀 (Miên - Mái nhà) + 女 (Nữ - Phụ nữ)', story: 'Người phụ nữ (女) ở dưới mái nhà (宀) ấm cúng thì tâm hồn bình an (AN).', examples: ['安い (やすい) – Rẻ', '安心 (あんしん) – An tâm'] },
+      { id: 8, char: '見', hv: 'KIẾN', meaning: 'Nhìn, thấy', jlpt: 'N5', strokes: 7, on: 'ケン', kun: 'み.る', parts: '目 (Mục - Mắt) + 儿 (Nhân đi - Đôi chân)', story: 'Con mắt (目) mọc thêm đôi chân (儿) chạy đi quan sát khắp nơi để nhìn thấy (KIẾN).', examples: ['見る (みる) – Nhìn, xem', '見学 (けんがく) – Tham quan'] },
+      { id: 9, char: '語', hv: 'NGỮ', meaning: 'Ngôn ngữ, kể', jlpt: 'N5', strokes: 14, on: 'ゴ', kun: 'かた.る', parts: '言 (Ngôn - Lời nói) + 五 (Ngũ - Năm) + 口 (Khẩu - Miệng)', story: 'Dùng lời nói (言) và năm (五) cái miệng (口) cùng bàn luận tạo thành ngôn ngữ (NGỮ).', examples: ['日本語 (にほんご) – Tiếng Nhật', '英語 (えいご) – Tiếng Anh'] },
+      { id: 10, char: '飲', hv: 'ẨM', meaning: 'Uống', jlpt: 'N5', strokes: 12, on: 'イン', kun: 'の.む', parts: '飠 (Thực - Ăn uống) + 欠 (Khiếm - Há miệng)', story: 'Cầm đồ ăn thức uống (飠) rồi há miệng (欠) ra là hành động uống (ẨM).', examples: ['飲む (のむ) – Uống', '飲み物 (のみもの) – Đồ uống'] },
+      { id: 11, char: '思', hv: 'TƯ', meaning: 'Suy nghĩ', jlpt: 'N4', strokes: 9, on: 'シ', kun: 'おも.う', parts: '田 (Điền - Bộ não) + 心 (Tâm - Trái tim)', story: 'Khi cả bộ não (田) và trái tim (心) cùng hoạt động là lúc con người suy nghĩ (TƯ).', examples: ['思う (おもう) – Nghĩ rằng', '思い出す (おもいだす) – Nhớ ra'] },
+      { id: 12, char: '働', hv: 'ĐỘNG', meaning: 'Lao động, làm việc', jlpt: 'N4', strokes: 13, on: 'ドウ', kun: 'はたら.く', parts: '亻 (Nhân đứng) + 動 (Động - Chuyển động)', story: 'Con người (亻) vận động chân tay (動) để tạo ra của cải gọi là lao động (ĐỘNG).', examples: ['働く (はたらく) – Làm việc', '労働 (ろうどう) – Lao động'] },
+      { id: 13, char: '旅', hv: 'LỮ', meaning: 'Du lịch, lữ hành', jlpt: 'N4', strokes: 10, on: 'リョ', kun: 'たび', parts: '方 (Phương) + 𠂉 + 衣 (Y - Áo)', story: 'Khoác áo (衣) lên đường đi về phương (方) xa khám phá vùng đất mới là du lịch (LỮ).', examples: ['旅行 (りょこう) – Du lịch', '旅館 (りょかん) – Lữ quán'] },
+      { id: 14, char: '忘', hv: 'VONG', meaning: 'Quên', jlpt: 'N4', strokes: 7, on: 'ボウ', kun: 'わす.れる', parts: '亡 (Vong - Mất đi) + 心 (Tâm - Trái tim)', story: 'Ký ức mất đi (亡) khỏi trái tim (心) nghĩa là đã quên (VONG).', examples: ['忘れる (わすれる) – Quên', '忘年会 (ぼうねんかい) – Tiệc tất niên'] },
+      { id: 15, char: '信', hv: 'TÍN', meaning: 'Tin tưởng, tín hiệu', jlpt: 'N3', strokes: 9, on: 'シン', kun: 'しん.じる', parts: '亻 (Nhân đứng) + 言 (Ngôn - Lời nói)', story: 'Lời nói (言) của một con người (亻) có trọng lượng thì đáng để tin tưởng (TÍN).', examples: ['信じる (しんじる) – Tin tưởng', '信号 (しんごう) – Đèn tín hiệu'] },
+      { id: 16, char: '想', hv: 'TƯỞNG', meaning: 'Tưởng tượng, suy tưởng', jlpt: 'N3', strokes: 13, on: 'ソウ', kun: 'おも.う', parts: '木 (Mộc) + 目 (Mục) + 心 (Tâm)', story: 'Mắt (目) nhìn cái cây (木) mà trong lòng (心) hình dung ra viễn cảnh tương lai (TƯỞNG).', examples: ['想像 (そうぞう) – Tưởng tượng', '感想 (かんそう) – Cảm tưởng'] }
+    ];
+
+    const RADICALS_DATA = [
+      { char: '一', name: 'Nhất', meaning: 'Số một, nét ngang', strokes: 1, sample: '三, 上, 下' },
+      { char: '亻', name: 'Nhân đứng', meaning: 'Con người', strokes: 2, sample: '休, 働, 信' },
+      { char: '木', name: 'Mộc', meaning: 'Cây cối, gỗ', strokes: 4, sample: '休, 林, 森' },
+      { char: '日', name: 'Nhật', meaning: 'Mặt trời, ngày', strokes: 4, sample: '明, 時, 早' },
+      { char: '月', name: 'Nguyệt', meaning: 'Mặt trăng, tháng', strokes: 4, sample: '明, 朝, 期' },
+      { char: '女', name: 'Nữ', meaning: 'Phụ nữ, con gái', strokes: 3, sample: '好, 安, 姉' },
+      { char: '心', name: 'Tâm', meaning: 'Trái tim, cảm xúc', strokes: 4, sample: '思, 忘, 想' },
+      { char: '言', name: 'Ngôn', meaning: 'Lời nói, ngôn từ', strokes: 7, sample: '語, 話, 信' },
+      { char: '水 / 氵', name: 'Thủy', meaning: 'Nước, chất lỏng', strokes: 4, sample: '海, 泳, 酒' },
+      { char: '口', name: 'Khẩu', meaning: 'Cái miệng, cửa', strokes: 3, sample: '語, 飲, 品' },
+      { char: '田', name: 'Điền', meaning: 'Ruộng đất', strokes: 5, sample: '男, 思, 町' },
+      { char: '宀', name: 'Miên', meaning: 'Mái nhà che chở', strokes: 3, sample: '安, 家, 室' },
+      { char: '目', name: 'Mục', meaning: 'Con mắt, nhìn', strokes: 5, sample: '見, 想, 眠' }
+    ];
+
+    const MINNA_DATA = {
+      1: [
+        { word: '私', reading: 'わたし', meaning: 'Tôi', kanjis: ['私'] },
+        { word: '先生', reading: 'せんせい', meaning: 'Giáo viên', kanjis: ['先', '生'] },
+        { word: '学生', reading: 'がくせい', meaning: 'Học sinh, sinh viên', kanjis: ['学', '生'] },
+        { word: '会社員', reading: 'かいしゃいん', meaning: 'Nhân viên công ty', kanjis: ['会', '社', '員'] }
+      ],
+      2: [
+        { word: '本', reading: 'ほん', meaning: 'Sách', kanjis: ['本'] },
+        { word: '辞書', reading: 'じしょ', meaning: 'Từ điển', kanjis: ['辞', '書'] },
+        { word: '新聞', reading: 'しんぶん', meaning: 'Báo chí', kanjis: ['新', '聞'] },
+        { word: '英語', reading: 'えいご', meaning: 'Tiếng Anh', kanjis: ['語'] }
+      ],
+      3: [
+        { word: '教室', reading: 'きょうしつ', meaning: 'Phòng học', kanjis: ['教', '室'] },
+        { word: '食堂', reading: 'しょくどう', meaning: 'Nhà ăn', kanjis: ['食', '堂'] },
+        { word: '事務所', reading: 'じむしょ', meaning: 'Văn phòng', kanjis: ['事', '務', '所'] },
+        { word: '国', reading: 'くに', meaning: 'Đất nước', kanjis: ['国'] }
+      ],
+      4: [
+        { word: '休み', reading: 'やすみ', meaning: 'Nghỉ ngơi, ngày nghỉ', kanjis: ['休'] },
+        { word: '働く', reading: 'はたらく', meaning: 'Làm việc', kanjis: ['働'] },
+        { word: '明日', reading: 'あした', meaning: 'Ngày mai', kanjis: ['明', '日'] },
+        { word: '三月', reading: 'さんがつ', meaning: 'Tháng Ba', kanjis: ['三', '月'] }
+      ]
+    };
+
+    // ==================== TRẠNG THÁI ỨNG DỤNG ====================
+    let currentJLPT = 'ALL';
+    let heroIdx = 0;
+    let srsState = {};
+    try {
+      srsState = JSON.parse(localStorage.getItem('kanjilab_srs') || '{}');
+    } catch (e) {
+      srsState = {};
+    }
+    let srsQueue = [];
+    let currentSRSCard = null;
+    let srsFlipped = false;
+
+    let quizList = [];
+    let quizIdx = 0;
+    let quizScore = 0;
+
+    // Trạng thái bộ vẽ nét (HanziWriter) cho cả Workbench ('wb') và Modal ('modal')
+    const strokeControllers = {
+      wb: { animWriter: null, quizWriter: null, outlineVisible: true, stepIdx: 0, totalStrokes: 3, freeMode: false, char: '三' },
+      modal: { animWriter: null, quizWriter: null, outlineVisible: true, stepIdx: 0, totalStrokes: 3, freeMode: false, char: '三' }
+    };
+
+    // ==================== HỆ THỐNG XEM NÉT & TẬP VIẾT TỪNG NÉT ====================
+    function setupStrokeWriters(scope, kanjiObj) {
+      const size = scope === 'wb' ? 190 : 165;
+      const animContainer = document.getElementById(`${scope}-anim-target`);
+      const quizContainer = document.getElementById(`${scope}-quiz-target`);
+      const strokeBadge = document.getElementById(`${scope}-stroke-count`);
+      const animStatus = document.getElementById(`${scope}-anim-status`);
+      const quizStatus = document.getElementById(`${scope}-quiz-status`);
+
+      animContainer.innerHTML = '';
+      quizContainer.innerHTML = '';
+
+      const ctrl = strokeControllers[scope];
+      ctrl.char = kanjiObj.char;
+      ctrl.outlineVisible = true;
+      ctrl.stepIdx = 0;
+      ctrl.totalStrokes = kanjiObj.strokes || 3;
+      if (strokeBadge) strokeBadge.innerText = `${ctrl.totalStrokes} nét`;
+
+      // Đảm bảo trở về chế độ tập viết từng nét khi đổi chữ
+      if (ctrl.freeMode) {
+        togglePracticeMode(scope, true);
+      }
+      clearFreeCanvas(scope);
+
+      if (typeof HanziWriter === 'undefined') {
+        animContainer.innerHTML = `<span class="jp-font text-7xl font-bold text-slate-800">${kanjiObj.char}</span>`;
+        animStatus.innerText = 'Đang ở chế độ ngoại tuyến (không tải được dữ liệu nét)';
+        togglePracticeMode(scope, false);
+        return;
+      }
+
+      // 1. Bộ phát hiệu ứng thứ tự nét vẽ (Animation)
+      ctrl.animWriter = HanziWriter.create(animContainer, kanjiObj.char, {
+        width: size,
+        height: size,
+        padding: 14,
+        showOutline: true,
+        showCharacter: true,
+        strokeAnimationSpeed: 1.1,
+        delayBetweenStrokes: 260,
+        strokeColor: '#e11d48',
+        outlineColor: '#cbd5e1',
+        radicalColor: '#4f46e5',
+        onLoadCharDataSuccess: (data) => {
+          ctrl.totalStrokes = data.strokes.length;
+          if (strokeBadge) strokeBadge.innerText = `${ctrl.totalStrokes} nét`;
+          animStatus.innerText = `Gồm ${ctrl.totalStrokes} nét. Bấm "Chạy nét" để xem`;
+          // Tự động chạy mẫu 1 lần cho người học dễ quan sát
+          ctrl.animWriter.animateCharacter();
+        },
+        onLoadCharDataError: () => {
+          animContainer.innerHTML = `<span class="jp-font text-7xl font-bold text-slate-800">${kanjiObj.char}</span>`;
+          animStatus.innerText = 'Chưa có dữ liệu nét động cho chữ này';
+        }
+      });
+
+      // 2. Bộ kiểm tra tập viết từng nét (Interactive Quiz)
+      ctrl.quizWriter = HanziWriter.create(quizContainer, kanjiObj.char, {
+        width: size,
+        height: size,
+        padding: 14,
+        showOutline: true,
+        showCharacter: false,
+        showHintAfterMisses: 2,
+        highlightOnComplete: true,
+        strokeColor: '#0f172a',
+        outlineColor: '#e2e8f0',
+        drawingColor: '#e11d48',
+        drawingWidth: 16,
+        onLoadCharDataSuccess: (data) => {
+          const total = data.strokes.length;
+          quizStatus.className = 'text-[11px] font-medium text-rose-600 text-center min-h-[16px]';
+          quizStatus.innerText = `Tô theo nét 1 / ${total}`;
+          ctrl.quizWriter.quiz({
+            onMistake: (strokeData) => {
+              quizStatus.className = 'text-[11px] font-semibold text-amber-600 text-center min-h-[16px]';
+              quizStatus.innerText = `⚠️ Sai hướng/thứ tự nét ${strokeData.strokeNum + 1}! Thử lại nhé`;
+            },
+            onCorrectStroke: (strokeData) => {
+              const nextNum = strokeData.strokeNum + 2;
+              if (nextNum <= total) {
+                quizStatus.className = 'text-[11px] font-semibold text-indigo-600 text-center min-h-[16px]';
+                quizStatus.innerText = `✓ Chuẩn! Tiếp tục nét ${nextNum} / ${total}`;
+              }
+            },
+            onComplete: (summaryData) => {
+              quizStatus.className = 'text-[11px] font-bold text-emerald-600 text-center min-h-[16px]';
+              quizStatus.innerText = `🎉 Xuất sắc! Hoàn thành đúng thứ tự ${total} nét (lỗi: ${summaryData.totalMistakes})`;
+            }
+          });
+        },
+        onLoadCharDataError: () => {
+          togglePracticeMode(scope, false);
+        }
+      });
+    }
+
+    function playStrokeAnim(scope) {
+      const ctrl = strokeControllers[scope];
+      if (!ctrl.animWriter) return;
+      ctrl.stepIdx = 0;
+      document.getElementById(`${scope}-anim-status`).innerText = 'Đang chạy toàn bộ thứ tự nét...';
+      ctrl.animWriter.animateCharacter({
+        onComplete: () => {
+          document.getElementById(`${scope}-anim-status`).innerText = `Hoàn tất ${ctrl.totalStrokes} nét. Bấm lại để xem tiếp`;
+        }
+      });
+    }
+
+    function stepStrokeAnim(scope) {
+      const ctrl = strokeControllers[scope];
+      if (!ctrl.animWriter) return;
+      if (ctrl.stepIdx === 0) {
+        ctrl.animWriter.hideCharacter();
+      }
+      if (ctrl.stepIdx < ctrl.totalStrokes) {
+        ctrl.animWriter.animateStroke(ctrl.stepIdx);
+        ctrl.stepIdx++;
+        document.getElementById(`${scope}-anim-status`).innerText = `Đang vẽ nét ${ctrl.stepIdx} / ${ctrl.totalStrokes}`;
+        if (ctrl.stepIdx >= ctrl.totalStrokes) {
+          ctrl.stepIdx = 0;
+        }
+      }
+    }
+
+    function toggleStrokeOutline(scope) {
+      const ctrl = strokeControllers[scope];
+      if (!ctrl.animWriter) return;
+      ctrl.outlineVisible = !ctrl.outlineVisible;
+      if (ctrl.outlineVisible) {
+        ctrl.animWriter.showOutline();
+      } else {
+        ctrl.animWriter.hideOutline();
+      }
+    }
+
+    function resetPracticeWriter(scope) {
+      const ctrl = strokeControllers[scope];
+      if (ctrl.freeMode) {
+        clearFreeCanvas(scope);
+        return;
+      }
+      const kObj = KANJI_DATA.find(k => k.char === ctrl.char) || KANJI_DATA[0];
+      setupStrokeWriters(scope, kObj);
+    }
+
+    function hintPracticeStroke(scope) {
+      const ctrl = strokeControllers[scope];
+      if (ctrl.freeMode || !ctrl.quizWriter) return;
+      ctrl.quizWriter.highlightStroke();
+    }
+
+    function togglePracticeMode(scope, forceQuizMode) {
+      const ctrl = strokeControllers[scope];
+      ctrl.freeMode = typeof forceQuizMode === 'boolean' ? !forceQuizMode : !ctrl.freeMode;
+
+      const quizBox = document.getElementById(`${scope}-quiz-target`);
+      const freeCanvas = document.getElementById(`${scope}-free-canvas`);
+      const modeBtn = document.getElementById(`${scope}-mode-btn`);
+      const hintBtn = document.getElementById(`${scope}-hint-btn`);
+      const statusEl = document.getElementById(`${scope}-quiz-status`);
+
+      if (ctrl.freeMode) {
+        quizBox.classList.add('hidden');
+        freeCanvas.classList.remove('hidden');
+        if (hintBtn) hintBtn.classList.add('hidden');
+        modeBtn.innerText = 'Chế độ chấm nét';
+        statusEl.className = 'text-[11px] font-medium text-indigo-600 text-center min-h-[16px]';
+        statusEl.innerText = 'Vẽ tự do bằng chuột hoặc cảm ứng';
+        clearFreeCanvas(scope);
+      } else {
+        freeCanvas.classList.add('hidden');
+        quizBox.classList.remove('hidden');
+        if (hintBtn) hintBtn.classList.remove('hidden');
+        modeBtn.innerText = 'Bảng vẽ tự do';
+        const kObj = KANJI_DATA.find(k => k.char === ctrl.char) || KANJI_DATA[0];
+        setupStrokeWriters(scope, kObj);
+      }
+    }
+
+    // Khởi tạo Canvas vẽ tự do hỗ trợ cả chuột và cảm ứng (Touch)
+    function initFreeCanvas(scope) {
+      const canvas = document.getElementById(`${scope}-free-canvas`);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let drawing = false;
+
+      const getPos = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: (clientX - rect.left) * (canvas.width / rect.width),
+          y: (clientY - rect.top) * (canvas.height / rect.height)
+        };
+      };
+
+      const start = (e) => {
+        e.preventDefault();
+        drawing = true;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+      };
+
+      const move = (e) => {
+        if (!drawing) return;
+        e.preventDefault();
+        const pos = getPos(e);
+        ctx.lineWidth = 8;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+      };
+
+      const stop = () => {
+        drawing = false;
+      };
+
+      canvas.addEventListener('mousedown', start);
+      canvas.addEventListener('mousemove', move);
+      window.addEventListener('mouseup', stop);
+
+      canvas.addEventListener('touchstart', start, { passive: false });
+      canvas.addEventListener('touchmove', move, { passive: false });
+      canvas.addEventListener('touchend', stop);
+    }
+
+    function clearFreeCanvas(scope) {
+      const canvas = document.getElementById(`${scope}-free-canvas`);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Vẽ chữ mẫu mờ ở nền để người học đồ theo
+      const char = strokeControllers[scope].char;
+      ctx.save();
+      ctx.font = 'bold 125px "Noto Serif JP", serif';
+      ctx.fillStyle = 'rgba(203, 213, 225, 0.55)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(char, canvas.width / 2, canvas.height / 2 + 6);
+      ctx.restore();
+    }
+
+    // Chọn chữ Kanji hiển thị lên Workbench (mặc định là chữ 三 - TAM)
+    function selectFeaturedKanji(charOrId) {
+      const k = typeof charOrId === 'number'
+        ? KANJI_DATA.find(item => item.id === charOrId)
+        : KANJI_DATA.find(item => item.char === charOrId);
+      const target = k || KANJI_DATA[0];
+
+      document.getElementById('wb-url-badge').innerText = `?jlpt=${target.jlpt}&k=${target.char}`;
+      document.getElementById('wb-char').innerText = target.char;
+      document.getElementById('wb-hv').innerText = target.hv;
+      document.getElementById('wb-jlpt').innerText = target.jlpt;
+      document.getElementById('wb-meaning').innerText = target.meaning;
+      document.getElementById('wb-on').innerText = target.on;
+      document.getElementById('wb-kun').innerText = target.kun;
+      document.getElementById('wb-parts').innerText = target.parts;
+      document.getElementById('wb-story').innerText = target.story;
+      document.getElementById('wb-examples').innerHTML = target.examples.map(ex => {
+        const wordOnly = ex.split(' ')[0];
+        return `
+          <div class="flex justify-between items-center bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100 text-xs">
+            <span class="font-medium text-slate-800">${ex}</span>
+            <button onclick="speakJP('${wordOnly}')" class="bg-white border border-slate-200 hover:border-rose-300 text-rose-600 font-semibold px-2 py-0.5 rounded-md cursor-pointer">
+              🔊 Đọc
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      setupStrokeWriters('wb', target);
+    }
+
+    // ==================== ĐIỀU HƯỚNG TAB ====================
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
+      const targetTab = document.getElementById(`tab-${tabId}`);
+      if (targetTab) targetTab.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.dataset.tab === tabId) {
+          btn.classList.add('bg-rose-50', 'text-rose-700', 'font-semibold');
+          btn.classList.remove('text-slate-600');
+        } else {
+          btn.classList.remove('bg-rose-50', 'text-rose-700', 'font-semibold');
+          btn.classList.add('text-slate-600');
+        }
+      });
+
+      if (tabId === 'kanji') {
+        const currentChar = strokeControllers.wb.char || '三';
+        selectFeaturedKanji(currentChar);
+      }
+      if (tabId === 'srs') initSRS();
+      if (tabId === 'quiz') initQuiz();
+    }
+
+    // ==================== PHÁT ÂM TIẾNG NHẬT (WEB SPEECH API) ====================
+    function speakJP(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ja-JP';
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // ==================== THẺ DEMO Ở TRANG CHỦ ====================
+    function renderHeroCard() {
+      const k = KANJI_DATA[heroIdx];
+      document.getElementById('hero-card-index').innerText = `Thẻ mẫu ${heroIdx + 1}/4`;
+      document.getElementById('hero-char').innerText = k.char;
+      document.getElementById('hero-hanviet').innerText = k.hv;
+      document.getElementById('hero-meaning').innerText = `(${k.meaning})`;
+      document.getElementById('hero-reading').innerText = `On: ${k.on} | Kun: ${k.kun}`;
+      document.getElementById('hero-parts').innerText = k.parts;
+      document.getElementById('hero-story').innerText = k.story;
+
+      document.getElementById('hero-front').classList.remove('hidden');
+      document.getElementById('hero-back').classList.add('hidden');
+    }
+
+    function toggleHeroCard() {
+      const front = document.getElementById('hero-front');
+      const back = document.getElementById('hero-back');
+      if (front && back) {
+        front.classList.toggle('hidden');
+        back.classList.toggle('hidden');
+      }
+    }
+
+    function nextHeroCard() {
+      heroIdx = (heroIdx + 1) % 4;
+      renderHeroCard();
+    }
+
+    // ==================== KHO KANJI & MODAL CHI TIẾT ====================
+    function filterKanji(level, btnEl) {
+      currentJLPT = level;
+      document.querySelectorAll('.jlpt-btn').forEach(b => {
+        b.classList.remove('bg-slate-900', 'text-white');
+        b.classList.add('bg-slate-100', 'text-slate-700');
+      });
+      if (btnEl) {
+        btnEl.classList.remove('bg-slate-100', 'text-slate-700');
+        btnEl.classList.add('bg-slate-900', 'text-white');
+      }
+      renderKanjiGrid();
+    }
+
+    function renderKanjiGrid() {
+      const q = document.getElementById('kanji-search').value.trim().toLowerCase();
+      const filtered = KANJI_DATA.filter(k => {
+        const matchLevel = currentJLPT === 'ALL' || k.jlpt === currentJLPT;
+        const matchQuery = !q ||
+          k.char.includes(q) ||
+          k.hv.toLowerCase().includes(q) ||
+          k.meaning.toLowerCase().includes(q);
+        return matchLevel && matchQuery;
+      });
+
+      const grid = document.getElementById('kanji-grid');
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 text-sm">Không tìm thấy chữ Kanji phù hợp.</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(k => {
+        const learned = srsState[k.id]?.reps > 0;
+        return `
+          <div onclick="openKanjiModal(${k.id})" class="cursor-pointer bg-white border ${learned ? 'border-emerald-300 bg-emerald-50/20' : 'border-slate-200'} hover:border-rose-400 hover:shadow-md rounded-2xl p-4 text-center transition group">
+            <div class="flex justify-between items-center text-[11px] font-bold text-slate-400 mb-1">
+              <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">${k.jlpt}</span>
+              ${learned ? '<span class="text-emerald-600">✓ Đã học</span>' : ''}
+            </div>
+            <div class="jp-font text-5xl font-bold text-slate-900 group-hover:text-rose-600 transition my-2.5">${k.char}</div>
+            <div class="font-extrabold text-sm text-rose-600">${k.hv}</div>
+            <div class="text-xs text-slate-500 truncate mt-0.5">${k.meaning}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openKanjiModal(id) {
+      const k = KANJI_DATA.find(item => item.id === id);
+      if (!k) return;
+
+      // Đồng bộ luôn lên Workbench khi bấm vào thẻ Kanji
+      selectFeaturedKanji(k.id);
+
+      document.getElementById('modal-char').innerText = k.char;
+      document.getElementById('modal-hv').innerText = k.hv;
+      document.getElementById('modal-jlpt').innerText = k.jlpt;
+      document.getElementById('modal-meaning').innerText = k.meaning;
+      document.getElementById('modal-on').innerText = k.on;
+      document.getElementById('modal-kun').innerText = k.kun;
+      document.getElementById('modal-parts').innerText = k.parts;
+      document.getElementById('modal-story').innerText = k.story;
+      document.getElementById('modal-examples').innerHTML = k.examples.map(ex => {
+        const wordOnly = ex.split(' ')[0];
+        return `
+          <div class="flex justify-between items-center bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-100">
+            <span class="font-medium text-slate-800">${ex}</span>
+            <button onclick="speakJP('${wordOnly}')" class="text-xs bg-white border border-slate-200 hover:border-rose-300 text-rose-600 font-semibold px-2.5 py-1 rounded-lg cursor-pointer">
+              🔊 Đọc
+            </button>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('kanji-modal').classList.remove('hidden');
+
+      // Khởi tạo bộ xem nét & tập viết trong Modal
+      setupStrokeWriters('modal', k);
+    }
+
+    function closeModal() {
+      document.getElementById('kanji-modal').classList.add('hidden');
+    }
+
+    // ==================== BỘ THỦ ====================
+    function renderRadicals() {
+      const q = document.getElementById('radical-search').value.trim().toLowerCase();
+      const list = RADICALS_DATA.filter(r =>
+        !q ||
+        r.char.toLowerCase().includes(q) ||
+        r.name.toLowerCase().includes(q) ||
+        r.meaning.toLowerCase().includes(q)
+      );
+
+      document.getElementById('radicals-grid').innerHTML = list.map(r => `
+        <div class="bg-white border border-slate-200 hover:border-rose-300 rounded-2xl p-4 flex items-center gap-4 transition">
+          <div class="w-14 h-14 shrink-0 rounded-2xl bg-rose-50 text-rose-700 jp-font text-3xl font-bold flex items-center justify-center border border-rose-100">
+            ${r.char}
+          </div>
+          <div class="min-w-0">
+            <div class="font-bold text-slate-900">
+              ${r.name} <span class="text-xs font-normal text-slate-400">(${r.strokes} nét)</span>
+            </div>
+            <div class="text-sm text-slate-600">${r.meaning}</div>
+            <div class="text-xs text-indigo-600 font-medium mt-1 truncate">Chữ mẫu: ${r.sample}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ==================== MINNA NO NIHONGO ====================
+    function renderMinna() {
+      const lesson = document.getElementById('minna-lesson-select').value;
+      const items = MINNA_DATA[lesson] || [];
+      document.getElementById('minna-list').innerHTML = items.map(item => `
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <span class="jp-font text-2xl font-bold text-slate-900">${item.word}</span>
+              <span class="text-sm text-rose-600 font-semibold">${item.reading}</span>
+              <button onclick="speakJP('${item.word}')" class="text-xs bg-slate-100 hover:bg-rose-100 text-slate-700 px-2.5 py-1 rounded-lg cursor-pointer" title="Nghe phát âm">
+                🔊
+              </button>
+            </div>
+            <div class="text-sm text-slate-600 mt-1">${item.meaning}</div>
+          </div>
+          <div class="flex gap-1.5 shrink-0">
+            ${item.kanjis.map(ch => {
+              const found = KANJI_DATA.find(k => k.char === ch);
+              return found
+                ? `<button onclick="openKanjiModal(${found.id})" class="w-10 h-10 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 jp-font font-bold text-lg cursor-pointer transition" title="Xem chiết tự chữ ${ch}">${ch}</button>`
+                : `<span class="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 jp-font font-bold text-lg flex items-center justify-center" title="Chưa có dữ liệu chiết tự">${ch}</span>`;
+            }).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ==================== FLASHCARD SRS ENGINE ====================
+    function updateStats() {
+      const now = Date.now();
+      const due = KANJI_DATA.filter(k => !srsState[k.id] || srsState[k.id].nextReview <= now).length;
+      const learned = Object.values(srsState).filter(s => s.reps > 0).length;
+
+      document.getElementById('due-badge').innerText = due;
+      document.getElementById('due-badge-mobile').innerText = due;
+      document.getElementById('learned-counter').innerText = `Đã thuộc: ${learned}/${KANJI_DATA.length}`;
+    }
+
+    function initSRS() {
+      const now = Date.now();
+      srsQueue = KANJI_DATA.filter(k => !srsState[k.id] || srsState[k.id].nextReview <= now);
+      const toast = document.getElementById('srs-toast');
+      if (srsQueue.length === 0) {
+        srsQueue = [...KANJI_DATA];
+        toast.innerText = '🎉 Bạn đã hoàn thành toàn bộ thẻ đến hạn hôm nay! Đang ở chế độ ôn tập tự do.';
+        toast.classList.remove('hidden');
+      } else {
+        toast.classList.add('hidden');
+      }
+      loadNextSRSCard();
+    }
+
+    function loadNextSRSCard() {
+      srsFlipped = false;
+      document.getElementById('srs-card-inner').classList.remove('flipped');
+      const controls = document.getElementById('srs-controls');
+      controls.classList.add('opacity-40', 'pointer-events-none');
+
+      document.getElementById('srs-remaining').innerText = srsQueue.length;
+      currentSRSCard = srsQueue[0];
+
+      document.getElementById('srs-jlpt-tag').innerText = currentSRSCard.jlpt;
+      document.getElementById('srs-front-char').innerText = currentSRSCard.char;
+      document.getElementById('srs-back-char').innerText = currentSRSCard.char;
+      document.getElementById('srs-back-hv').innerText = currentSRSCard.hv;
+      document.getElementById('srs-back-mean').innerText = currentSRSCard.meaning;
+      document.getElementById('srs-on').innerText = currentSRSCard.on;
+      document.getElementById('srs-kun').innerText = currentSRSCard.kun;
+      document.getElementById('srs-radicals').innerText = currentSRSCard.parts;
+      document.getElementById('srs-story').innerText = currentSRSCard.story;
+      document.getElementById('srs-example').innerText = currentSRSCard.examples[0];
+      currentSRSCard.exampleWord = currentSRSCard.examples[0].split(' ')[0];
+    }
+
+    function flipSRSCard() {
+      srsFlipped = !srsFlipped;
+      document.getElementById('srs-card-inner').classList.toggle('flipped', srsFlipped);
+      if (srsFlipped) {
+        const controls = document.getElementById('srs-controls');
+        controls.classList.remove('opacity-40', 'pointer-events-none');
+      }
+    }
+
+    function rateSRS(quality) {
+      if (!srsFlipped) return;
+      const id = currentSRSCard.id;
+      const prev = srsState[id] || { reps: 0, interval: 0 };
+      const intervals = { 1: 0, 2: 1, 3: 3, 4: 7 };
+      const days = intervals[quality];
+
+      if (quality === 1) {
+        srsState[id] = { reps: 0, interval: 0, nextReview: Date.now() };
+        srsQueue.push(srsQueue.shift());
+      } else {
+        srsState[id] = {
+          reps: prev.reps + 1,
+          interval: days,
+          nextReview: Date.now() + days * 86400000
+        };
+        srsQueue.shift();
+        if (srsQueue.length === 0) {
+          srsQueue = [...KANJI_DATA];
+          const toast = document.getElementById('srs-toast');
+          toast.innerText = '🎉 Xuất sắc! Bạn đã ôn xong lượt này. Tiếp tục ôn tự do.';
+          toast.classList.remove('hidden');
+        }
+      }
+
+      try {
+        localStorage.setItem('kanjilab_srs', JSON.stringify(srsState));
+      } catch (e) {}
+
+      updateStats();
+      renderKanjiGrid();
+      loadNextSRSCard();
+    }
+
+    function resetSRS() {
+      srsState = {};
+      try {
+        localStorage.removeItem('kanjilab_srs');
+      } catch (e) {}
+      updateStats();
+      renderKanjiGrid();
+      initSRS();
+    }
+
+    // Phím Space để lật thẻ SRS & phím Escape đóng Modal
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && !document.getElementById('tab-srs').classList.contains('hidden')) {
+        e.preventDefault();
+        flipSRSCard();
+      }
+      if (e.code === 'Escape') {
+        closeModal();
+      }
+    });
+
+    // ==================== THI THỬ (JLPT MOCK TEST) ====================
+    function initQuiz() {
+      quizList = [...KANJI_DATA].sort(() => Math.random() - 0.5).slice(0, 10);
+      quizIdx = 0;
+      quizScore = 0;
+      document.getElementById('quiz-score').innerText = '0';
+      renderQuizQuestion();
+    }
+
+    function renderQuizQuestion() {
+      const q = quizList[quizIdx];
+      document.getElementById('quiz-progress').innerText = `Câu ${quizIdx + 1} / ${quizList.length}`;
+      document.getElementById('quiz-question-char').innerText = q.char;
+
+      const fb = document.getElementById('quiz-feedback');
+      fb.classList.add('hidden');
+      fb.className = 'hidden p-4 rounded-2xl text-sm leading-relaxed';
+      document.getElementById('quiz-next-btn').classList.add('hidden');
+
+      const distractors = KANJI_DATA
+        .filter(item => item.id !== q.id)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 3);
+      const options = [q, ...distractors].sort(() => Math.random() - 0.5);
+
+      document.getElementById('quiz-options').innerHTML = options.map(opt => `
+        <button onclick="answerQuiz(${opt.id}, ${q.id}, this)" class="quiz-opt-btn w-full text-left px-4 py-3.5 rounded-2xl border-2 border-slate-200 hover:border-rose-400 font-medium text-sm transition cursor-pointer">
+          <span class="font-extrabold text-rose-600">${opt.hv}</span> – ${opt.meaning}
+          <span class="text-xs text-slate-400 ml-1">(${opt.on})</span>
+        </button>
+      `).join('');
+    }
+
+    function answerQuiz(selectedId, correctId, btnEl) {
+      document.querySelectorAll('.quiz-opt-btn').forEach(b => {
+        b.disabled = true;
+        b.classList.remove('hover:border-rose-400', 'cursor-pointer');
+      });
+
+      const correctObj = KANJI_DATA.find(k => k.id === correctId);
+      const fb = document.getElementById('quiz-feedback');
+
+      if (selectedId === correctId) {
+        quizScore++;
+        document.getElementById('quiz-score').innerText = quizScore;
+        btnEl.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-950');
+        fb.classList.add('bg-emerald-50', 'border', 'border-emerald-200', 'text-emerald-900');
+        fb.innerHTML = `✅ <strong>Chính xác!</strong> ${correctObj.story}`;
+      } else {
+        btnEl.classList.add('bg-rose-50', 'border-rose-500', 'text-rose-950');
+        fb.classList.add('bg-rose-50', 'border', 'border-rose-200', 'text-rose-900');
+        fb.innerHTML = `❌ <strong>Chưa đúng.</strong> Đáp án đúng là <strong>${correctObj.hv} (${correctObj.meaning})</strong>.<br/>💡 ${correctObj.story}`;
+      }
+
+      fb.classList.remove('hidden');
+      const nextBtn = document.getElementById('quiz-next-btn');
+      nextBtn.innerText = quizIdx + 1 < quizList.length ? 'Câu tiếp theo →' : `Hoàn thành (${quizScore}/10 điểm) – Làm bài mới ↻`;
+      nextBtn.classList.remove('hidden');
+    }
+
+    function nextQuizQuestion() {
+      if (quizIdx + 1 < quizList.length) {
+        quizIdx++;
+        renderQuizQuestion();
+      } else {
+        initQuiz();
+      }
+    }
+
+    // ==================== KHỞI TẠO ====================
+    window.addEventListener('DOMContentLoaded', () => {
+      initFreeCanvas('wb');
+      initFreeCanvas('modal');
+      renderHeroCard();
+      renderKanjiGrid();
+      renderRadicals();
+      renderMinna();
+      updateStats();
+
+      // Hỗ trợ tham số URL ?jlpt=N5&k=三 giống kanji.vn
+      const params = new URLSearchParams(window.location.search);
+      const queryKanji = params.get('k');
+      if (queryKanji) {
+        switchTab('kanji');
+        selectFeaturedKanji(queryKanji);
+      } else {
+        switchTab('home');
+      }
+    });
+  </script>
+</body>
+</html>
